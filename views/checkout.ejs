@@ -1,0 +1,308 @@
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+
+<div class="min-h-screen pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 hero-gradient">
+    <div class="container-responsive max-w-6xl mx-auto">
+
+        <div class="text-center mb-8 md:mb-12 popup-float">
+            <h2 class="text-2xl md:text-4xl font-extrabold mb-2 text-white">Checkout Pembayaran</h2>
+            <p class="text-gray-400">Selesaikan transaksi QRIS Anda sebelum waktu pembayaran habis.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
+
+            <div class="lg:col-span-7 space-y-6">
+                <section class="glass p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/10 popup-float">
+                    <div class="flex items-center space-x-4 mb-6 pb-6 border-b border-white/5">
+                        <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center text-green-500 shrink-0">
+                            <i class="bi bi-receipt-cutoff text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white">Detail Transaksi</h3>
+                            <p class="text-xs text-gray-400">Pastikan nominal dan ID transaksi sudah sesuai.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                        <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">ID Transaksi</p>
+                            <p class="text-sm md:text-base text-white font-mono font-bold break-all">#<%= deposit.reffId %></p>
+                        </div>
+                        <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Status</p>
+                            <p class="text-sm md:text-base text-yellow-500 font-extrabold uppercase">Menunggu Pembayaran</p>
+                        </div>
+                        <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Paket</p>
+                            <p class="text-sm md:text-base text-white font-bold capitalize"><%= plan.name %> Plan</p>
+                        </div>
+                        <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Durasi Aktif</p>
+                            <p class="text-sm md:text-base text-white font-bold"><%= plan.durationDays %> Hari</p>
+                        </div>
+                        <div class="sm:col-span-2 bg-green-500/10 rounded-2xl p-5 border border-green-500/20">
+                            <p class="text-[10px] text-green-500 font-black uppercase tracking-widest mb-2">Total Pembayaran</p>
+                            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-2">
+                                <h3 class="text-3xl md:text-4xl font-black text-green-500">
+                                    Rp <%= deposit.nominal.toLocaleString('id-ID') %>
+                                </h3>
+                                <p class="text-[11px] text-gray-400 leading-relaxed md:text-right">
+                                    Transfer sesuai nominal agar sistem dapat mencocokkan pembayaran otomatis.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="glass p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/10 popup-float" style="animation-delay: 100ms;">
+                    <div class="flex items-center space-x-4 mb-5">
+                        <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400 shrink-0">
+                            <i class="bi bi-phone text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white">📲 Bayar Via E-Wallet</h3>
+                            <p class="text-xs text-gray-400">QRIS mendukung aplikasi pembayaran populer dan mobile banking.</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                            <i class="bi bi-wallet2 text-green-500 text-xl"></i>
+                            <p class="mt-2 text-xs font-bold text-white">GoPay</p>
+                        </div>
+                        <div class="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                            <i class="bi bi-wallet2 text-purple-400 text-xl"></i>
+                            <p class="mt-2 text-xs font-bold text-white">OVO</p>
+                        </div>
+                        <div class="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                            <i class="bi bi-wallet2 text-blue-400 text-xl"></i>
+                            <p class="mt-2 text-xs font-bold text-white">DANA</p>
+                        </div>
+                        <div class="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                            <i class="bi bi-bank text-yellow-500 text-xl"></i>
+                            <p class="mt-2 text-xs font-bold text-white">m-Banking</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="glass bg-red-500/5 p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-red-500/20 popup-float" style="animation-delay: 150ms;">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center text-red-500 shrink-0">
+                            <i class="bi bi-exclamation-triangle-fill text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-extrabold text-red-500 uppercase tracking-widest mb-2">Peringatan Penting</h4>
+                            <p class="text-[11px] md:text-sm text-gray-400 leading-relaxed">
+                                Bayar sesuai nominal yang tertera. Jika nominal berbeda, sistem bisa gagal mengonfirmasi transaksi secara otomatis.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="lg:col-span-5 glass p-6 md:p-8 rounded-[24px] md:rounded-[32px] border border-white/10 popup-float" style="animation-delay: 200ms;">
+                <div class="flex items-center justify-between gap-4 mb-6 pb-5 border-b border-white/5">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-white">Scan QRIS untuk Membayar</h3>
+                        <p class="text-xs text-gray-400 mt-1">Gunakan kamera pembayaran dari aplikasi pilihan Anda.</p>
+                    </div>
+                    <div class="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 shrink-0">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
+                        </span>
+                        <span class="text-yellow-500 font-bold uppercase text-[10px]">Pending</span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-3xl mb-5 shadow-2xl mx-auto w-[230px] md:w-[270px] aspect-square flex items-center justify-center relative overflow-hidden">
+                    <img id="qris-image" src="<%= deposit.paymentData.qr_image %>" alt="QRIS Code" class="w-full h-full object-contain">
+                </div>
+
+                <div class="flex items-center justify-center space-x-2 text-red-400 font-bold text-xs bg-red-500/10 px-4 py-3 rounded-xl border border-red-500/20 w-full mx-auto mb-5">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Kadaluarsa: <span id="countdown" class="font-mono text-sm tracking-wider">Memuat...</span></span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button onclick="cancelOrder()" class="w-full py-4 rounded-2xl bg-red-500 text-white text-xs font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-600 active:scale-[0.99] transition-all">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Cancel Pembayaran</span>
+                    </button>
+                    <button onclick="checkPaymentNow()" class="w-full py-4 rounded-2xl bg-green-500 text-black text-xs font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-green-400 active:scale-[0.99] transition-all">
+                        <i class="bi bi-check2-circle"></i>
+                        <span>Saya Sudah Membayar</span>
+                    </button>
+                </div>
+
+                <section class="mt-6 pt-6 border-t border-white/5">
+                    <h4 class="text-sm font-extrabold text-white mb-4">📋 Cara Pembayaran QRIS</h4>
+                    <ol class="space-y-3 text-xs text-gray-400 leading-relaxed">
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 flex items-center justify-center font-black shrink-0">1</span>
+                            <span>Buka aplikasi e-wallet atau mobile banking yang mendukung QRIS.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 flex items-center justify-center font-black shrink-0">2</span>
+                            <span>Pilih menu scan QR, lalu arahkan kamera ke QRIS di atas.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 flex items-center justify-center font-black shrink-0">3</span>
+                            <span>Pastikan nominalnya Rp <%= deposit.nominal.toLocaleString('id-ID') %>, lalu konfirmasi pembayaran.</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 flex items-center justify-center font-black shrink-0">4</span>
+                            <span>Tekan Saya Sudah Membayar untuk mengecek status lebih cepat.</span>
+                        </li>
+                    </ol>
+                </section>
+            </aside>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const reffId = "<%= deposit.reffId %>";
+    const createdAt = new Date("<%= deposit.createdAt.toISOString() %>").getTime();
+    let checkInterval;
+
+    function getAlertTheme() {
+        const isLight = document.body.classList.contains('light-theme');
+        return {
+            background: isLight ? '#ffffff' : '#121212',
+            color: isLight ? '#0f172a' : '#ffffff'
+        };
+    }
+
+    function handlePaymentStatus(result, showPending = false) {
+        if (result.status === 'success') {
+            if (checkInterval) clearInterval(checkInterval);
+            Swal.fire({
+                icon: 'success',
+                title: 'Pembayaran Berhasil!',
+                text: result.message || 'Pembayaran Anda sudah dikonfirmasi.',
+                ...getAlertTheme(),
+                confirmButtonColor: '#22c55e'
+            }).then(() => {
+                window.location.href = '/dashboard';
+            });
+            return true;
+        }
+
+        if (result.status === 'expired' || result.status === 'failed' || result.status === 'cancelled') {
+            if (checkInterval) clearInterval(checkInterval);
+            Swal.fire({
+                icon: 'error',
+                title: 'Orderan Gagal',
+                text: result.status === 'expired' ? 'Waktu pembayaran telah habis (30 menit).' : 'Pembayaran gagal atau dibatalkan.',
+                ...getAlertTheme(),
+                confirmButtonColor: '#ef4444'
+            }).then(() => {
+                window.location.href = '/pricing';
+            });
+            return true;
+        }
+
+        if (showPending) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Masih Menunggu Pembayaran',
+                text: 'Jika Anda baru saja membayar, tunggu beberapa saat lalu cek kembali.',
+                ...getAlertTheme(),
+                confirmButtonColor: '#22c55e'
+            });
+        }
+
+        return false;
+    }
+
+    function startCountdown() {
+        const countdownDisplay = document.getElementById('countdown');
+        const countdownInt = setInterval(() => {
+            const now = new Date().getTime();
+            const diffTime = now - createdAt;
+            // Expiration is 30 minutes = 1800000 ms
+            const remaining = 1800000 - diffTime;
+
+            if (remaining <= 0) {
+                clearInterval(countdownInt);
+                countdownDisplay.textContent = "00:00";
+            } else {
+                let minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                countdownDisplay.textContent = minutes + ":" + seconds;
+            }
+        }, 1000);
+    }
+
+    async function cancelOrder() {
+        const confirmed = await Swal.fire({
+            title: 'Batalkan Orderan?',
+            text: 'Apakah Anda yakin ingin membatalkan orderan ini?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff4b4b',
+            cancelButtonColor: '#333',
+            confirmButtonText: 'Ya, Batalkan',
+            cancelButtonText: 'Tidak',
+            ...getAlertTheme()
+        });
+
+        if (confirmed.isConfirmed) {
+            try {
+                const response = await fetch(`/api/deposit/cancel/${reffId}`, { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    Swal.fire({
+                        title: 'Dibatalkan!',
+                        text: result.message,
+                        icon: 'success',
+                        ...getAlertTheme(),
+                        confirmButtonColor: '#22c55e'
+                    }).then(() => {
+                        window.location.href = '/pricing';
+                    });
+                } else {
+                    alert(result.error);
+                }
+            } catch (err) {
+                alert('Gagal membatalkan orderan');
+            }
+        }
+    }
+
+    async function checkPaymentNow() {
+        try {
+            const response = await fetch(`/api/deposit/status/${reffId}`);
+            const result = await response.json();
+            handlePaymentStatus(result, true);
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Mengecek Pembayaran',
+                text: 'Koneksi bermasalah. Silakan coba lagi.',
+                ...getAlertTheme(),
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    }
+
+    function startStatusCheck() {
+        checkInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`/api/deposit/status/${reffId}`);
+                const result = await response.json();
+                handlePaymentStatus(result);
+            } catch (err) {
+                console.error('Polling error:', err);
+            }
+        }, 10000); // 10 detik delay
+    }
+
+    startCountdown();
+    startStatusCheck();
+</script>
+
+<%- include('partials/footer') %>

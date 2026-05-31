@@ -1,0 +1,115 @@
+<%- include('partials/head') %>
+    <%- include('partials/nav') %>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="py-24 px-6 relative">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="text-4xl font-extrabold mb-4">Pilih Paket <span class="text-green-500">Terbaik</span>
+                        Anda</h2>
+                    <p class="text-gray-400">Hemat lebih banyak dengan paket langganan jangka panjang.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <% plans.forEach((plan, index)=> { %>
+                        <div
+                            class="<%= plan.name.toLowerCase() === 'basic' ? 'bg-gradient-to-b from-green-500/20 to-transparent border-2 border-green-500/50 shadow-2xl scale-105 z-10' : 'glass border border-white/5' %> p-8 rounded-[40px] flex flex-col reveal relative overflow-hidden group">
+                            <% if (plan.name.toLowerCase()==='basic' ) { %>
+                                <div
+                                    class="absolute top-6 right-6 bg-green-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase">
+                                    Populer</div>
+                                <% } %>
+                                    <div class="mb-8">
+                                        <h4
+                                            class="text-xl font-bold mb-2 <%= plan.name.toLowerCase() === 'basic' ? 'text-green-500' : '' %>">
+                                            <%= plan.name %> Plan
+                                        </h4>
+                                        <p class="text-gray-500 text-sm">
+                                            <%= plan.name==='Trial' ? 'Coba fitur dasar secara gratis.' :
+                                                (plan.name==='Basic' ? 'Cocok untuk penggunaan pribadi.'
+                                                : 'Ideal untuk bisnis kecil Anda.' ) %>
+                                        </p>
+                                        <div class="mt-6 flex items-baseline">
+                                            <% if (plan.price===0) { %>
+                                                <span class="text-4xl font-extrabold">Gratis</span>
+                                                <% } else { %>
+                                                    <span class="text-sm font-bold text-gray-400 mr-1">Rp</span>
+                                                    <span class="text-4xl font-extrabold">
+                                                        <%= plan.price.toLocaleString('id-ID') %>
+                                                    </span>
+                                                    <span class="text-gray-500 text-sm ml-2">/ paket</span>
+                                                    <% } %>
+                                        </div>
+                                    </div>
+                                    <ul class="space-y-4 mb-10 flex-grow text-sm text-gray-400">
+                                        <% plan.features.forEach(feature=> { %>
+                                            <li><i class="bi bi-check2-circle text-green-500 mr-2"></i>
+                                                <%= feature %>
+                                            </li>
+                                            <% }) %>
+                                    </ul>
+                                    <% if (plan.price===0) { %>
+                                        <% if (user) { %>
+                                            <button onclick="claimTrial()"
+                                                class="w-full py-4 rounded-2xl glass font-bold hover:bg-white/10 transition-all border border-white/10">Klaim
+                                                Gratis</button>
+                                            <% } else { %>
+                                                <button onclick="window.location.href='/signup'"
+                                                    class="w-full py-4 rounded-2xl glass font-bold hover:bg-white/10 transition-all border border-white/10">Mulai
+                                                    Gratis</button>
+                                                <% } %>
+                                                    <% } else { %>
+                                                        <a href="/checkout/<%= plan._id %>"
+                                                            class="w-full py-4 rounded-2xl <%= plan.name.toLowerCase() === 'basic' ? 'bg-green-500 text-black' : 'glass text-white' %> font-bold hover:opacity-90 transition-all text-center">Beli
+                                                            Sekarang</a>
+                                                        <% } %>
+                        </div>
+                        <% }) %>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section (Bento Style) -->
+        <section id="features" class="py-24 px-6 bg-[#080808]">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="text-4xl font-extrabold mb-4">Kenapa Memilih <span class="text-green-500">Gateway</span>
+                        Kami?</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">Infrastruktur kuat dengan fitur yang dirancang untuk
+                        performa tinggi.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <div
+                        class="md:col-span-2 glass p-8 rounded-3xl reveal flex flex-col justify-between border-t border-green-500/20">
+                        <div>
+                            <i class="bi bi-code-slash text-3xl text-green-500 mb-6 block"></i>
+                            <h4 class="text-xl font-bold mb-2">REST API Lengkap</h4>
+                            <p class="text-gray-500 text-sm">Integrasi mudah ke sistem Anda dengan dokumentasi API yang
+                                sangat jelas.</p>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 glass p-8 rounded-3xl reveal flex flex-col justify-between border-t border-green-500/20"
+                        style="transition-delay: 100ms;">
+                        <div>
+                            <i class="bi bi-lightning-charge-fill text-3xl text-green-500 mb-6 block"></i>
+                            <h4 class="text-xl font-bold mb-2">Pengiriman Cepat</h4>
+                            <p class="text-gray-500 text-sm">Pesan terkirim dalam hitungan milidetik dengan server
+                                latensi rendah.</p>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 glass p-8 rounded-3xl reveal flex flex-col justify-between border-t border-green-500/20"
+                        style="transition-delay: 200ms;">
+                        <div>
+                            <i class="bi bi-shield-lock-fill text-3xl text-green-500 mb-6 block"></i>
+                            <h4 class="text-xl font-bold mb-2">Koneksi Stabil</h4>
+                            <p class="text-gray-500 text-sm">Uptime 99.9% menjamin bot Anda selalu siap merespon
+                                pelanggan.</p>
+                        </div>
+                    </div>
+                    <!-- More features... -->
+                </div>
+            </div>
+        </section>
+
+
+
+        <%- include('partials/footer') %>

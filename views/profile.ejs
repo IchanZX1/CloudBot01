@@ -1,0 +1,203 @@
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+
+<main class="pt-24 pb-12 px-4 md:px-6 min-h-screen">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="mb-10 text-center reveal">
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-2">Manajemen <span class="text-green-500">Profil</span></h1>
+            <p class="text-gray-400 text-sm md:text-base">Kelola identitas digital dan keamanan akun Anda dalam satu tempat.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <!-- Left: Card Display (Flip Animation) -->
+            <div class="perspective-1000">
+                <div id="profile-card" class="relative w-full aspect-[1/1.4] md:aspect-[1/1.5] transition-transform duration-700 preserve-3d cursor-pointer shadow-2xl rounded-[40px]" onclick="flipCard()">
+                    <!-- Front Side -->
+                    <div class="absolute inset-0 backface-hidden glass border border-white/10 rounded-[40px] p-8 flex flex-col items-center justify-between overflow-hidden">
+                        <div class="absolute -top-20 -right-20 w-40 h-40 bg-green-500/10 blur-[60px] rounded-full"></div>
+                        
+                        <div class="relative z-10 w-full text-center">
+                            <div class="w-24 h-24 md:w-32 md:h-32 mx-auto rounded-full p-1 bg-gradient-to-tr from-green-500 to-transparent mb-6 relative group">
+                                <img id="card-avatar" src="<%= user.profilePic || '/img/default-profile.png' %>" class="w-full h-full rounded-full object-cover border-4 border-[#050505]" alt="Profile">
+                                <div class="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                    <i class="bi bi-camera text-2xl text-white"></i>
+                                </div>
+                            </div>
+                            <h3 id="card-username" class="text-2xl font-black text-white uppercase tracking-tight"><%= user.username %></h3>
+                            <p class="text-green-500 font-bold text-xs uppercase tracking-widest mt-1"><%= (user.paket || 'FREE').toUpperCase() %> MEMBER</p>
+                        </div>
+
+                        <div class="w-full space-y-4 relative z-10">
+                            <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Email Address</p>
+                                <p id="card-email" class="text-sm font-semibold truncate" data-original="<%= user.email %>"><%= user.email %></p>
+                            </div>
+                            <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">WhatsApp Number</p>
+                                <p id="card-wa" class="text-sm font-semibold"><%= user.no_Wa %></p>
+                            </div>
+                        </div>
+
+                        <div class="w-full pt-6 border-t border-white/10 flex justify-between items-center relative z-10">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                                    <i class="bi bi-code-square text-black font-bold"></i>
+                                </div>
+                                <span class="text-xs font-black tracking-tighter">ZXcoderID <span class="text-green-500">Cloud</span></span>
+                            </div>
+                            <span class="text-[10px] text-gray-500 font-mono">#<%= user._id.toString().slice(-6).toUpperCase() %></span>
+                        </div>
+                    </div>
+
+                    <!-- Back Side (Shiny Green Card) -->
+                    <div class="absolute inset-0 backface-hidden rounded-[40px] rotate-y-180 p-1 bg-gradient-to-br from-green-400 via-green-600 to-green-900 shadow-[0_0_50px_rgba(34,197,94,0.3)]">
+                        <div class="w-full h-full bg-[#050505] rounded-[38px] p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                            <!-- Branded Background Pattern -->
+                            <div class="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center text-[180px] font-black text-green-500 rotate-12">
+                                ZX
+                            </div>
+                            <!-- Dynamic Glow -->
+                            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-transparent via-green-500/20 to-transparent animate-pulse"></div>
+                            
+                            <div class="relative z-10">
+                                <div class="w-20 h-20 bg-green-500 rounded-3xl mx-auto flex items-center justify-center shadow-[0_0_40px_rgba(34,197,94,0.5)] mb-6 transform -rotate-6">
+                                    <i class="bi bi-shield-check text-4xl text-black"></i>
+                                </div>
+                                <h4 class="text-xl font-black text-white mb-2">VERIFIED IDENTITY</h4>
+                                <p class="text-sm text-green-500 font-bold tracking-tighter max-w-[200px] mx-auto uppercase">Secure infrastructure powered by ZXcoderID Cloud Server</p>
+                            </div>
+
+                            <div class="absolute bottom-8 left-0 right-0 px-8 flex justify-center">
+                                <div class="flex space-x-1">
+                                    <% for(let i=0; i<4; i++) { %>
+                                        <div class="w-8 h-1 bg-green-500/30 rounded-full overflow-hidden">
+                                            <div class="h-full bg-green-500 animate-[loading_2s_infinite]" style="animation-delay: <%= i*0.5 %>s"></div>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Controls -->
+                <div class="mt-6 flex justify-center">
+                    <button onclick="flipCard()" class="glass px-6 py-2.5 rounded-full text-xs font-bold hover:bg-green-500 hover:text-black transition-all flex items-center space-x-2 border border-white/10">
+                        <i class="bi bi-arrow-repeat text-lg"></i>
+                        <span>Putar Kartu</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right: Edit Form -->
+            <div class="glass rounded-[40px] border border-white/5 p-8 reveal">
+                <form id="profile-form" onsubmit="handleUpdate(event)" class="space-y-6">
+                    <!-- Photo Upload -->
+                    <div class="flex items-center space-x-6 mb-8 group">
+                        <div class="relative">
+                            <img id="preview-avatar" src="<%= user.profilePic || '/img/default-profile.png' %>" class="w-20 h-20 rounded-2xl object-cover border-2 border-green-500/30" alt="Preview">
+                            <label for="profilePic" class="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-lg">
+                                <i class="bi bi-pencil-fill text-black text-xs"></i>
+                                <input type="file" id="profilePic" name="profilePic" class="hidden" accept="image/*" onchange="previewImage(this)">
+                            </label>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-white uppercase tracking-tight">Ganti Foto Profil</p>
+                            <p class="text-xs text-gray-500">Maksimal file 5MB (JPG, PNG)</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest pl-2">Username</label>
+                            <input type="text" name="username" value="<%= user.username %>" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 focus:border-green-500 outline-none transition-all text-sm font-semibold" required>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest pl-2">Nomor WhatsApp</label>
+                            <input type="text" name="no_Wa" value="<%= user.no_Wa %>" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 focus:border-green-500 outline-none transition-all text-sm font-semibold" required>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest pl-2">Alamat Email</label>
+                        <input type="email" name="email" value="<%= user.email %>" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 focus:border-green-500 outline-none transition-all text-sm font-semibold" required>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest pl-2">Password Baru (Kosongkan jika tidak ganti)</label>
+                        <div class="relative">
+                            <input type="password" id="password" name="password" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 focus:border-green-500 outline-none transition-all text-sm font-semibold pr-12">
+                            <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
+                                <i class="bi bi-eye" id="pass-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pt-6">
+                        <button type="submit" class="w-full py-4 bg-green-500 hover:bg-green-400 text-black font-black rounded-2xl transition-all shadow-[0_4px_15px_rgba(34,197,94,0.3)] active:scale-95 flex items-center justify-center space-x-2">
+                            <i class="bi bi-cloud-arrow-up-fill text-lg"></i>
+                            <span>Simpan Perubahan</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+
+<style>
+    .perspective-1000 {
+        perspective: 1000px;
+    }
+    .preserve-3d {
+        transform-style: preserve-3d;
+    }
+    .backface-hidden {
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+        transform: rotateY(180deg);
+    }
+    
+    .loading-bar {
+        background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.8), transparent);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite linear;
+    }
+
+    @keyframes loading {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .otp-input {
+        text-align: center !important;
+        letter-spacing: 1rem !important;
+        font-size: 1.5rem !important;
+        font-weight: bold !important;
+        border-radius: 1rem !important;
+        background: rgba(255,255,255,0.05) !important;
+        border-color: rgba(255,255,255,0.1) !important;
+        color: white !important;
+    }
+
+    .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .glass {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+</style>
+
+<%- include('partials/footer') %>

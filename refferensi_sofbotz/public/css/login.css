@@ -1,0 +1,314 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap");
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #0b0f1a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+section {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(
+    circle at top,
+    #10162a 0%,
+    #070a14 70%
+  );
+}
+
+section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1;
+}
+
+section > * {
+  position: relative;
+  z-index: 2;
+}
+
+section::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    radial-gradient(circle, rgba(131, 58, 180, 0.18) 0%, transparent 60%),
+    radial-gradient(circle, rgba(0, 212, 255, 0.18) 0%, transparent 60%);
+  animation: nebulaMove 40s linear infinite;
+  z-index: 1;
+}
+
+@keyframes nebulaMove {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate(50px, 50px) rotate(360deg);
+  }
+}
+
+.form-box {
+  position: relative;
+  width: 95%;
+  max-width: 1000px;
+  min-width: 340px;
+  padding: 100px 80px;
+  background: rgba(18, 22, 40, 0.65);
+  border: 1.8px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  backdrop-filter: blur(22px);
+  box-shadow:
+    0 0 45px rgba(0, 234, 255, 0.18),
+    inset 0 0 30px rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: slideUp 0.8s ease-out;
+}
+
+h2 {
+  font-size: 3.2em;
+  text-align: center;
+  margin-bottom: 30px;
+  background: linear-gradient(
+    90deg,
+    #ffffff 15%,
+    #00eaff 40%,
+    #b066ff 60%,
+    #ffffff 85%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 7s ease-in-out infinite;
+  will-change: background-position;
+  -webkit-text-stroke: 0.8px rgba(255, 255, 255, 0.4);
+}
+
+@keyframes shine {
+  0% {
+    background-position: -50% center;
+  }
+  50% {
+    background-position: 120% center;
+  }
+  100% {
+    background-position: -50% center;
+  }
+}
+
+.inputbox {
+  position: relative;
+  margin: 40px 0;
+  width: 100%;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+.inputbox label {
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  transform: translateY(-50%);
+  color: #cbd5f5;
+  font-size: 1.5em;
+  pointer-events: none;
+  transition: 0.4s;
+}
+
+input:focus ~ label,
+input:valid ~ label {
+  top: -10px;
+  font-size: 1.1em;
+  color: #00ffe7;
+}
+
+.inputbox input {
+  width: 100%;
+  height: 75px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 1.5em;
+  padding: 0 45px 0 10px;
+  color: #ffffff;
+}
+
+.inputbox ion-icon {
+  position: absolute;
+  right: 8px;
+  color: #cbd5f5;
+  font-size: 1.8em;
+  top: 26px;
+}
+
+.forget {
+  margin: -5px 0 25px;
+  font-size: 1em;
+  color: #cbd5f5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.forget label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.forget input[type="checkbox"] {
+  accent-color: #00eaff;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+.forget a {
+  color: #00eaff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.forget a:hover {
+  text-decoration: underline;
+  color: #b066ff;
+}
+
+button {
+  width: 100%;
+  height: 70px;
+  border-radius: 45px;
+  background: linear-gradient(135deg, #00ffe7, #00b3ff);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 1.5em;
+  font-weight: 700;
+  color: #041014;
+  transition: 0.3s;
+  box-shadow: 0 0 25px rgba(0, 234, 255, 0.4);
+}
+
+button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #00b3ff, #00ffe7);
+}
+
+.register {
+  font-size: 1.4em;
+  color: #cbd5f5;
+  text-align: center;
+  margin: 30px 0 15px;
+}
+
+.register p a {
+  text-decoration: none;
+  color: #00ffe7;
+  font-weight: 700;
+  transition: 0.3s;
+}
+
+.register p a:hover {
+  text-decoration: underline;
+  color: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .form-box {
+    max-width: 100%;
+    padding: 40px 25px;
+  }
+  h2 {
+    font-size: 2.2em;
+  }
+  .inputbox input {
+    height: 60px;
+    font-size: 1.2em;
+  }
+  .inputbox label {
+    font-size: 1.1em;
+  }
+  button {
+    font-size: 1.2em;
+    height: 60px;
+  }
+  .register {
+    font-size: 1em;
+  }
+}
+
+.error-text {
+  color: #ff6b6b;
+  font-size: 13px;
+  margin-top: 3px;
+  display: none;
+}
+
+.alert {
+  background: linear-gradient(135deg, #ff3b3b, #ff5b5b);
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(255, 59, 59, 0.5);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

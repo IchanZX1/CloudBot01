@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kebijakan & Ketentuan | {{NAMA_PERUSAHAAN}}</title>
+
+    <!-- Bootstrap & Icons (CDN) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: #0b0f14;
+        --card: rgba(255, 255, 255, 0.06);
+        --card-border: rgba(255, 255, 255, 0.14);
+        --txt: #e6e9ef;
+        --muted: #9aa3b2;
+        --accent: #7c5cff;
+        --accent2: #00e0ff;
+        --radius: 18px;
+        --shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        color: var(--txt);
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Ubuntu,
+          "Helvetica Neue",
+          Arial;
+        background:
+          radial-gradient(
+            1200px 600px at 10% 20%,
+            rgba(124, 92, 255, 0.15),
+            transparent
+          ),
+          radial-gradient(
+            1000px 600px at 90% 80%,
+            rgba(0, 224, 255, 0.12),
+            transparent
+          ),
+          var(--bg);
+        overflow-x: hidden;
+      }
+
+      /* Page frame */
+      .page-wrap {
+        min-height: 100%;
+        padding: 40px 20px;
+      }
+      .glass {
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        backdrop-filter: blur(14px) saturate(120%);
+        -webkit-backdrop-filter: blur(14px) saturate(120%);
+        box-shadow: var(--shadow);
+      }
+      .page-header.glass {
+        padding: 22px 20px;
+      }
+      .brand h1 {
+        font-family: "Poppins", sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        margin: 0;
+        font-size: 1.4rem;
+      }
+      .brand .sub {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      /* Layout */
+      .toc {
+        position: sticky;
+        top: 20px;
+      }
+      .toc .list-group-item {
+        background: transparent;
+        color: var(--txt);
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+      .toc .list-group-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .toc .active {
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border: none;
+        color: #0b0f14;
+      }
+
+      .content.glass {
+        padding: 22px;
+      }
+      .section + .section {
+        margin-top: 26px;
+      }
+      .section h2 {
+        font-family: "Poppins", sans-serif;
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin-bottom: 14px;
+      }
+      .lead-muted {
+        color: var(--muted);
+      }
+
+      /* Tables */
+      table.table {
+        --bs-table-color: var(--txt);
+        --bs-table-striped-color: var(--txt);
+        --bs-table-bg: transparent;
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+      .table thead th {
+        color: #dfe3ee;
+        font-weight: 700;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+      }
+      .table td,
+      .table th {
+        vertical-align: top;
+      }
+      .table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      /* Cards inside content */
+      .note {
+        border-left: 4px solid var(--accent);
+        background: rgba(124, 92, 255, 0.08);
+        padding: 12px 14px;
+        border-radius: 12px;
+      }
+
+      /* Badges */
+      .badge-soft {
+        background: linear-gradient(
+          135deg,
+          rgba(124, 92, 255, 0.25),
+          rgba(0, 224, 255, 0.25)
+        );
+        color: #dfe7ff;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      /* Footer */
+      .footer-note {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      /* Links */
+      a,
+      .btn-link {
+        color: #8ecbff;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      /* Code blocks */
+      code {
+        background: rgba(255, 255, 255, 0.07);
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.4rem;
+      }
+
+      /* Small utilities */
+      .divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+        margin: 16px 0;
+      }
+      .icon {
+        width: 26px;
+        text-align: center;
+        margin-right: 0.5rem;
+        color: #b8b8ff;
+      }
+
+      /* Print */
+      @media print {
+        .page-wrap {
+          padding: 0;
+        }
+        .glass {
+          box-shadow: none;
+          backdrop-filter: none;
+          background: #fff;
+          color: #000;
+          border: 1px solid #ddd;
+        }
+        .toc {
+          display: none;
+        }
+        .content {
+          padding: 0;
+        }
+        body {
+          background: #fff;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ======= PAGE HEADER ======= -->
+    <div class="page-wrap container">
+      <div class="page-header glass mb-3">
+        <div
+          class="d-flex flex-wrap align-items-center justify-content-between gap-2"
+        >
+          <div class="brand">
+            <h1>
+              <i class="fa-solid fa-shield-halved me-2"></i>{{NAMA_PERUSAHAAN}}
+              — Kebijakan & Ketentuan
+            </h1>
+            <div class="sub">
+              Terakhir diperbarui:
+              <span id="last-updated">15 November 2025</span>
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="/" class="btn btn-sm btn-outline-light"
+              ><i class="fa-solid fa-house me-1"></i> Beranda</a
+            >
+            <a
+              href="#kontak"
+              class="btn btn-sm btn-primary"
+              style="
+                background: linear-gradient(135deg, #7c5cff, #00e0ff);
+                border: none;
+              "
+            >
+              <i class="fa-solid fa-life-ring me-1"></i> Dukungan
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======= BODY ======= -->
+      <div class="row g-3">
+        <!-- TOC -->
+        <aside class="col-12 col-lg-4">
+          <div class="glass p-3 toc">
+            <div class="d-flex align-items-center mb-2">
+              <i class="fa-solid fa-list-check icon"></i>
+              <h2 class="h6 m-0">Daftar Isi</h2>
+            </div>
+            <div class="list-group list-group-flush small" id="tocList">
+              <a
+                class="list-group-item list-group-item-action active"
+                href="#pendahuluan"
+                >Pendahuluan</a
+              >
+              <a
+                class="list-group-item list-group-item-action"
+                href="#ketentuan-layanan"
+                >Ketentuan Layanan</a
+              >
+              <a class="list-group-item list-group-item-action" href="#privasi"
+                >Kebijakan Privasi</a
+              >
+              <a class="list-group-item list-group-item-action" href="#data"
+                >Pengelolaan Data</a
+              >
+              <a
+                class="list-group-item list-group-item-action"
+                href="#pembayaran"
+                >Pembayaran & Refund</a
+              >
+              <a
+                class="list-group-item list-group-item-action"
+                href="#hak-kewajiban"
+                >Hak & Kewajiban</a
+              >
+              <a class="list-group-item list-group-item-action" href="#role"
+                >Role System Layanan</a
+              >
+              <a class="list-group-item list-group-item-action" href="#batasan"
+                >Batasan Tanggung Jawab</a
+              >
+              <a
+                class="list-group-item list-group-item-action"
+                href="#perubahan"
+                >Perubahan Kebijakan</a
+              >
+              <a class="list-group-item list-group-item-action" href="#kontak"
+                >Kontak</a
+              >
+            </div>
+          </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="col-12 col-lg-8">
+          <div class="content glass">
+            <section id="pendahuluan" class="section">
+              <h2><i class="fa-solid fa-door-open me-2"></i>Pendahuluan</h2>
+              <p class="lead-muted">
+                Dokumen ini mengatur <b>Ketentuan Layanan</b> dan
+                <b>Kebijakan Privasi</b> untuk layanan {{NAMA_PERUSAHAAN}}
+                (“kami”, “kita”, atau “perusahaan”). Dengan menggunakan layanan
+                kami, Anda menyatakan telah membaca, memahami, dan setuju
+                terhadap seluruh isi dokumen ini.
+              </p>
+              <div class="note mt-2">
+                <span class="badge badge-soft me-2">Ringkas</span>
+                Anda dapat menavigasi menggunakan Daftar Isi di sebelah kiri
+                untuk menemukan topik tertentu dengan cepat.
+              </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="ketentuan-layanan" class="section">
+              <h2>
+                <i class="fa-solid fa-scale-balanced me-2"></i>Ketentuan Layanan
+              </h2>
+              <p class="mb-2">
+                Berikut ringkasan poin utama Ketentuan Layanan:
+              </p>
+              <table class="table table-sm table-striped align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 26%">Topik</th>
+                    <th>Ketentuan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Akses Layanan</td>
+                    <td>
+                      Pengguna harus berusia minimal 13 tahun atau sesuai hukum
+                      setempat. Akses dapat dihentikan jika melanggar aturan.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Penggunaan yang Dilarang</td>
+                    <td>
+                      Dilarang menggunakan untuk aktivitas ilegal, spam, iklan
+                      judol, slot, pelanggaran IP, atau upaya menembus keamanan
+                      sistem.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Perubahan Layanan</td>
+                    <td>
+                      Kami dapat menambah, mengubah, atau menghentikan fitur
+                      dengan pemberitahuan wajar.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Penangguhan</td>
+                    <td>
+                      Kami berhak menangguhkan akun yang menyalahi ketentuan
+                      atau mengganggu stabilitas layanan.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="privasi" class="section">
+              <h2>
+                <i class="fa-solid fa-user-shield me-2"></i>Kebijakan Privasi
+              </h2>
+              <p class="mb-2">
+                Kami menjaga data Anda sesuai prinsip minimasi data dan
+                transparansi.
+              </p>
+              <table class="table table-sm align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 26%">Kategori Data</th>
+                    <th>Contoh</th>
+                    <th>Tujuan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Identitas</td>
+                    <td>Nama, email, nomor ponsel</td>
+                    <td>Autentikasi, komunikasi terkait akun</td>
+                  </tr>
+                  <tr>
+                    <td>Teknis</td>
+                    <td>IP, log aktivitas</td>
+                    <td>Keamanan, perbaikan fitur</td>
+                  </tr>
+                  <tr>
+                    <td>Transaksi</td>
+                    <td>Riwayat pembayaran, paket</td>
+                    <td>Pemrosesan pembayaran & dukungan</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="note mt-2">
+                Anda dapat meminta akses, perbaikan, atau penghapusan data
+                dengan menghubungi kami (lihat bagian
+                <a href="#kontak">Kontak</a>).
+              </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="data" class="section">
+              <h2><i class="fa-solid fa-database me-2"></i>Pengelolaan Data</h2>
+              <ul class="mb-2">
+                <li>Penyimpanan data pada wilayah/jurisdiksi yang relevan.</li>
+                <li>
+                  Enkripsi saat transit (HTTPS) dan saat at-rest (bila berlaku).
+                </li>
+                <li>
+                  Retensi data mengikuti ketentuan hukum yang berlaku atau
+                  sesuai kebutuhan operasional.
+                </li>
+              </ul>
+              <p class="lead-muted mb-0">
+                Kami melakukan kontrol akses berbasis peran (RBAC) untuk
+                meminimalkan risiko akses tidak sah.
+              </p>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="pembayaran" class="section">
+              <h2>
+                <i class="fa-solid fa-credit-card me-2"></i>Pembayaran & Refund
+              </h2>
+              <table class="table table-sm table-striped align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 26%">Topik</th>
+                    <th>Kebijakan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Metode Pembayaran</td>
+                    <td>
+                      Kartu, e-wallet, transfer bank, qris, paypal atau metode
+                      lain yang kami dukung.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Bukti Transfer</td>
+                    <td>
+                      Setelah transfer harus menyertakan bukti pembayaran,
+                      screenshot ataupun struk, bila tidak maka kami akan anggap
+                      sebagai donasi
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Refund</td>
+                    <td>
+                      Refund parsial/proporsional dapat diberikan sesuai kasus
+                      dan kebijakan aktif, hubungi dukungan.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="hak-kewajiban" class="section">
+              <h2>
+                <i class="fa-solid fa-handshake-simple me-2"></i>Hak & Kewajiban
+              </h2>
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <div class="note h-100">
+                    <b>Hak Pengguna</b>
+                    <ul class="mb-0 mt-1">
+                      <li>Mengakses layanan sesuai paket.</li>
+                      <li>Meminta bantuan dukungan resmi.</li>
+                      <li>Custom fitur yg tersedia</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div
+                    class="note h-100"
+                    style="
+                      border-left-color: #00e0ff;
+                      background: rgba(0, 224, 255, 0.08);
+                    "
+                  >
+                    <b>Kewajiban Pengguna</b>
+                    <ul class="mb-0 mt-1">
+                      <li>Mematuhi ketentuan & hukum yang berlaku.</li>
+                      <li>Menjaga kredensial & keamanan akun.</li>
+                      <li>Tidak menyalahgunakan layanan.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="role" class="section">
+              <h2>
+                <i class="fa-solid fa-id-badge me-2"></i>Role Layanan Bot
+                WhatsApp
+              </h2>
+
+              <p class="mb-2">
+                Role pada layanan {{NAMA_PERUSAHAAN}}
+                <b
+                  >bukan merupakan sistem game, level, atau peringkat
+                  pengguna</b
+                >. Role digunakan sebagai
+                <b>penanda sisa masa aktif layanan jadibot WhatsApp</b> serta
+                untuk mengatur prioritas dan akses fitur tertentu.
+              </p>
+
+              <p class="lead-muted">
+                Role ditentukan secara otomatis berdasarkan
+                <b>sisa waktu aktif layanan</b>. Sistem tidak melihat riwayat
+                penggunaan, aktivitas, jumlah perintah, maupun pencapaian
+                lainnya.
+              </p>
+
+              <table class="table table-sm table-striped align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 26%">Sisa Masa Aktif</th>
+                    <th>Role Layanan</th>
+                    <th>Keterangan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>≤ 7 Hari</td>
+                    <td>
+                      <span class="badge bg-secondary">Guest Pass Trial</span>
+                    </td>
+                    <td>Akses percobaan atau sisa masa aktif layanan</td>
+                  </tr>
+                  <tr>
+                    <td>≤ 30 Hari</td>
+                    <td>
+                      <span
+                        class="badge"
+                        style="
+                          background: linear-gradient(
+                            to right,
+                            #000000,
+                            #b31217
+                          );
+                        "
+                        >Pathfinder</span
+                      >
+                    </td>
+                    <td>Pengguna dengan masa aktif layanan standar</td>
+                  </tr>
+                  <tr>
+                    <td>≤ 60 Hari</td>
+                    <td>
+                      <span
+                        class="badge"
+                        style="
+                          background: linear-gradient(
+                            to right,
+                            #21d4fd,
+                            #b721ff
+                          );
+                        "
+                        >Vanguard</span
+                      >
+                    </td>
+                    <td>Pengguna dengan masa aktif menengah</td>
+                  </tr>
+                  <tr>
+                    <td>≤ 90 Hari</td>
+                    <td>
+                      <span
+                        class="badge"
+                        style="
+                          background: linear-gradient(
+                            to right,
+                            #f6d365,
+                            #fda085
+                          );
+                          color: #000;
+                        "
+                        >Paragon</span
+                      >
+                    </td>
+                    <td>Pengguna prioritas layanan</td>
+                  </tr>
+                  <tr>
+                    <td>≤ 120 Hari</td>
+                    <td>
+                      <span
+                        class="badge"
+                        style="
+                          background: linear-gradient(
+                            to right,
+                            #d31027,
+                            #ea384d
+                          );
+                        "
+                        >Supreme</span
+                      >
+                    </td>
+                    <td>Akses lanjutan dan prioritas dukungan</td>
+                  </tr>
+                  <tr>
+                    <td>≤ 240 Hari</td>
+                    <td>
+                      <span
+                        class="badge"
+                        style="
+                          background: linear-gradient(
+                            to right,
+                            #434343,
+                            #000000
+                          );
+                        "
+                        >Legend</span
+                      >
+                    </td>
+                    <td>Pengguna inti layanan jadibot</td>
+                  </tr>
+                  <tr>
+                    <td>> 240 Hari</td>
+                    <td>
+                      <span
+                        class="badge"
+                        style="
+                          background: linear-gradient(
+                            to right,
+                            #6a11cb,
+                            #2575fc
+                          );
+                        "
+                        >Eternal Mangekyou</span
+                      >
+                    </td>
+                    <td>Status loyal jangka panjang</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="note mt-2">
+                Role akan <b>berubah otomatis</b> mengikuti sisa masa aktif
+                layanan. Contoh: jika pengguna membeli paket 30 hari dan sisa
+                masa aktif tinggal 7 hari, maka role akan berubah menjadi
+                <b>Guest Pass Trial</b>. Untuk mempertahankan role, pengguna
+                perlu melakukan perpanjangan layanan sebelum masa aktif
+                berakhir.
+              </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="batasan" class="section">
+              <h2>
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>Batasan
+                Tanggung Jawab
+              </h2>
+              <p class="mb-2">
+                Layanan disediakan “sebagaimana adanya”. Kami tidak bertanggung
+                jawab atas kehilangan data, kerugian tidak langsung, ataupun
+                konsekuensial akibat penyalahgunaan layanan, sepanjang diizinkan
+                oleh hukum.
+              </p>
+              <p class="lead-muted mb-0">
+                Jika hukum setempat mengharuskan batasan tertentu, maka batas
+                maksimal tanggung jawab dibatasi hingga biaya yang telah Anda
+                bayarkan dalam 3 bulan terakhir.
+              </p>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="perubahan" class="section">
+              <h2>
+                <i class="fa-solid fa-pen-to-square me-2"></i>Perubahan
+                Kebijakan
+              </h2>
+              <p class="mb-2">
+                Kami dapat memperbarui dokumen ini dari waktu ke waktu.
+              </p>
+              <ul class="mb-0">
+                <li>
+                  Perubahan material akan diberi pemberitahuan melalui email
+                  atau banner di website.
+                </li>
+                <li>Tanggal “Terakhir diperbarui” akan disesuaikan.</li>
+              </ul>
+            </section>
+
+            <div class="divider"></div>
+
+            <section id="kontak" class="section">
+              <h2><i class="fa-solid fa-envelope-open-text me-2"></i>Kontak</h2>
+              <p class="mb-2">
+                Untuk pertanyaan atau permintaan terkait data, hubungi:
+              </p>
+              <table class="table table-sm align-middle w-auto">
+                <tbody>
+                  <tr>
+                    <td class="pe-3">
+                      <i class="fa-solid fa-building icon"></i>
+                    </td>
+                    <td>
+                      <b>{{NAMA_PERUSAHAAN}}</b><br /><span class="lead-muted"
+                        >{{ALAMAT_SINGKAT}}</span
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="pe-3"><i class="fa-solid fa-at icon"></i></td>
+                    <td>
+                      <a href="mailto:{{EMAIL_DUKUNGAN}}">{{EMAIL_DUKUNGAN}}</a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="pe-3">
+                      <i class="fa-brands fa-instagram icon"></i>
+                    </td>
+                    <td>
+                      <a href="{{LINK_WA}}" target="_blank" rel="noopener"
+                        >{{INSTAGRAM}}</a
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="pe-3"><i class="fa-solid fa-globe icon"></i></td>
+                    <td>
+                      <a href="{{DOMAIN_WEB}}" target="_blank" rel="noopener"
+                        >{{DOMAIN_WEB}}</a
+                      >
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="footer-note mt-2">
+                Dengan melanjutkan penggunaan layanan, Anda menyetujui kebijakan
+                dan ketentuan ini.
+              </p>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      if (window.location.pathname.endsWith(".html")) {
+        var newPathname = window.location.pathname.replace(".html", "");
+        var newUrl = window.location.origin + newPathname;
+        window.history.replaceState({}, "", newUrl);
+      }
+
+      const BRAND = {
+        NAMA_PERUSAHAAN: "Soft Botz",
+        ALAMAT_SINGKAT: "Jakarta, Indonesia",
+        EMAIL_DUKUNGAN: "nguyenfergo@gmail.com",
+        INSTAGRAM: "https://www.instagram.com/banh_dims0",
+        LINK_WA: "https://wa.me/6281200000000",
+        DOMAIN_WEB: "https://softbotzz.drizznesiasite.biz.id",
+        LAST_UPDATED: "15 November 2025",
+      };
+
+      document.body.innerHTML = document.body.innerHTML
+        .replaceAll("{{NAMA_PERUSAHAAN}}", BRAND.NAMA_PERUSAHAAN)
+        .replaceAll("{{ALAMAT_SINGKAT}}", BRAND.ALAMAT_SINGKAT)
+        .replaceAll("{{EMAIL_DUKUNGAN}}", BRAND.EMAIL_DUKUNGAN)
+        .replaceAll("{{INSTAGRAM}}", BRAND.INSTAGRAM)
+        .replaceAll("{{LINK_WA}}", BRAND.LINK_WA)
+        .replaceAll("{{DOMAIN_WEB}}", BRAND.DOMAIN_WEB);
+
+      document.getElementById("last-updated").textContent = BRAND.LAST_UPDATED;
+
+      const links = [...document.querySelectorAll("#tocList a")];
+      const sections = links
+        .map((a) => document.querySelector(a.getAttribute("href")))
+        .filter(Boolean);
+
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              links.forEach((a) => a.classList.remove("active"));
+              const active = links.find(
+                (a) => a.getAttribute("href") === "#" + entry.target.id
+              );
+              active && active.classList.add("active");
+            }
+          });
+        },
+        { rootMargin: "-40% 0px -50% 0px", threshold: 0 }
+      );
+
+      sections.forEach((sec) => obs.observe(sec));
+
+      links.forEach((a) => {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          document
+            .querySelector(a.getAttribute("href"))
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+    </script>
+  </body>
+</html>

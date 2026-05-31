@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Chat</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-image: url("https://w0.peakpx.com/wallpaper/76/8/HD-wallpaper-elaina-anime-bruja-moda-purple-waifu.jpg");
+        background-size: cover;
+        background-position: center;
+        transition:
+          background-color 0.3s,
+          color 0.3s;
+        padding: 20px;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        z-index: -1;
+      }
+
+      body.dark-mode {
+        background-color: #121212;
+        color: #ffffff;
+      }
+
+      h1 {
+        font-size: 36px;
+        animation: colorChange 3s infinite;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(
+          255,
+          255,
+          255,
+          0.8
+        ); /* Default light mode background */
+      }
+
+      body.dark-mode h1 {
+        background-color: rgba(0, 0, 0, 0.8); /* Dark mode background */
+      }
+
+      @keyframes colorChange {
+        0% {
+          color: red;
+        }
+        33% {
+          color: green;
+        }
+        66% {
+          color: blue;
+        }
+        100% {
+          color: red;
+        }
+      }
+
+      #chat-box {
+        width: 100%;
+        max-width: 500px;
+        height: 50%;
+        background-color: rgba(255, 99, 71, 0); /* Ubah opacity di sini */
+        border: 0px solid #ccc;
+        border-radius: 0px;
+        overflow-y: auto;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        transition:
+          background-color 0.3s,
+          color 0.3s,
+          border-color 0.3s;
+        margin-bottom: 20px;
+      }
+
+      body.dark-mode #chat-box {
+        background-color: rgba(30, 30, 30, 0.8); /* Dark mode background */
+        color: #ffffff;
+        border-color: #333;
+      }
+
+      .message {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #e1f5fe;
+        transition: background-color 0.3s;
+      }
+
+      body.dark-mode .message {
+        background-color: #333;
+      }
+
+      .message a {
+        color: #007bff;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .message .meta {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+      }
+
+      #input-area {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 500px;
+        align-items: flex-start; /* Align items to the start (left) */
+        margin-bottom: 10px;
+      }
+
+      #input-area input,
+      #input-area button,
+      #input-area #file-input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        transition:
+          background-color 0.3s,
+          color 0.3s,
+          border-color 0.3s;
+        width: calc(100% - 20px); /* Adjust width */
+      }
+
+      body.dark-mode #input-area input,
+      body.dark-mode #input-area button,
+      body.dark-mode #input-area #file-input {
+        background-color: #333;
+        color: #ffffff;
+        border-color: #555;
+      }
+
+      #input-area button,
+      #input-area #file-input {
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        width: calc(100% - 20px); /* Adjust width */
+      }
+
+      body.dark-mode #input-area button,
+      body.dark-mode #input-area #file-input {
+        background-color: #0056b3;
+      }
+
+      #input-area button:hover,
+      #input-area #file-input:hover {
+        background-color: #0056b3;
+        width: calc(100% - 20px); /* Adjust width */
+      }
+
+      .switch {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+      }
+
+      .switch input {
+        display: none;
+      }
+
+      .switch-label {
+        display: block;
+        width: 40px;
+        height: 20px;
+        background: #ccc;
+        border-radius: 50px;
+        position: relative;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .switch-label::after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background: white;
+        border-radius: 50%;
+        top: 2px;
+        left: 2px;
+        transition: left 0.3s;
+      }
+
+      input:checked + .switch-label {
+        background: #007bff;
+      }
+
+      input:checked + .switch-label::after {
+        left: 22px;
+      }
+
+      /* Music Player */
+      .music-player {
+        width: 100%;
+        max-width: 500px;
+        padding: 20px;
+        box-sizing: border-box;
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        position: absolute;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .music-player img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+      }
+
+      .music-player .details {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+
+      .music-player .details h2 {
+        font-size: 16px;
+        margin: 0;
+      }
+
+      .music-player .details p {
+        font-size: 14px;
+        margin: 0;
+        color: #666;
+      }
+
+      /* Snow Animation */
+      .snowflake {
+        position: absolute;
+        top: -20px;
+        left: calc(10% + 90% * var(--random-x));
+        width: 5px;
+        height: 5px;
+        background-color: #ffffff;
+        border-radius: 50%;
+        animation: snowfall var(--duration) linear infinite;
+        pointer-events: none;
+        opacity: 0.7;
+      }
+
+      @keyframes snowfall {
+        from {
+          transform: translateY(-10vh) rotate(0deg);
+        }
+        to {
+          transform: translateY(110vh) rotate(360deg);
+        }
+      }
+
+      /* Generate random position and duration for each snowflake */
+      .snowflake:nth-child(1) {
+        --random-x: 0.1;
+        --duration: 10s;
+      }
+
+      .snowflake:nth-child(2) {
+        --random-x: 0.2;
+        --duration: 15s;
+      }
+
+      .snowflake:nth-child(3) {
+        --random-x: 0.3;
+        --duration: 12s;
+      }
+
+      .snowflake:nth-child(4) {
+        --random-x: 0.4;
+        --duration: 13s;
+      }
+
+      .snowflake:nth-child(5) {
+        --random-x: 0.5;
+        --duration: 11s;
+      }
+
+      .snowflake:nth-child(6) {
+        --random-x: 0.6;
+        --duration: 14s;
+      }
+
+      .snowflake:nth-child(7) {
+        --random-x: 0.7;
+        --duration: 12.5s;
+      }
+
+      .snowflake:nth-child(8) {
+        --random-x: 0.8;
+        --duration: 10.5s;
+      }
+
+      .snowflake:nth-child(9) {
+        --random-x: 0.9;
+        --duration: 13.5s;
+      }
+
+      .snowflake:nth-child(10) {
+        --random-x: 0.95;
+        --duration: 11.7s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="music-player">
+      <img
+        src="https://telegra.ph/file/8af241343ccd0394cacc6.jpg"
+        alt="Music Cover"
+      />
+      <div class="details">
+        <h2>yukari x remilia bandxz ~ feel</h2>
+        <p>Artis</p>
+      </div>
+      <audio controls>
+        <source src="https://f.uguu.se/KFZQbzUp.mp3" type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+
+    <h1>Live Chat</h1>
+
+    <div id="chat-box">
+      <!-- Chat messages will appear here -->
+    </div>
+
+    <div id="input-area">
+      <input type="text" id="username" placeholder="Masukkan Nama Kamu" />
+      <input type="text" id="message" placeholder="Ketik Pesan!" />
+      <input
+        type="file"
+        id="file-input"
+        accept="*"
+        onchange="handleFileUpload(event)"
+      />
+      <button onclick="sendMessage()">Kirim!</button>
+    </div>
+
+    <div class="switch">
+      <input type="checkbox" id="mode-switch" />
+      <label class="switch-label" for="mode-switch"></label>
+    </div>
+
+    <script>
+      const modeSwitch = document.getElementById("mode-switch");
+      const chatBox = document.getElementById("chat-box");
+      const usernameInput = document.getElementById("username");
+      const messageInput = document.getElementById("message");
+
+      // Check if there are saved messages in localStorage and load them
+      const savedMessages =
+        JSON.parse(localStorage.getItem("chatMessages")) || [];
+
+      function appendMessage(message) {
+        const messageElement = document.createElement("div");
+        messageElement.classList.add("message");
+        messageElement.innerHTML = `
+            <p>${message.content}</p>
+            <div class="meta">${message.username} • ${message.timestamp}</div>
+        `;
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+      }
+
+      function sendMessage() {
+        const username = usernameInput.value.trim();
+        const messageText = messageInput.value.trim();
+
+        if (username === "" || messageText === "") {
+          alert("Silakan masukkan nama dan pesan Anda!");
+          return;
+        }
+
+        const message = {
+          username: username,
+          content: messageText,
+          timestamp: getCurrentTime(),
+        };
+
+        appendMessage(message);
+        saveMessageToLocalStorage(message); // Save message to localStorage
+        messageInput.value = ""; // Clear input field
+      }
+
+      function getCurrentTime() {
+        const now = new Date();
+        const options = {
+          hour: "numeric",
+          minute: "numeric",
+          day: "numeric",
+          month: "long", // Change to 'short' or 'numeric' for different formats
+          year: "numeric",
+          timeZone: "Asia/Jakarta", // Adjust timezone as needed
+        };
+        return now.toLocaleDateString("id-ID", options);
+      }
+
+      function saveMessageToLocalStorage(message) {
+        savedMessages.push(message);
+        localStorage.setItem("chatMessages", JSON.stringify(savedMessages));
+      }
+
+      function handleFileUpload(event) {
+        const file = event.target.files[0];
+        // Handle file upload here
+      }
+
+      // Dark mode toggle
+      modeSwitch.addEventListener("change", () => {
+        document.body.classList.toggle("dark-mode");
+        localStorage.setItem("darkModeEnabled", modeSwitch.checked);
+      });
+
+      // Load stored dark mode preference from localStorage
+      const darkModeEnabled =
+        localStorage.getItem("darkModeEnabled") === "true";
+      if (darkModeEnabled) {
+        document.body.classList.add("dark-mode");
+      }
+
+      // Initialize chat messages from localStorage on page load
+      if (savedMessages.length > 0) {
+        savedMessages.forEach((message) => appendMessage(message));
+      }
+
+      // Snow animation generation
+      const numSnowflakes = 10;
+      const snowContainer = document.createElement("div");
+      snowContainer.classList.add("snow-container");
+      document.body.appendChild(snowContainer);
+
+      for (let i = 0; i < numSnowflakes; i++) {
+        const snowflake = document.createElement("div");
+        snowflake.classList.add("snowflake");
+        snowflake.style.setProperty("--random-x", Math.random());
+        snowflake.style.setProperty(
+          "--duration",
+          `${Math.random() * 10 + 10}s`
+        );
+        snowContainer.appendChild(snowflake);
+      }
+    </script>
+  </body>
+</html>

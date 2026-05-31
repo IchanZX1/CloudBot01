@@ -1,0 +1,476 @@
+<%- include('partials/head') %>
+    <%- include('partials/nav') %>
+
+        <style>
+            .feature-toggle input:checked + .feature-card {
+                border-color: rgba(34, 197, 94, 0.55);
+                background: rgba(34, 197, 94, 0.10);
+            }
+
+            .feature-toggle input:checked + .feature-card .feature-icon,
+            .feature-toggle input:checked + .feature-card .feature-label {
+                color: #22c55e;
+            }
+
+            .feature-toggle input:checked + .feature-card .feature-switch {
+                background: rgba(34, 197, 94, 0.20);
+                border-color: rgba(34, 197, 94, 0.35);
+            }
+
+            .feature-toggle input:checked + .feature-card .feature-knob {
+                transform: translateX(16px);
+                background: #22c55e;
+            }
+
+            .dashboard-console {
+                min-height: 540px;
+            }
+
+            @media (max-width: 640px) {
+                .dashboard-console {
+                    min-height: 560px;
+                }
+
+                #status-content {
+                    padding: 14px;
+                }
+            }
+        </style>
+
+        <div id="connect-page" class="min-h-screen pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 hero-gradient relative">
+            <!-- Thumbnail Background Effect -->
+            <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                <img src="/api/bot/thumb" alt="Bot Thumbnail Background" class="w-full h-full object-cover opacity-60 blur-xl mix-blend-overlay scale-105 transition-all duration-1000">
+                <div class="absolute inset-0 bg-gradient-to-b from-[#050505]/70 via-[#050505]/95 to-[#050505] light-theme-gradient"></div>
+            </div>
+
+            <div class="relative z-10">
+                <div class="container-responsive text-center mb-8 md:mb-12 popup-float">
+                    <h2 class="text-2xl md:text-4xl font-extrabold mb-2 text-white">Welcome Back, <%= user.username %>!</h2>
+                    <p class="text-gray-400">Manage your WhatsApp Bot connections here</p>
+                </div>
+
+                <div class="container-responsive grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
+                    <div
+                        class="glass p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 flex items-center space-x-4 popup-float transition-all hover:border-green-500/20">
+                        <div
+                            class="w-10 h-10 md:w-12 md:h-12 bg-green-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-green-500 text-lg md:text-xl shrink-0">
+                            <i class="bi bi-box-seam-fill"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Type Paket</p>
+                            <h4 class="text-lg font-extrabold text-white capitalize">
+                                <%= user.paket %>
+                            </h4>
+                        </div>
+                    </div>
+                    <div class="glass p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 flex items-center space-x-4 popup-float transition-all hover:border-blue-500/20"
+                        style="animation-delay: 100ms;">
+                        <div
+                            class="w-10 h-10 md:w-12 md:h-12 bg-blue-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-blue-500 text-lg md:text-xl shrink-0">
+                            <i class="bi bi-calendar-event-fill"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Masa Aktif</p>
+                            <h4 class="text-lg font-extrabold text-white">
+                                <%= user._expired ? new Date(user._expired).toLocaleDateString('id-ID', { day: '2-digit' ,
+                                    month: 'long' , year: 'numeric' }) : 'Permanent' %>
+                            </h4>
+                        </div>
+                    </div>
+                    <div class="glass p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 flex items-center space-x-4 popup-float transition-all hover:border-purple-500/20"
+                        style="animation-delay: 200ms;">
+                        <div
+                            class="w-10 h-10 md:w-12 md:h-12 bg-purple-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-purple-500 text-lg md:text-xl shrink-0">
+                            <i class="bi bi-whatsapp"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">WhatsApp</p>
+                            <h4 class="text-lg font-extrabold text-white">
+                                <%= user.no_Wa %>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-responsive grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-start relative z-10">
+                <!-- Form Card -->
+                <div class="glass p-6 md:p-8 rounded-[24px] md:rounded-[40px] border border-white/10 popup-float">
+                    <div class="flex bg-white/5 p-1 rounded-xl mb-8 border border-white/5">
+                        <button type="button" id="tab-editmsg"
+                            class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-400 hover:text-white transition-all">Edit
+                            Msg</button>
+                        <button type="button" id="tab-config"
+                            class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-400 hover:text-white transition-all">Config</button>
+                        <button type="button" id="tab-connect"
+                            class="flex-1 py-2 text-sm font-bold rounded-lg bg-green-500 text-black">Connect</button>
+                    </div>
+
+                    <!-- Connect Form (Default) -->
+                    <form id="connect-form" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Username</label>
+                            <input type="text" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                value="<%= user.username %>" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Email</label>
+                            <input type="email" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                value="<%= user.email %>" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Bot Number</label>
+                            <div class="flex gap-2">
+                                <div class="relative w-1/3 min-w-[120px]">
+                                    <select id="country-code" name="country-code" class="auth-input w-full py-3 px-3 rounded-xl text-sm appearance-none cursor-pointer bg-black/40 border border-white/10 focus:border-green-500/50">
+                                        <option value="+62" selected>Indonesia (+62)</option>
+                                    </select>
+                                    <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                        <i class="bi bi-chevron-down text-[10px]"></i>
+                                    </div>
+                                </div>
+                                <input type="tel" id="bot-number" name="bot-number"
+                                    class="auth-input flex-1 py-3 px-4 rounded-xl text-sm" placeholder="e.g. 812xxxx"
+                                    value="<%= user.no_Bot && user.no_Bot.startsWith('62') ? user.no_Bot.slice(2) : user.no_Bot %>" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Owner Number</label>
+                            <input type="tel" id="owner-num" name="owner-num"
+                                class="auth-input w-full py-3 px-4 rounded-xl text-sm" placeholder="e.g. 62812xxxx">
+                        </div>
+                        <div class="flex items-center space-x-2 py-2">
+                            <input type="checkbox" id="same-num"
+                                class="w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500 accent-green-500">
+                            <label for="same-num" class="text-xs font-bold text-gray-400 cursor-pointer">Same as Bot
+                                Number</label>
+                        </div>
+
+                        <div class="pt-2">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Connection
+                                Method</p>
+                            <input type="hidden" id="connect-method" name="method" value="qr">
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="button" id="qr-btn"
+                                    class="method-btn flex items-center justify-center space-x-2 py-3 rounded-xl glass border border-green-500 text-xs font-bold hover:bg-green-500/10 transition-all">
+                                    <i class="bi bi-qr-code-scan"></i>
+                                    <span>Scan QR</span>
+                                </button>
+                                <button type="button" id="pairing-btn"
+                                    class="method-btn flex items-center justify-center space-x-2 py-3 rounded-xl glass border border-white/5 text-xs font-bold text-gray-400 hover:text-white transition-all">
+                                    <i class="bi bi-phone"></i>
+                                    <span>Pairing Code</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="submit-connect"
+                            class="w-full mt-6 py-4 text-sm font-extrabold text-gray-400 hover:text-green-500 transition-colors uppercase tracking-widest">
+                            Start Connect
+                        </button>
+                    </form>
+
+                    <!-- Config Form (Hidden by default) -->
+                    <form id="config-form" class="space-y-4 hidden">
+                        <div id="bot-settings-container" class="mb-6 p-4 rounded-2xl bg-white/5 border border-white/5">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Bot Features
+                            </p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                                <% const features=[ 
+                                    { id: 'public' , label: 'Public Mode', icon: 'bi-broadcast' },
+                                    { id: 'anticall' , label: 'Anti Call', icon: 'bi-telephone-x' },
+                                    { id: 'autobio' , label: 'Auto Bio', icon: 'bi-person-lines-fill' },
+                                    { id: 'onlygrub' , label: 'Only Group', icon: 'bi-people' },
+                                    { id: 'onlypc' , label: 'Only Private Chat', icon: 'bi-chat-left' },
+                                    { id: 'autoread' , label: 'Auto Read', icon: 'bi-check2-all' },
+                                    { id: 'autoshalat' , label: 'Auto Sholat', icon: 'bi-moon-stars' }
+                                ] %>
+                                    <% features.forEach(feat=> { %>
+                                        <label class="feature-toggle relative flex items-center group cursor-pointer">
+                                            <input type="checkbox" name="settings_<%= feat.id %>" class="sr-only">
+                                            <div
+                                                class="feature-card w-full min-h-[58px] px-4 py-3 rounded-2xl border border-white/5 bg-white/5 transition-all flex items-center justify-between gap-3">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <i class="feature-icon bi <%= feat.icon %> text-gray-500 transition-colors"></i>
+                                                    <span class="feature-label text-xs font-bold text-gray-400 group-hover:text-white transition-colors">
+                                                        <%= feat.label %>
+                                                    </span>
+                                                </div>
+                                                <span class="feature-switch w-9 h-5 rounded-full bg-black/30 border border-white/10 relative shrink-0 transition-all">
+                                                    <span class="feature-knob absolute w-3.5 h-3.5 rounded-full bg-gray-500 left-0.5 top-0.5 transition-transform"></span>
+                                                </span>
+                                            </div>
+                                        </label>
+                                        <% }) %>
+                            </div>
+                            <div class="mt-4">
+                                <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Auto Sholat City</label>
+                                <input type="text" name="settings_sholat_city" class="auth-input w-full py-2.5 px-4 rounded-xl text-xs"
+                                    placeholder="Contoh: Jakarta">
+                            </div>
+                            <div class="mt-4">
+                                <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Command Prefixes</label>
+                                <div class="relative">
+                                    <i class="bi bi-terminal absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                                    <input type="text" name="settings_prefixes" class="auth-input w-full py-2.5 pl-9 pr-4 rounded-xl text-xs font-mono"
+                                        placeholder="!,.,#,,,$">
+                                </div>
+                                <p class="text-[9px] text-gray-500 mt-1">Pisahkan dengan koma. Prefix yang diizinkan: ! . # , $</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Bot Name</label>
+                                <input type="text" name="botname" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                    placeholder="ZXcoderID">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Owner Number</label>
+                                <input type="text" name="ownernumber"
+                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm" placeholder="62812xxxx">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Watermark (global.wm)</label>
+                            <input type="text" name="wm" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                placeholder="ZXcoderID">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Pack Name</label>
+                                <input type="text" name="packname"
+                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm" placeholder="Sticker By">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Author</label>
+                                <input type="text" name="author" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                    placeholder="IchanDev">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Creator JID
+                                (global.creator)</label>
+                            <input type="text" name="creator" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                placeholder="62812xxxx@s.whatsapp.net">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Thumbnail (Max 10MB)</label>
+                            <input type="file" name="thumbnail" accept="image/*"
+                                class="auth-input w-full py-3 px-4 rounded-xl text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-500 file:text-black hover:file:bg-green-400">
+                        </div>
+
+                        <button type="submit" id="submit-config"
+                            class="w-full mt-6 py-4 text-sm font-extrabold text-gray-400 hover:text-green-500 transition-colors uppercase tracking-widest">
+                            Save Configuration
+                        </button>
+                    </form>
+
+                    <!-- Edit Msg Form -->
+                    <div id="editmsg-form" class="space-y-4 hidden">
+                        <form id="editmsg-actual-form" class="space-y-6">
+                            <div id="msg-group-1" class="space-y-4" data-package="<%= user.paket %>">
+                                <p
+                                    class="text-[10px] font-bold text-green-500 uppercase tracking-widest bg-green-500/10 w-fit px-2 py-1 rounded">
+                                    Package: <span class="capitalize">
+                                        <%= user.paket %>
+                                    </span></p>
+                                <h5 class="text-white text-sm font-bold border-b border-white/5 pb-2">Basic Messages
+                                </h5>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Wait
+                                            Message</label>
+                                        <input type="text" name="wait"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                            placeholder="Tunggu sebentar...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Success
+                                            Message</label>
+                                        <input type="text" name="success"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                            placeholder="Sukses Kak">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">On
+                                            Message</label>
+                                        <input type="text" name="on"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                            placeholder="Sudah Aktif">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Off
+                                            Message</label>
+                                        <input type="text" name="off"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                            placeholder="Sudah Off">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="msg-group-2" class="space-y-4 hidden">
+                                <h5 class="text-white text-sm font-bold border-b border-white/5 pb-2">Query & Error
+                                    Messages</h5>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Query
+                                            Text</label>
+                                        <input type="text" name="query.text"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                            placeholder="Teks Mana?">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Query
+                                            Link</label>
+                                        <input type="text" name="query.link"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                            placeholder="Link Mana?">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Error
+                                            Feature</label>
+                                        <input type="text" name="error.fitur"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                            placeholder="Fitur Error...">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="msg-group-3" class="space-y-4 hidden">
+                                <h5 class="text-white text-sm font-bold border-b border-white/5 pb-2">Only / Restriction
+                                    Messages</h5>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                            Group</label>
+                                        <input type="text" name="only.group"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                            Private</label>
+                                        <input type="text" name="only.private"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                            Owner</label>
+                                        <input type="text" name="only.owner"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                            Admin</label>
+                                        <input type="text" name="only.admin"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only Bot
+                                            Admin</label>
+                                        <input type="text" name="only.badmin"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                            Premium</label>
+                                        <input type="text" name="only.premium"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div id="msg-group-4" class="space-y-4 hidden">
+                                <h5 class="text-white text-sm font-bold border-b border-white/5 pb-2">Special Feature
+                                    Messages (Sewa)</h5>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Sewa
+                                            Caption</label>
+                                        <textarea name="sewa.caption"
+                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-32"
+                                            placeholder="Haloo Kak {name}..."></textarea>
+                                        <p class="text-[9px] text-gray-500 mt-1">* Use {name} for User Name and {time}
+                                            for Greeting</p>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">List Sewa
+                                                Title</label>
+                                            <input type="text" name="sewa.list_title"
+                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                placeholder="LIST SEWA">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Payment
+                                                Button</label>
+                                            <input type="text" name="sewa.payment_text"
+                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                placeholder="PAYMENT💰">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Owner
+                                                Button</label>
+                                            <input type="text" name="sewa.owner_text"
+                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                placeholder="OWNER👥">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="submit-editmsg"
+                                class="w-full mt-6 py-4 text-sm font-extrabold text-gray-400 hover:text-green-500 transition-colors uppercase tracking-widest">
+                                Save Custom Messages
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+                <!-- Log Console -->
+                <div class="lg:col-span-1 popup-float" style="animation-delay: 100ms;">
+                    <div
+                        class="dashboard-console bg-[#0c0e14] border border-white/10 rounded-2xl overflow-hidden flex flex-col">
+                        <div
+                            class="bg-white/5 border-b border-white/10 px-4 py-3 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="flex gap-1.5">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
+                                </div>
+                                <span
+                                    class="text-xs font-bold font-mono text-gray-500 ml-2">system_logs_whatsapp.sh</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div id="status-badge"
+                                    class="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-gray-500">IDLE</div>
+                                <button onclick="document.getElementById('wa-logs-container').innerHTML = ''"
+                                    class="text-gray-500 hover:text-white transition-colors">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="status-content"
+                            class="min-h-[220px] flex flex-col items-center justify-center bg-white/5 border-b border-white/10 p-6 transition-all">
+                            <i class="bi bi-qr-code text-6xl text-gray-600 mb-4"></i>
+                            <p id="status-text" class="text-gray-500 text-xs text-center leading-relaxed font-medium">
+                                QR Code atau Pairing Code akan muncul di sini.
+                            </p>
+                        </div>
+                        <div id="wa-logs-container"
+                            class="flex-1 p-4 font-mono text-[11px] leading-relaxed overflow-y-auto space-y-1 scroll-smooth">
+                            <!-- Logs will appear here -->
+                            <div class="text-gray-500 opacity-50"># Waiting for logs...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <%- include('partials/footer') %>

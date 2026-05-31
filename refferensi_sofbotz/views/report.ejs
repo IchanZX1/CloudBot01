@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Report Bug - Soft Botz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="/css/dashboard-new.css" />
+    <link rel="stylesheet" href="/css/custom.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+
+    <style>
+      .report-wrapper {
+        max-width: 720px;
+        margin: 0 auto;
+      }
+
+      .report-card {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.05),
+          rgba(255, 255, 255, 0.02)
+        );
+        border-radius: 26px;
+        padding: 30px 28px 34px;
+        box-shadow: 0 22px 70px rgba(130, 90, 255, 0.28);
+      }
+
+      body.light-theme .report-card {
+        background: #ffffff;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+      }
+
+      .report-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 6px;
+      }
+
+      .report-header i {
+        font-size: 28px;
+        color: var(--accent-color);
+      }
+
+      .report-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary-color);
+        margin-bottom: 18px;
+        line-height: 1.7;
+      }
+
+      .security-badges {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+      }
+
+      .security-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        background: rgba(130, 90, 255, 0.15);
+        color: var(--accent-color);
+      }
+
+      .info-box {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+
+      .info-item {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 14px 16px;
+      }
+
+      body.light-theme .info-item {
+        background: #f9fafb;
+      }
+
+      .info-label {
+        font-size: 12px;
+        color: var(--text-secondary-color);
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .info-value {
+        font-size: 15px;
+        font-weight: 600;
+        word-break: break-all;
+      }
+
+      .report-textarea textarea {
+        min-height: 160px;
+        resize: vertical;
+        border-radius: 16px;
+      }
+
+      .char-hint {
+        font-size: 12px;
+        margin-top: 6px;
+        color: var(--text-secondary-color);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .submit-area {
+        margin-top: 28px;
+      }
+
+      .submit-area button {
+        width: 100%;
+        padding: 14px;
+        border-radius: 18px;
+        font-size: 16px;
+      }
+
+      @media (max-width: 600px) {
+        .info-box {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .toast-success {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+        color: #fff;
+        padding: 16px 22px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 18px 50px rgba(130, 90, 255, 0.45);
+        animation:
+          slideIn 0.4s ease,
+          fadeOut 0.4s ease 3.6s forwards;
+        z-index: 9999;
+        max-width: calc(100% - 32px);
+      }
+
+      .toast-success i {
+        font-size: 26px;
+      }
+
+      .toast-success strong {
+        display: block;
+        font-size: 14px;
+      }
+
+      .toast-success span {
+        font-size: 13px;
+        opacity: 0.9;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes fadeOut {
+        to {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <nav>
+        <div class="nav-left">
+          <h3>Soft Botz</h3>
+        </div>
+        <div class="nav-right">
+          <a href="/dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+          <a href="/report" class="active"
+            ><i class="fas fa-bug"></i> Report Bug</a
+          >
+
+          <button id="theme-toggle" class="theme-toggle-btn">
+            <i class="fas fa-moon"></i>
+            <i class="fas fa-sun"></i>
+          </button>
+          <div class="profile-dropdown">
+            <img src="media/pp.jpg" alt="Avatar" class="avatar" />
+            <div class="dropdown-content">
+              <a href="/profile"><i class="fas fa-user"></i> Profile</a>
+              <a href="/report" class="active disabled"
+                ><i class="fas fa-bug"></i> Report Bug/Error</a
+              >
+              <a href="/logout"><i class="fas fa-sign-out-alt"></i> Log out</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main class="dashboard-grid">
+        <div class="panel full-width-panel">
+          <div class="report-wrapper">
+            <div class="report-card">
+              <div class="report-header">
+                <i class="fas fa-shield-bug"></i>
+                <h4>Laporan Bug & Error</h4>
+              </div>
+
+              <div class="report-subtitle">
+                <p>
+                  <i class="fas fa-triangle-exclamation"></i>
+                  Laporkan bug atau error yang kamu temukan secara
+                  <strong>detail, jelas, dan sesuai kondisi sebenarnya</strong>.
+                </p>
+
+                <p>
+                  <i class="fas fa-user-shield"></i>
+                  Data akun kamu seperti username, email, dan bot ID akan
+                  otomatis disertakan dalam laporan untuk keperluan verifikasi.
+                </p>
+
+                <p>
+                  <i class="fas fa-shield-halved"></i>
+                  Sistem ini dilindungi dengan validasi server dan proteksi XSS,
+                  sehingga data tidak dapat dimanipulasi.
+                </p>
+
+                <p>
+                  <i class="fas fa-ban"></i>
+                  Dilarang keras mengirim laporan palsu, spam, atau laporan yang
+                  disengaja untuk menipu admin, moderator dan sistem.
+                </p>
+
+                <p>
+                  <i class="fas fa-user-lock"></i>
+                  Pelanggaran dapat berakibat
+                  <strong>pemblokiran akun (ban permanen)</strong>
+                  tanpa pemberitahuan sebelumnya.
+                </p>
+
+                <p>
+                  <i class="fas fa-circle-check"></i>
+                  Tim kami akan meninjau laporan valid dan menindaklanjuti
+                  secepat mungkin demi kenyamanan bersama.
+                </p>
+              </div>
+
+              <div class="security-badges">
+                <div class="security-badge">
+                  <i class="fas fa-lock"></i> Read-only Identity
+                </div>
+                <div class="security-badge">
+                  <i class="fas fa-server"></i> Server Validation
+                </div>
+              </div>
+
+              <form method="POST" action="/report" id="reportForm">
+                <div class="info-box">
+                  <div class="info-item">
+                    <div class="info-label">
+                      <i class="fas fa-user-shield"></i> Username
+                    </div>
+                    <div class="info-value"><%= user.username %></div>
+                  </div>
+
+                  <div class="info-item">
+                    <div class="info-label">
+                      <i class="fas fa-robot"></i> Bot ID
+                    </div>
+                    <div class="info-value"><%= bot.id || 'N/A' %></div>
+                  </div>
+
+                  <div class="info-item" style="grid-column: 1/-1">
+                    <div class="info-label">
+                      <i class="fas fa-envelope-circle-check"></i> Email
+                    </div>
+                    <div class="info-value"><%= user.email %></div>
+                  </div>
+                </div>
+
+                <div class="mb-3 report-textarea">
+                  <label class="form-label">
+                    Detail Laporan <span>*</span>
+                  </label>
+                  <textarea
+                    name="report"
+                    class="form-control"
+                    maxlength="500"
+                    required
+                    placeholder="Contoh:
+- Fitur remini error kak
+- Error di dashboard muncul setelah update
+- Perintah tertentu tidak merespon"
+                  ></textarea>
+                  <div class="char-hint">
+                    <i class="fas fa-circle-info"></i> Maksimal 500 karakter
+                  </div>
+                </div>
+
+                <div class="submit-area">
+                  <button type="submit" class="btn btn-save">
+                    <i class="fas fa-paper-plane"></i> Kirim Laporan
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <% if (typeof query !== "undefined" && query.success) { %>
+    <div class="toast-success" id="toastSuccess">
+      <i class="fas fa-circle-check"></i>
+      <div>
+        <strong>Laporan terkirim</strong>
+        <span>Terima kasih, tim kami akan segera menindaklanjuti.</span>
+      </div>
+    </div>
+    <% } %>
+
+    <script>
+      const toggle = document.getElementById("theme-toggle");
+      const theme = localStorage.getItem("theme") || "dark";
+      if (theme === "light") document.body.classList.add("light-theme");
+
+      toggle.addEventListener("click", () => {
+        document.body.classList.toggle("light-theme");
+        localStorage.setItem(
+          "theme",
+          document.body.classList.contains("light-theme") ? "light" : "dark"
+        );
+      });
+
+      document.getElementById("reportForm").addEventListener("submit", (e) => {
+        const textarea = e.target.querySelector("textarea");
+        textarea.value = textarea.value
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      });
+
+      const toast = document.getElementById("toastSuccess");
+      if (toast) {
+        setTimeout(() => toast.remove(), 4200);
+
+        if (window.history.replaceState) {
+          const url = new URL(window.location);
+          url.searchParams.delete("success");
+          window.history.replaceState({}, document.title, url.pathname);
+        }
+      }
+    </script>
+  </body>
+</html>

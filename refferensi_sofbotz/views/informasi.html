@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Soft Botz - Informasi</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        transition:
+          background-color 0.5s,
+          color 0.5s;
+        background: url("https://w0.peakpx.com/wallpaper/221/317/HD-wallpaper-anime-starry-sky-railroad-car-mood-anime-girl-scenic-falling-stars-night-anime.jpg")
+          no-repeat center center fixed;
+        background-size: cover;
+      }
+      .light-mode {
+        background-color: rgba(255, 255, 255, 0.8);
+        color: #333;
+      }
+      .dark-mode {
+        background-color: rgba(51, 51, 51, 0.8);
+        color: #ffffff;
+      }
+      .header {
+        background-color: rgba(34, 34, 34, 0.9);
+        color: #ffffff;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 2em;
+        color: #ffffff;
+        text-shadow:
+          2px 2px 4px rgba(255, 255, 255, 0.8),
+          0 0 10px rgb(255, 0, 0),
+          0 0 20px rgb(0, 255, 0),
+          0 0 30px rgb(0, 0, 255);
+        animation: textShadowAnimation 5s infinite;
+      }
+      @keyframes textShadowAnimation {
+        0% {
+          text-shadow:
+            2px 2px 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgb(255, 0, 0),
+            0 0 20px rgb(0, 255, 0),
+            0 0 30px rgb(0, 0, 255);
+        }
+        25% {
+          text-shadow:
+            2px 2px 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgb(0, 255, 0),
+            0 0 20px rgb(0, 0, 255),
+            0 0 30px rgb(255, 0, 0);
+        }
+        50% {
+          text-shadow:
+            2px 2px 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgb(0, 0, 255),
+            0 0 20px rgb(255, 0, 0),
+            0 0 30px rgb(0, 255, 0);
+        }
+        75% {
+          text-shadow:
+            2px 2px 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgb(0, 255, 0),
+            0 0 20px rgb(255, 0, 0),
+            0 0 30px rgb(0, 0, 255);
+        }
+        100% {
+          text-shadow:
+            2px 2px 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgb(255, 0, 0),
+            0 0 20px rgb(0, 255, 0),
+            0 0 30px rgb(0, 0, 255);
+        }
+      }
+      .player-container p {
+        margin: 0;
+        font-size: 1em;
+        color: #ffffff;
+        text-shadow:
+          2px 2px 4px rgba(255, 255, 255, 0.8),
+          0 0 10px rgb(255, 0, 0),
+          0 0 20px rgb(0, 255, 0),
+          0 0 30px rgb(0, 0, 255);
+        animation: textShadowAnimation 5s infinite;
+      }
+      @keyframes textShadowAnimation {
+        0% {
+          text-shadow:
+            2px 2px 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgb(255, 0, 0),
+            0 0 20px rgb(0, 255, 0),
+            0 0 30px rgb(0, 0, 255);
+        }
+        25% {
+          text-shadow:
+            2px 2px 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgb(0, 255, 0),
+            0 0 20px rgb(0, 0, 255),
+            0 0 30px rgb(255, 0, 0);
+        }
+        50% {
+          text-shadow:
+            2px 2px 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgb(0, 0, 255),
+            0 0 20px rgb(255, 0, 0),
+            0 0 30px rgb(0, 255, 0);
+        }
+        75% {
+          text-shadow:
+            2px 2px 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgb(0, 255, 0),
+            0 0 20px rgb(255, 0, 0),
+            0 0 30px rgb(0, 0, 255);
+        }
+        100% {
+          text-shadow:
+            2px 2px 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgb(255, 0, 0),
+            0 0 20px rgb(0, 255, 0),
+            0 0 30px rgb(0, 0, 255);
+        }
+      }
+      .dropdown {
+        position: relative;
+        transform: translate(
+          -140px,
+          1px
+        ); /* Geser 50px ke kanan dan 100px ke bawah */
+        display: inline-block;
+      }
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+      }
+      .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+      }
+      .dropdown-content a:hover {
+        background-color: #f1f1f1;
+      }
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+      .dropdown:hover .dropbtn {
+        background-color: #3e8e41;
+      }
+      .theme-toggle {
+        position: relative;
+        width: 60px;
+        height: 34px;
+      }
+      .theme-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider-toggle {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+      .slider-toggle:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider-toggle {
+        background-color: #2196f3;
+      }
+      input:checked + .slider-toggle:before {
+        transform: translateX(26px);
+      }
+      .content {
+        padding: 20px;
+      }
+      .promo {
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        transition:
+          background-color 0.5s,
+          color 0.5s;
+      }
+      .light-mode .promo {
+        background-color: rgba(255, 255, 255, 0.8);
+        color: #333;
+      }
+      .dark-mode .promo {
+        background-color: rgba(51, 51, 51, 0.8);
+        color: #ffffff;
+      }
+      .footer {
+        background-color: rgba(34, 34, 34, 0.9);
+        color: #ffffff;
+        text-align: center;
+        padding: 10px;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+      }
+      .product-img {
+        width: 100%;
+        max-width: 400px;
+        display: block;
+        margin: 0 auto 20px;
+        border-radius: 10px;
+      }
+      .price-list {
+        background-color: #007bff;
+        color: #ffffff;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+        display: block;
+        margin: 20px auto;
+      }
+      .dark-mode .price-list {
+        background-color: #ffffff;
+        color: #007bff;
+      }
+      .price-details {
+        display: none;
+        margin-top: 10px;
+        text-align: center;
+      }
+      .loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        z-index: 9999;
+      }
+      .slider {
+        overflow: hidden;
+        background-color: white;
+        margin: 0 15px;
+        height: 80px;
+        width: 20px;
+        border-radius: 30px;
+        box-shadow:
+          15px 15px 20px rgba(0, 0, 0, 0.1),
+          -15px -15px 30px #fff,
+          inset -5px -5px 10px rgba(0, 0, 255, 0.1),
+          inset 5px 5px 10px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+      .slider::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+        width: 70px;
+        border-radius: 100%;
+        box-shadow:
+          inset 0px 0px 0px rgba(0, 0, 0, 0.3),
+          0px 420px 0 400px #2697f3,
+          inset 0px 0px 0px rgba(0, 0, 0, 0.1);
+        animation: animate_2 2.5s ease-in-out infinite;
+        animation-delay: calc(-0.09s * var(--i));
+      }
+      @keyframes animate_2 {
+        0%,
+        100% {
+          transform: translateY(-380px);
+        }
+        50% {
+          transform: translateY(0px);
+        }
+      }
+      .slider:nth-child(1)::before {
+        --i: 1;
+      }
+      .slider:nth-child(2)::before {
+        --i: 2;
+      }
+      .slider:nth-child(3)::before {
+        --i: 3;
+      }
+      .slider:nth-child(4)::before {
+        --i: 4;
+      }
+      .slider:nth-child(5)::before {
+        --i: 5;
+      }
+      .slider:nth-child(6)::before {
+        --i: 6;
+      }
+      .slider:nth-child(7)::before {
+        --i: 7;
+      }
+      .slider:nth-child(8)::before {
+        --i: 8;
+      }
+      .slider:nth-child(9)::before {
+        --i: 9;
+      }
+      .slider:nth-child(10)::before {
+        --i: 10;
+      }
+      .content {
+        text-align: center;
+        padding: 50px;
+        position: relative;
+        z-index: 1;
+      }
+      .music-player {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+      }
+      .music-player img {
+        height: 50px;
+        width: 50px;
+        margin-right: 10px;
+        border-radius: 50%;
+      }
+      .music-player .details {
+        flex-grow: 1;
+      }
+      .music-player .details h4,
+      .music-player .details p {
+        margin: 0;
+      }
+      .music-player .controls {
+        display: flex;
+        align-items: center;
+      }
+      .music-player .controls button {
+        background: none;
+        border: none;
+        color: #007bff;
+        cursor: pointer;
+        margin: 0 5px;
+      }
+      .music-player .controls button:hover {
+        color: #0056b3;
+      }
+
+      bodyy {
+        font-family: Arial, sans-serif;
+        color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 30vh;
+        margin: 0;
+      }
+
+      .player-container {
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 300px;
+      }
+
+      .player-controls {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        margin-top: 20px;
+      }
+
+      .player-controls button {
+        border: none;
+        color: #121212;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .player-controls button:hover {
+        background: #f1f1f1;
+      }
+
+      .progress-container {
+        width: 100%;
+        background: #3b3b3b;
+        border-radius: 5px;
+        margin-top: 20px;
+        cursor: pointer;
+      }
+
+      .progress {
+        width: 0%;
+        height: 10px;
+        background: #1db954;
+        border-radius: 5px;
+      }
+
+      .time {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .time span {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loader">
+      <div class="slider"></div>
+      <div class="slider"></div>
+      <div class="slider"></div>
+      <div class="slider"></div>
+      <div class="slider"></div>
+      <div class="slider"></div>
+      <div class="slider"></div>
+      <div class="slider"></div>
+      <div class="slider"></div>
+      <div class="slider"></div>
+    </div>
+    <div class="header">
+      <h1>Soft Botz</h1>
+      <div class="dropdown">
+        <button class="dropbtn">Menu</button>
+        <div class="dropdown-content">
+          <a href="/">Home</a>
+        </div>
+      </div>
+      <label class="theme-toggle">
+        <input type="checkbox" id="theme-toggle" />
+        <span class="slider-toggle"></span>
+      </label>
+    </div>
+    <div class="content">
+      <div class="promo light-mode">
+        <h2>Selamat Datang Pengguna Soft Botz</h2>
+        <p>
+          Untuk sementara link website nya bugil dulu wkwkwk, soalnya belum bisa
+          di pasang proxy subdomain nya, untuk mendapatkan informasi lebih
+          lanjut silakan klik "Saluran Whatsapp" di halaman home, Terimakasih!
+        </p>
+      </div>
+    </div>
+
+    <bodyy>
+      <div class="player-container">
+        <audio id="audio" src="https://f.uguu.se/XpCnVSGG.mp4"></audio>
+        <div class="player-controls">
+          <button id="play">Play</button>
+          <button id="pause">Pause</button>
+        </div>
+        <div class="progress-container" id="progress-container">
+          <div class="progress" id="progress"></div>
+        </div>
+        <div class="time">
+          <span id="current-time">0:00</span>
+          <span id="duration">0:00</span>
+        </div>
+        <p>Biar Ada Hiburan:v</p>
+      </div>
+    </bodyy>
+
+    <div class="footer">&copy; 2024 Soft Botz. All rights reserved.</div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var loader = document.querySelector(".loader");
+        setTimeout(function () {
+          loader.style.display = "none";
+        }, 2000);
+
+        const themeToggle = document.getElementById("theme-toggle");
+        themeToggle.addEventListener("change", function () {
+          document.body.classList.toggle("dark-mode");
+        });
+
+        const priceListButton = document.querySelector(".price-list");
+        const priceDetails = document.querySelector(".price-details");
+        priceListButton.addEventListener("click", function () {
+          priceDetails.style.display =
+            priceDetails.style.display === "none" ? "block" : "none";
+        });
+      });
+
+      const audio = document.getElementById("audio");
+      const playBtn = document.getElementById("play");
+      const pauseBtn = document.getElementById("pause");
+      const progressContainer = document.getElementById("progress-container");
+      const progress = document.getElementById("progress");
+      const currentTimeEl = document.getElementById("current-time");
+      const durationEl = document.getElementById("duration");
+
+      playBtn.addEventListener("click", () => {
+        audio.play();
+      });
+
+      pauseBtn.addEventListener("click", () => {
+        audio.pause();
+      });
+
+      audio.addEventListener("timeupdate", updateProgress);
+
+      function updateProgress(e) {
+        const { duration, currentTime } = e.srcElement;
+        const progressPercent = (currentTime / duration) * 100;
+        progress.style.width = `${progressPercent}%`;
+
+        const currentMinutes = Math.floor(currentTime / 60);
+        const currentSeconds = Math.floor(currentTime % 60);
+        const durationMinutes = Math.floor(duration / 60);
+        const durationSeconds = Math.floor(duration % 60);
+
+        currentTimeEl.textContent = `${currentMinutes}:${currentSeconds < 10 ? "0" : ""}${currentSeconds}`;
+        durationEl.textContent = `${durationMinutes}:${durationSeconds < 10 ? "0" : ""}${durationSeconds}`;
+      }
+
+      progressContainer.addEventListener("click", (e) => {
+        const width = progressContainer.clientWidth;
+        const clickX = e.offsetX;
+        const duration = audio.duration;
+        audio.currentTime = (clickX / width) * duration;
+      });
+
+      audio.addEventListener("loadedmetadata", () => {
+        const durationMinutes = Math.floor(audio.duration / 60);
+        const durationSeconds = Math.floor(audio.duration % 60);
+        durationEl.textContent = `${durationMinutes}:${durationSeconds < 10 ? "0" : ""}${durationSeconds}`;
+      });
+    </script>
+  </body>
+</html>

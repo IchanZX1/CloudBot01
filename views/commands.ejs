@@ -1,0 +1,297 @@
+<%- include('partials/head') %>
+    <%- include('partials/nav') %>
+
+        <style>
+            .feature-toggle input:checked + .feature-card {
+                border-color: rgba(34, 197, 94, 0.55);
+                background: rgba(34, 197, 94, 0.10);
+            }
+
+            .feature-toggle input:checked + .feature-card .feature-icon,
+            .feature-toggle input:checked + .feature-card .feature-label {
+                color: #22c55e;
+            }
+
+            .feature-toggle input:checked + .feature-card .feature-switch {
+                background: rgba(34, 197, 94, 0.20);
+                border-color: rgba(34, 197, 94, 0.35);
+            }
+
+            .feature-toggle input:checked + .feature-card .feature-knob {
+                transform: translateX(16px);
+                background: #22c55e;
+            }
+        </style>
+
+        <div class="min-h-screen pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 hero-gradient">
+            <div class="container-responsive text-center mb-8 md:mb-12 popup-float">
+                <h2 class="text-2xl md:text-4xl font-extrabold mb-2 text-white">Group Settings</h2>
+                <p class="text-xs md:text-sm text-gray-400">Kelola pengaturan grup dari session bot WhatsApp yang sedang tersambung.</p>
+                <div class="mt-4 flex justify-center">
+                    <span id="group-bot-status" class="px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-xs font-bold text-yellow-500 flex items-center gap-2">
+                        <i class="bi bi-hourglass-split"></i>
+                        Loading session bot
+                    </span>
+                </div>
+            </div>
+
+            <div class="container-responsive grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
+                <section class="lg:col-span-4 glass p-5 md:p-8 rounded-2xl md:rounded-[32px] border border-white/10 popup-float">
+                    <div class="flex items-center gap-3 mb-6 pb-5 border-b border-white/5">
+                        <div class="w-11 h-11 bg-green-500/20 rounded-2xl flex items-center justify-center text-green-500 text-xl shrink-0">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-extrabold text-white">Pilih Group</h4>
+                            <p class="text-xs text-gray-500">Data diambil dari bot yang aktif.</p>
+                        </div>
+                    </div>
+
+                    <label for="group-select" class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Group WhatsApp</label>
+                    <div class="relative">
+                        <select id="group-select" class="auth-input w-full py-3 px-4 pr-10 rounded-xl text-sm appearance-none cursor-pointer">
+                            <option value="">Memuat daftar group...</option>
+                        </select>
+                        <i class="bi bi-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
+                    </div>
+
+                    <div id="selected-group-info" class="mt-5 bg-white/5 rounded-2xl p-4 border border-white/5 hidden">
+                        <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Detail Group</p>
+                        <h5 id="group-name" class="text-white font-extrabold text-sm break-words"></h5>
+                        <p id="group-id" class="text-[11px] text-gray-500 font-mono mt-2 break-all"></p>
+                        <p id="group-desc" class="text-xs text-gray-400 mt-3 leading-relaxed"></p>
+                    </div>
+
+                    <div class="mt-6 bg-green-500/10 border border-green-500/20 rounded-2xl p-4">
+                        <p class="text-[10px] font-black text-green-500 uppercase tracking-widest mb-2">Placeholder Pesan</p>
+                        <div class="space-y-2 text-xs text-gray-400">
+                            <p><span class="font-mono text-green-500">@user</span> = nama atau mention user</p>
+                            <p><span class="font-mono text-green-500">@grup</span> = nama group</p>
+                            <p><span class="font-mono text-green-500">@desc</span> = deskripsi group</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="lg:col-span-8 glass p-5 md:p-8 rounded-2xl md:rounded-[32px] border border-white/10 popup-float" style="animation-delay: 100ms;">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-5 border-b border-white/5 gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 text-xl shrink-0">
+                                <i class="bi bi-sliders"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-extrabold text-white">Setting Group</h4>
+                                <p class="text-xs text-gray-500">Aktifkan fitur dan sesuaikan pesan welcome/goodbye.</p>
+                            </div>
+                        </div>
+                        <button type="button" id="reload-groups-btn" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                            <i class="bi bi-arrow-clockwise mr-1"></i>
+                            Refresh
+                        </button>
+                    </div>
+
+                    <form id="group-settings-form" class="space-y-8">
+                        <div id="group-empty-state" class="py-16 text-center">
+                            <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 text-gray-500 text-2xl">
+                                <i class="bi bi-chat-square-dots"></i>
+                            </div>
+                            <p class="text-sm font-bold text-white">Pilih group terlebih dahulu</p>
+                            <p class="text-xs text-gray-500 mt-2">Pengaturan akan muncul setelah group dipilih.</p>
+                        </div>
+
+                        <div id="group-settings-content" class="hidden space-y-8">
+                            <div>
+                                <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Feature Toggles</p>
+                                <div id="group-feature-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                                    <% const features = [
+                                        { id: 'auto_ai_grup', label: 'AI Group', icon: 'bi-stars' },
+                                        { id: 'goodbye', label: 'Goodbye', icon: 'bi-door-open' },
+                                        { id: 'welcome', label: 'Welcome', icon: 'bi-person-plus' }
+                                    ]; %>
+                                    <% features.forEach(feature => { %>
+                                        <label class="feature-toggle relative flex items-center cursor-pointer group">
+                                            <input type="checkbox" name="<%= feature.id %>" class="sr-only">
+                                            <div class="feature-card w-full min-h-[58px] rounded-2xl border border-white/5 bg-white/5 transition-all px-4 py-3 flex items-center justify-between gap-3">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    <i class="feature-icon bi <%= feature.icon %> text-gray-500 transition-colors"></i>
+                                                    <span class="feature-label text-xs font-bold text-gray-400 group-hover:text-white transition-colors"><%= feature.label %></span>
+                                                </div>
+                                                <span class="feature-switch w-9 h-5 rounded-full bg-black/30 border border-white/10 relative shrink-0 transition-all">
+                                                    <span class="feature-knob absolute w-3.5 h-3.5 rounded-full bg-gray-500 left-0.5 top-0.5 transition-transform"></span>
+                                                </span>
+                                            </div>
+                                        </label>
+                                    <% }) %>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                                <div>
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Set Welcome</label>
+                                        <span class="text-[10px] text-green-500 font-bold">Saat user masuk</span>
+                                    </div>
+                                    <textarea name="welcome_text" class="auth-input w-full min-h-[180px] py-4 px-4 rounded-2xl text-sm leading-relaxed" placeholder="Halo @user, selamat datang di @grup&#10;&#10;@desc"></textarea>
+                                </div>
+                                <div>
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Set Goodbye</label>
+                                        <span class="text-[10px] text-red-400 font-bold">Saat user keluar</span>
+                                    </div>
+                                    <textarea name="goodbye_text" class="auth-input w-full min-h-[180px] py-4 px-4 rounded-2xl text-sm leading-relaxed" placeholder="Dadah @user dari @grup"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+                                <p class="text-xs text-gray-500 leading-relaxed">
+                                    Setting disimpan pada <span class="font-mono text-green-500">database.json</span> key group dan file welcome/goodbye session bot.
+                                </p>
+                                <button type="submit" id="save-group-settings-btn" class="w-full md:w-auto px-8 py-4 rounded-2xl bg-green-500 text-black text-xs font-extrabold uppercase tracking-widest hover:bg-green-400 active:scale-[0.99] transition-all">
+                                    <i class="bi bi-save mr-2"></i>
+                                    Simpan Setting Group
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const groupSelect = document.getElementById('group-select');
+                const statusBadge = document.getElementById('group-bot-status');
+                const reloadBtn = document.getElementById('reload-groups-btn');
+                const form = document.getElementById('group-settings-form');
+                const emptyState = document.getElementById('group-empty-state');
+                const content = document.getElementById('group-settings-content');
+                const selectedInfo = document.getElementById('selected-group-info');
+                const groupName = document.getElementById('group-name');
+                const groupIdText = document.getElementById('group-id');
+                const groupDesc = document.getElementById('group-desc');
+                const saveBtn = document.getElementById('save-group-settings-btn');
+                let groups = [];
+
+                const featureKeys = ['auto_ai_grup', 'goodbye', 'welcome'];
+
+                function escapeHtml(value) {
+                    return String(value || '').replace(/[&<>"']/g, (char) => ({
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        '"': '&quot;',
+                        "'": '&#39;'
+                    }[char]));
+                }
+
+                function setStatus(text, type = 'warning') {
+                    const variants = {
+                        success: 'bg-green-500/10 border-green-500/20 text-green-500',
+                        warning: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500',
+                        error: 'bg-red-500/10 border-red-500/20 text-red-500'
+                    };
+                    statusBadge.className = `px-4 py-1.5 rounded-full border text-xs font-bold flex items-center gap-2 ${variants[type] || variants.warning}`;
+                    statusBadge.innerHTML = `<i class="bi ${type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : 'bi-hourglass-split'}"></i>${text}`;
+                }
+
+                async function loadGroups() {
+                    setStatus('Loading session bot', 'warning');
+                    groupSelect.innerHTML = '<option value="">Memuat daftar group...</option>';
+                    groupSelect.disabled = true;
+                    content.classList.add('hidden');
+                    emptyState.classList.remove('hidden');
+
+                    try {
+                        const response = await fetch('/api/bot/groups');
+                        const result = await response.json();
+                        if (!result.success) throw new Error(result.error || 'Gagal mengambil group');
+
+                        groups = result.groups || [];
+                        groupSelect.innerHTML = groups.length
+                            ? '<option value="">Pilih group...</option>' + groups.map(group => `<option value="${escapeHtml(group.id)}">${escapeHtml(group.subject)} (${group.size || 0})</option>`).join('')
+                            : '<option value="">Bot belum tergabung ke group</option>';
+                        groupSelect.disabled = !groups.length;
+                        setStatus(`Bot ${result.botNumber} connected`, 'success');
+                    } catch (err) {
+                        groups = [];
+                        groupSelect.innerHTML = `<option value="">${err.message}</option>`;
+                        setStatus(err.message, 'error');
+                    }
+                }
+
+                async function loadGroupSettings(groupId) {
+                    if (!groupId) {
+                        selectedInfo.classList.add('hidden');
+                        content.classList.add('hidden');
+                        emptyState.classList.remove('hidden');
+                        return;
+                    }
+
+                    const selected = groups.find(group => group.id === groupId);
+                    if (selected) {
+                        groupName.textContent = selected.subject;
+                        groupIdText.textContent = selected.id;
+                        groupDesc.textContent = selected.desc || 'Tidak ada deskripsi group.';
+                        selectedInfo.classList.remove('hidden');
+                    }
+
+                    emptyState.innerHTML = '<div class="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div><p class="text-gray-500 text-sm font-medium">Memuat pengaturan group...</p>';
+                    emptyState.classList.remove('hidden');
+                    content.classList.add('hidden');
+
+                    try {
+                        const response = await fetch(`/api/bot/group-settings/${encodeURIComponent(groupId)}`);
+                        const result = await response.json();
+                        if (!result.success) throw new Error(result.error || 'Gagal memuat settings');
+
+                        const settings = result.settings || {};
+                        featureKeys.forEach(key => {
+                            if (form[key]) form[key].checked = !!settings[key];
+                        });
+                        form.welcome_text.value = settings.welcome_text || '';
+                        form.goodbye_text.value = settings.goodbye_text || '';
+
+                        emptyState.classList.add('hidden');
+                        content.classList.remove('hidden');
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                    }
+                }
+
+                groupSelect.addEventListener('change', () => loadGroupSettings(groupSelect.value));
+                reloadBtn.addEventListener('click', loadGroups);
+
+                form.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const groupId = groupSelect.value;
+                    if (!groupId) return showToast('Pilih group terlebih dahulu.', 'error');
+
+                    saveBtn.disabled = true;
+                    saveBtn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-2"></i>Menyimpan...';
+
+                    const payload = {};
+                    featureKeys.forEach(key => payload[key] = !!form[key]?.checked);
+                    payload.welcome_text = form.welcome_text.value;
+                    payload.goodbye_text = form.goodbye_text.value;
+
+                    try {
+                        const response = await fetch(`/api/bot/group-settings/${encodeURIComponent(groupId)}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await response.json();
+                        if (!result.success) throw new Error(result.error || 'Gagal menyimpan settings');
+                        showToast(result.message || 'Pengaturan group berhasil disimpan!', 'success');
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                    } finally {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = '<i class="bi bi-save mr-2"></i>Simpan Setting Group';
+                    }
+                });
+
+                loadGroups();
+            });
+        </script>
+
+<%- include('partials/footer') %>

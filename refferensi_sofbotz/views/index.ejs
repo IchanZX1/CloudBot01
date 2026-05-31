@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soft Botz – Platform Jadibot WhatsApp</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+--bg:#0d1117;
+--panel:#161b22;
+--card:#1c222c;
+--border:#2b3240;
+--accent:#3b82f6;
+--accent2:#8b5cf6;
+--accent-soft:rgba(59,130,246,.15);
+--text:#e6edf3;
+--muted:#9aa4b2;
+--green:#22c55e;
+--yellow:#facc15;
+--red:#ef4444;
+}
+
+body{
+margin:0;
+font-family:Inter,sans-serif;
+background:var(--bg);
+color:var(--text);
+overflow-x:hidden;
+}
+
+a{text-decoration:none}
+
+.container{max-width:1080px}
+
+.pricing-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:26px;
+  margin-top:40px;
+}
+
+.price-card{
+  background:linear-gradient(
+    180deg,
+    rgba(255,255,255,.08),
+    rgba(255,255,255,.03)
+  );
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:22px;
+  padding:34px 30px;
+  box-shadow:0 18px 55px rgba(0,0,0,.45);
+  position:relative;
+  transition:.35s ease;
+}
+
+.price-card:hover{
+  transform:translateY(-6px);
+  border-color:#3b82f6;
+}
+
+.price-card.featured{
+  border-color:#8b5cf6;
+  box-shadow:
+    0 0 0 1px rgba(139,92,246,.5),
+    0 30px 90px rgba(139,92,246,.35);
+}
+
+.price-badge{
+  position:absolute;
+  top:-14px;
+  right:20px;
+  background:linear-gradient(135deg,#3b82f6,#8b5cf6);
+  color:#fff;
+  padding:6px 14px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  box-shadow:0 8px 24px rgba(139,92,246,.45);
+}
+
+.price-card h4{
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+.price{
+  font-size:2.2rem;
+  font-weight:800;
+  margin:18px 0;
+  background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ffffff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.price small{
+  font-size:13px;
+  color:#9ca3af;
+  font-weight:500;
+}
+
+.price-card ul{
+  list-style:none;
+  padding:0;
+  margin:0 0 24px;
+}
+
+.price-card li{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+  font-size:14px;
+  color:#cbd5e1;
+}
+
+.price-card li i{
+  color:#22c55e;
+}
+
+.price-btn{
+  width:100%;
+  padding:13px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#3b82f6,#6366f1);
+  color:#fff;
+  font-weight:600;
+  text-align:center;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  box-shadow:0 10px 30px rgba(59,130,246,.45);
+}
+
+.price-btn:hover{
+  transform:translateY(-1px);
+  color:#fff;
+}
+
+.faq{
+  max-width:880px;
+  margin:60px auto 0;
+}
+
+.faq-title{
+  text-align:center;
+  margin-bottom:36px;
+}
+
+.faq-title span{
+  font-size:13px;
+  font-weight:600;
+  color:#3b82f6;
+  letter-spacing:.5px;
+}
+
+.accordion-item{
+  background:linear-gradient(
+    180deg,
+    rgba(255,255,255,.06),
+    rgba(255,255,255,.02)
+  );
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  margin-bottom:14px;
+  overflow:hidden;
+}
+
+.accordion-button{
+  background:transparent;
+  color:#e5e7eb;
+  font-weight:600;
+  padding:18px 22px;
+  box-shadow:none;
+}
+
+.accordion-button::after{
+  filter:invert(1);
+  opacity:.6;
+}
+
+.accordion-button:not(.collapsed){
+  background:rgba(59,130,246,.12);
+  color:#93c5fd;
+}
+
+.accordion-body{
+  background:rgba(0,0,0,.2);
+  color:#cbd5e1;
+  font-size:14px;
+  line-height:1.7;
+  padding:20px 22px;
+}
+
+.navbar{
+background:rgba(13,17,23,.88);
+backdrop-filter:blur(14px);
+border-bottom:1px solid var(--border);
+}
+
+.navbar-brand{
+font-weight:800;
+letter-spacing:.5px;
+background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ffffff);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.offcanvas{
+background:rgba(15,20,30,.96);
+backdrop-filter:blur(20px);
+border-left:1px solid var(--border);
+}
+
+.hero-wrapper{
+padding:110px 0 70px;
+position:relative;
+}
+
+.hero-wrapper::before{
+content:"";
+position:absolute;
+inset:0;
+background:
+radial-gradient(circle at 15% 20%,rgba(59,130,246,.18),transparent 40%),
+radial-gradient(circle at 85% 10%,rgba(139,92,246,.18),transparent 45%);
+pointer-events:none;
+}
+
+.hero-card{
+background:linear-gradient(180deg,#161b22,#12161c);
+border:1px solid var(--border);
+border-radius:26px;
+padding:42px;
+max-width:820px;
+margin:auto;
+}
+
+.hero-badge{
+display:inline-flex;
+align-items:center;
+gap:8px;
+background:var(--accent-soft);
+color:var(--accent);
+padding:7px 14px;
+border-radius:999px;
+font-size:13px;
+font-weight:600;
+}
+
+.hero-card h1{
+font-size:clamp(1.9rem,3vw,2.4rem);
+margin:18px 0 14px;
+}
+
+.hero-card p{
+color:var(--muted);
+max-width:640px;
+}
+
+.hero-actions{
+margin-top:26px;
+display:flex;
+gap:14px;
+flex-wrap:wrap;
+}
+
+.btn-main{
+background:linear-gradient(135deg,#3b82f6,#8b5cf6);
+border:none;
+padding:13px 24px;
+border-radius:14px;
+font-weight:600;
+color:#fff;
+box-shadow:0 10px 30px rgba(59,130,246,.35);
+}
+
+.btn-outline{
+border:1px solid var(--border);
+padding:13px 24px;
+border-radius:14px;
+color:var(--text);
+background:rgba(255,255,255,.03);
+backdrop-filter:blur(6px);
+}
+
+.section{
+padding:80px 0;
+}
+
+.section-title{
+text-align:center;
+margin-bottom:44px;
+}
+
+.section-title span{
+font-size:13px;
+font-weight:600;
+color:var(--accent);
+letter-spacing:.5px;
+}
+
+.info-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+gap:22px;
+}
+
+.info-card{
+background:var(--panel);
+border:1px solid var(--border);
+border-radius:18px;
+padding:26px;
+transition:.3s;
+}
+
+.info-card:hover{
+transform:translateY(-4px);
+border-color:var(--accent);
+}
+
+.info-icon{
+width:46px;
+height:46px;
+border-radius:14px;
+background:var(--accent-soft);
+color:var(--accent);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:18px;
+margin-bottom:14px;
+}
+
+.server-card{
+width:100%;
+background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+border:1px solid rgba(255,255,255,.14);
+border-radius:22px;
+padding:20px;
+box-shadow:0 16px 50px rgba(0,0,0,.45);
+margin-top:18px;
+position:relative;
+}
+
+.server-card.offline{
+opacity:.7;
+filter:grayscale(.7);
+}
+
+.server-top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:14px;
+}
+
+.server-title{
+display:flex;
+align-items:center;
+gap:10px;
+font-weight:600;
+}
+
+.server-title i{color:#60a5fa}
+
+.server-percent{
+font-weight:700;
+}
+
+.server-bar{
+width:100%;
+height:14px;
+background:rgba(255,255,255,.14);
+border-radius:999px;
+overflow:hidden;
+margin-bottom:14px;
+}
+
+.server-bar-fill{
+height:100%;
+border-radius:999px;
+position:relative;
+overflow:hidden;
+transition:width .9s cubic-bezier(.4,0,.2,1),background .4s ease;
+}
+
+.server-bar-fill::after{
+content:"";
+position:absolute;
+top:0;
+left:-40%;
+width:40%;
+height:100%;
+background:linear-gradient(120deg,transparent,rgba(255,255,255,.35),transparent);
+animation:barFlow 2.4s infinite;
+}
+
+@keyframes barFlow{
+from{left:-40%}
+to{left:120%}
+}
+
+.bar-ok{
+background:linear-gradient(90deg,#22c55e,#4ade80);
+box-shadow:0 0 12px rgba(34,197,94,.55);
+}
+
+.bar-warn{
+background:linear-gradient(90deg,#facc15,#fde047);
+box-shadow:0 0 12px rgba(250,204,21,.55);
+}
+
+.bar-full{
+background:linear-gradient(90deg,#ef4444,#f87171);
+box-shadow:0 0 14px rgba(239,68,68,.65);
+}
+
+.bar-ok::after{animation-duration:3s}
+.bar-warn::after{animation-duration:1.8s}
+.bar-full::after{animation-duration:1.1s}
+
+.bar-offline{
+background:#374151;
+box-shadow:none;
+}
+
+.bar-offline::after{
+animation:none;
+}
+
+.server-bottom{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:12px;
+}
+
+.server-status{
+font-size:13px;
+display:flex;
+align-items:center;
+gap:6px;
+}
+
+.status-ok{color:var(--green)}
+.status-warn{color:var(--yellow)}
+.status-full{color:var(--red)}
+.status-offline{color:#9ca3af}
+
+.server-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 10px;
+  box-shadow: 0 0 6px currentColor;
+  animation: ledBlink 1.8s infinite;
+}
+
+.led-ok {
+  color: #22c55e;
+  animation-duration: 1.6s;
+}
+
+.led-warn {
+  color: #facc15;
+  animation-duration: 1.2s;
+}
+
+.led-full {
+  color: #ef4444;
+  animation-duration: 0.9s;
+}
+
+.led-offline {
+  color: #6b7280;
+  animation: ledOff 2.5s infinite;
+}
+
+@keyframes ledBlink {
+  0%   { opacity: .3; }
+  30%  { opacity: 1; }
+  60%  { opacity: .4; }
+  100% { opacity: .8; }
+}
+
+@keyframes ledOff {
+  0%   { opacity: .15; }
+  50%  { opacity: .35; }
+  100% { opacity: .15; }
+}
+
+.server-card:nth-child(1) .server-led { animation-delay: .2s; }
+.server-card:nth-child(2) .server-led { animation-delay: .6s; }
+.server-card:nth-child(3) .server-led { animation-delay: 1s; }
+.server-card:nth-child(4) .server-led { animation-delay: .4s; }
+.server-card:nth-child(5) .server-led { animation-delay: .9s; }
+
+.server-btn{
+padding:10px 16px;
+border-radius:12px;
+background:linear-gradient(135deg,#3b82f6,#6366f1);
+color:#fff;
+font-size:13px;
+font-weight:600;
+display:flex;
+align-items:center;
+gap:6px;
+box-shadow:0 8px 24px rgba(59,130,246,.45);
+}
+
+.server-btn:hover{
+transform:translateY(-1px);
+color:#fff;
+}
+
+.server-btn.disabled{
+pointer-events:none;
+opacity:.5;
+filter:grayscale(.6);
+background:linear-gradient(135deg,#4b5563,#374151);
+box-shadow:none;
+cursor:not-allowed;
+}
+
+footer{
+border-top:1px solid var(--border);
+padding:42px 0;
+text-align:center;
+color:var(--muted);
+}
+
+footer a{
+color:var(--muted);
+margin:0 10px;
+font-size:18px;
+}
+
+footer a:hover{color:var(--accent)}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark fixed-top">
+<div class="container">
+<a class="navbar-brand" href="#">Soft Botz</a>
+<button class="navbar-toggler border-0" data-bs-toggle="offcanvas" data-bs-target="#menu">
+<span class="navbar-toggler-icon"></span>
+</button>
+</div>
+</nav>
+
+<div class="offcanvas offcanvas-end text-white" id="menu">
+<div class="offcanvas-header">
+<h5 class="offcanvas-title">Menu</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+</div>
+<div class="offcanvas-body d-flex flex-column gap-3">
+<a class="btn btn-main" href="/register"><i class="fa fa-plus"></i> Create Bot</a>
+<a class="btn btn-outline" href="/login"><i class="fa fa-right-to-bracket"></i> Login</a>
+<a class="btn btn-outline" href="/register"><i class="fa fa-user-plus"></i> Register</a>
+<hr>
+<a href="#features">Features</a>
+<a href="#pricing">Pricing</a>
+<a href="#faq">FAQ</a>
+<a href="#footer">Contact</a>
+</div>
+</div>
+
+<section class="hero-wrapper">
+<div class="container">
+<div class="hero-card">
+<span class="hero-badge"><i class="fa fa-robot"></i> WhatsApp Bot Platform</span>
+<h1>Bangun & Kelola Bot WhatsApp dengan Cara Profesional</h1>
+<p>
+Platform jadibot WhatsApp berbasis Baileys yang stabil, aman,
+dan dirancang agar mudah digunakan oleh pemula maupun developer.
+</p>
+<div class="hero-actions">
+<a href="/register" class="btn-main"><i class="fa fa-rocket"></i> Create Bot</a>
+<a href="/login" class="btn-outline"><i class="fa fa-right-to-bracket"></i> Login</a>
+</div>
+
+
+<div class="server-grid">
+
+<% servers.forEach((srv, i) => { %>
+
+  <div class="server-card
+    <%= srv.offline ? 'offline' : '' %>
+    <%= srv.comingSoon ? 'coming-soon' : '' %>">
+
+    <div class="server-top">
+      <div class="server-title">
+        <i class="fas fa-server"></i>
+        <span><%= srv.name %></span>
+
+        <!-- LED INDICATOR -->
+        <span class="server-led
+          <%= srv.comingSoon
+            ? 'led-coming'
+            : srv.offline
+            ? 'led-offline'
+            : srv.status === 'Available'
+            ? 'led-ok'
+            : srv.status === 'Limited'
+            ? 'led-warn'
+            : 'led-full'
+          %>"
+          style="animation-delay:<%= (i % 6) * 0.3 %>s">
+        </span>
+      </div>
+
+      <span class="server-percent">
+        <%= srv.comingSoon || srv.offline ? '--' : srv.percent + '%' %>
+      </span>
+    </div>
+
+    <!-- BAR -->
+    <div class="server-bar">
+      <div class="server-bar-fill
+        <%= srv.comingSoon
+          ? 'bar-coming'
+          : srv.offline
+          ? 'bar-offline'
+          : srv.percent < 50
+          ? 'bar-ok'
+          : srv.percent < 80
+          ? 'bar-warn'
+          : 'bar-full'
+        %>"
+        style="width:<%= srv.comingSoon || srv.offline ? 100 : srv.percent %>%;">
+      </div>
+    </div>
+
+    <!-- BOTTOM -->
+    <div class="server-bottom">
+      <div class="server-status
+        <%= srv.comingSoon
+          ? 'status-coming'
+          : srv.offline
+          ? 'status-offline'
+          : srv.status === 'Available'
+          ? 'status-ok'
+          : srv.status === 'Limited'
+          ? 'status-warn'
+          : 'status-full'
+        %>">
+
+        <i class="fas
+          <%= srv.comingSoon
+            ? 'fa-hourglass-half'
+            : srv.offline
+            ? 'fa-plug-circle-xmark'
+            : srv.status === 'Available'
+            ? 'fa-circle-check'
+            : srv.status === 'Limited'
+            ? 'fa-triangle-exclamation'
+            : 'fa-circle-xmark'
+          %>">
+        </i>
+
+        <%= srv.availability %>
+      </div>
+
+      <a href="/register"
+         class="server-btn
+         <%= srv.comingSoon || srv.offline || srv.status === 'Full'
+           ? 'disabled'
+           : ''
+         %>">
+        <i class="fas fa-rocket"></i>
+        Create Bot
+      </a>
+    </div>
+
+  </div>
+
+<% }) %>
+</div>
+
+</div>
+</div>
+</section>
+
+<section id="features" class="section">
+<div class="container">
+<div class="section-title">
+<span>FEATURES</span>
+<h2>Dirancang untuk Kebutuhan Nyata</h2>
+</div>
+
+<div class="info-grid">
+<div class="info-card">
+<div class="info-icon"><i class="fa fa-bolt"></i></div>
+<h5>Performa Stabil</h5>
+<p>Server dioptimalkan agar bot tetap online dan cepat.</p>
+</div>
+
+<div class="info-card">
+<div class="info-icon"><i class="fa fa-shield-halved"></i></div>
+<h5>Keamanan Sistem</h5>
+<p>Proteksi input, validasi server, dan mitigasi XSS.</p>
+</div>
+
+<div class="info-card">
+<div class="info-icon"><i class="fa fa-sliders"></i></div>
+<h5>Custom Fleksibel</h5>
+<p>Atur fitur bot tanpa konfigurasi manual.</p>
+</div>
+
+<div class="info-card">
+<div class="info-icon"><i class="fa fa-headset"></i></div>
+<h5>Support Aktif</h5>
+<p>Admin & tim siap membantu kapan saja.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="pricing" class="section">
+<div class="container">
+<div class="section-title">
+<span>PRICING</span>
+<h2>Paket Langganan</h2>
+</div>
+
+<div class="pricing-grid">
+<div class="price-card">
+<h4>Free Trial</h4>
+<div class="price">Rp 0</div>
+<ul>
+<li><i class="fa fa-check"></i> Akses terbatas</li>
+<li><i class="fa fa-check"></i> Custom dasar</li>
+<li><i class="fa fa-xmark"></i> Tanpa support prioritas</li>
+</ul>
+<a href="/register" class="btn-outline w-100 text-center">Coba Gratis</a>
+</div>
+
+<div class="price-card featured">
+<h4>1 Bulan</h4>
+<div class="price">Rp 15.000</div>
+<ul>
+<li><i class="fa fa-check"></i> Full fitur</li>
+<li><i class="fa fa-check"></i> Custom penuh</li>
+<li><i class="fa fa-check"></i> Support aktif</li>
+<li><i class="fa fa-check"></i> Tanpa iklan</li>
+</ul>
+<a href="/register" class="btn-main w-100 text-center">Pilih Paket</a>
+</div>
+
+<div class="price-card">
+<h4>3 Bulan</h4>
+<div class="price">Rp 35.000</div>
+<ul>
+<li><i class="fa fa-check"></i> Semua fitur premium</li>
+<li><i class="fa fa-check"></i> Lebih hemat</li>
+<li><i class="fa fa-check"></i> Support prioritas</li>
+</ul>
+<a href="/register" class="btn-outline w-100 text-center">Pilih Paket</a>
+</div>
+</div>
+</div>
+</section>
+
+<section id="faq" class="section">
+<div class="container">
+<div class="section-title">
+<span>FAQ</span>
+<h2>Pertanyaan Umum</h2>
+</div>
+
+<div class="faq accordion">
+<div class="accordion-item">
+<button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f1">
+Apakah aman digunakan?
+</button>
+<div id="f1" class="accordion-collapse collapse">
+<div class="accordion-body">
+Ya, sistem menggunakan validasi server-side dan proteksi keamanan.
+</div>
+</div>
+</div>
+
+<div class="accordion-item">
+<button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f2">
+Apakah bisa custom fitur?
+</button>
+<div id="f2" class="accordion-collapse collapse">
+<div class="accordion-body">
+Bisa, semua paket berbayar mendukung custom penuh.
+</div>
+</div>
+</div>
+
+<div class="accordion-item">
+<button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f3">
+Bagaimana cara mulai?
+</button>
+<div id="f3" class="accordion-collapse collapse">
+<div class="accordion-body">
+Daftar akun, buat bot, lalu jalankan dari dashboard.
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<footer id="footer">
+<div class="container">
+<p>© 2025 – 2026 Soft Botz</p>
+<div class="mt-2">
+<a href="#"><i class="fab fa-github"></i></a>
+<a href="#"><i class="fab fa-instagram"></i></a>
+<a href="#"><i class="fab fa-whatsapp"></i></a>
+<a href="#"><i class="fab fa-telegram"></i></a>
+</div>
+</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+async function loadServers() {
+  try {
+    const res = await fetch("/api/servers");
+    const servers = await res.json();
+
+    servers.forEach((srv, index) => {
+
+      const card = document.querySelectorAll(".server-card")[index];
+      if (!card) return;
+
+      const percentEl = card.querySelector(".server-percent");
+      const bar = card.querySelector(".server-bar-fill");
+      const statusEl = card.querySelector(".server-status");
+      const btn = card.querySelector(".server-btn");
+      const led = card.querySelector(".server-led");
+
+      if (srv.comingSoon) {
+        percentEl.innerText = "--";
+        bar.style.width = "100%";
+        bar.className = "server-bar-fill bar-coming";
+        statusEl.innerHTML =
+          '<i class="fas fa-hourglass-half"></i> Coming Soon';
+        btn.classList.add("disabled");
+        led.className = "server-led led-coming";
+        return;
+      }
+
+      if (srv.offline) {
+        percentEl.innerText = "--";
+        bar.style.width = "100%";
+        bar.className = "server-bar-fill bar-offline";
+        statusEl.innerHTML =
+          '<i class="fas fa-plug-circle-xmark"></i> Offline';
+        btn.classList.add("disabled");
+        led.className = "server-led led-offline";
+        return;
+      }
+
+      percentEl.innerText = srv.percent + "%";
+      bar.style.width = srv.percent + "%";
+
+      if (srv.percent < 50) {
+        bar.className = "server-bar-fill bar-ok";
+        statusEl.innerHTML =
+          '<i class="fas fa-circle-check"></i> Slot Available';
+        led.className = "server-led led-ok";
+        btn.classList.remove("disabled");
+
+      } else if (srv.percent < 80) {
+        bar.className = "server-bar-fill bar-warn";
+        statusEl.innerHTML =
+          '<i class="fas fa-triangle-exclamation"></i> Limited Slot';
+        led.className = "server-led led-warn";
+        btn.classList.remove("disabled");
+
+      } else {
+        bar.className = "server-bar-fill bar-full";
+        statusEl.innerHTML =
+          '<i class="fas fa-circle-xmark"></i> Full';
+        led.className = "server-led led-full";
+        btn.classList.add("disabled");
+      }
+
+    });
+
+  } catch (err) {
+    console.error("Failed refresh server data:", err);
+  }
+}
+
+loadServers();
+setInterval(loadServers, 5000);
+</script>
+</body>
+</html>

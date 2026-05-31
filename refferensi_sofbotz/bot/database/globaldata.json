@@ -1,0 +1,19 @@
+{
+  "databotzz": {
+    "1db5ec0f-c890-4299-a137-4083eb54a9bf": {
+      "120363026527041363@g.us": {
+        "welcome": true,
+        "left": true,
+        "antipolling2": false,
+        "antipolling": true
+      },
+      "global": {
+        "public": true,
+        "owners": []
+      },
+      "120363232426181622@g.us": {
+        "antisaluran2": true
+      }
+    }
+  }
+}

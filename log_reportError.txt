@@ -1,0 +1,17 @@
+
+[28/03/2026 00:13:25] Command: .lovestick | Error: ano.split is not a function
+TypeError: ano.split is not a function
+    at NanoBotz (/home/container/Nano.js:30851:29)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+========================================
+
+[28/03/2026 00:13:35] Command: .doge | Error: ano.split is not a function
+TypeError: ano.split is not a function
+    at NanoBotz (/home/container/Nano.js:30843:29)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+========================================
+
+[28/03/2026 19:10:47] Command: kick | Error: Timed Out
+Error: Timed Out
+    at /home/container/node_modules/@whiskeysockets/baileys/lib/Utils/generics.js:149:32
+========================================

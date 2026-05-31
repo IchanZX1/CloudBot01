@@ -1,0 +1,34 @@
+{
+  "120363026527041363@g.us": {
+    "wife": {
+      "key": {
+        "remoteJid": "120363026527041363@g.us",
+        "fromMe": false,
+        "id": "AC21517973F8D4863F66F93FB52BD1A4"
+      },
+      "message": {
+        "imageMessage": {
+          "url": "https://mmg.whatsapp.net/v/t62.7118-24/553556260_1548793186450850_382224718981492734_n.enc?ccb=11-4&oh=01_Q5Aa3gH13ybZqOhS9XOAYTeKrfViqXizCzdSfPHnRonyevuXDw&oe=69858BAE&_nc_sid=5e03e0&mms3=true",
+          "mimetype": "image/jpeg",
+          "fileSha256": "HP2C+5f6el/mrCqiCQChFYqCGa8vP3nifx3GTc/4DPQ=",
+          "fileLength": "203796",
+          "height": 899,
+          "width": 1599,
+          "mediaKey": "KvkIOV8aNlcJ3zMmBHTs6NXQ5j8it6LBfT//bHuVT1Y=",
+          "fileEncSha256": "wlHjNtUdS2AB+NiphvXUtKxDyEfqeXmvVWzwmBCBHx4=",
+          "directPath": "/v/t62.7118-24/553556260_1548793186450850_382224718981492734_n.enc?ccb=11-4&oh=01_Q5Aa3gH13ybZqOhS9XOAYTeKrfViqXizCzdSfPHnRonyevuXDw&oe=69858BAE&_nc_sid=5e03e0",
+          "mediaKeyTimestamp": "1767774008",
+          "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEABsbGxscGx4hIR4qLSgtKj04MzM4PV1CR0JHQl2NWGdYWGdYjX2Xe3N7l33gsJycsOD/2c7Z//////////////8BGxsbGxwbHiEhHiotKC0qPTgzMzg9XUJHQkdCXY1YZ1hYZ1iNfZd7c3uXfeCwnJyw4P/Zztn////////////////CABEIACEAPAMBIgACEQEDEQH/xAAuAAADAQEBAAAAAAAAAAAAAAAABAUDAQIBAQEBAQAAAAAAAAAAAAAAAAEAAgP/2gAMAwEAAhADEAAAAFXXcBnLuZrgxorHF6TBqtDuSY9yq8hbCPvhJ35GqXVA5DiITJ3DTrCBz//EACwQAAICAQMBBwIHAAAAAAAAAAECAAMRBBIhEwUQFDFBQlEycjQ1RGFigYL/2gAIAQEAAT8Aq0Vjuo9pGczSU6jSX/TlDHDeKsbHOeMxgzXfvmHcLm9DLLz4bo/BlFBuLAei57qfEIAjV+QwGiVWC4O9pKZmssdriVXAENa9NbFY75sN6g9PB+fky1eMkYYHmdn1s5fa+DH7Ly31S5itbMPQSu5riQZY2yg7lHwIhcsoH9Si6xE2OBulvCOrHknMod67gajG6jYLo2f4x0JQiLQ1N2ajk+4TVLbdWD0yMekVLdwIU8GabLaoZfmasY1vn5y+ldMyurZOY/atnsURvKfrf8Q+U1PCW/bNB+KSW/mM1YHRu+7u/8QAGBEAAwEBAAAAAAAAAAAAAAAAABARAQL/2gAIAQIBAT8AVVwuFWPk/8QAGREAAwEBAQAAAAAAAAAAAAAAAAERECAh/9oACAEDAQE/ACCWUp4uHn//2Q==",
+          "contextInfo": {
+            "pairedMediaType": "NOT_PAIRED_MEDIA",
+            "statusSourceType": "IMAGE"
+          },
+          "scansSidecar": "V9TkvV05gEh32UEVefzppTBbFUSSwgPzsrrdyejwozA9ZHoCK23kgA==",
+          "scanLengths": [15355, 84915, 44044, 59482],
+          "midQualityFileSha256": "El3J+ecfpb19dj924NiwGMozdMpsfykQt1de5KBTSTk="
+        }
+      },
+      "participant": "6285783417029@s.whatsapp.net"
+    }
+  }
+}

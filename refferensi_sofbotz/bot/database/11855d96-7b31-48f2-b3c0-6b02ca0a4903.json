@@ -1,0 +1,450 @@
+{
+  "6285129424560@s.whatsapp.net": {
+    "exp": 10,
+    "level": 1,
+    "coins": 780,
+    "lastExp": 1761750631446,
+    "nextExpTime": 0,
+    "dailyCount": 1,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 50,
+    "nextRewardCmd": 142
+  },
+  "62857553821097@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 6,
+    "nextRewardCmd": 227
+  },
+  "6281274189413@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 8,
+    "nextRewardCmd": 389
+  },
+  "6288279387138@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 11,
+    "nextRewardCmd": 184
+  },
+  "6281274189512@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 8,
+    "nextRewardCmd": 339
+  },
+  "62856408894536@s.whatsapp.net": {
+    "exp": 7,
+    "level": 1,
+    "coins": 960,
+    "lastExp": 1761827140731,
+    "nextExpTime": 0,
+    "dailyCount": 1,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 17,
+    "nextRewardCmd": 331
+  },
+  "62895803816030@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 3,
+    "nextRewardCmd": 211
+  },
+  "6285758963739@s.whatsapp.net": {
+    "exp": 2,
+    "level": 1,
+    "coins": 585,
+    "lastExp": 1761750570351,
+    "nextExpTime": 0,
+    "dailyCount": 1,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 6,
+    "nextRewardCmd": 346
+  },
+  "6283102041415@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 2,
+    "nextRewardCmd": 340
+  },
+  "6285933519324@s.whatsapp.net": {
+    "exp": 1,
+    "level": 1,
+    "coins": 533,
+    "lastExp": 1761750658295,
+    "nextExpTime": 0,
+    "dailyCount": 1,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 4,
+    "nextRewardCmd": 194
+  },
+  "6285282562024@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 5,
+    "nextRewardCmd": 209
+  },
+  "43882268123294@lid": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 1,
+    "nextRewardCmd": 194
+  },
+  "6285607825221@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 1,
+    "nextRewardCmd": 228
+  },
+  "6285250619144@s.whatsapp.net": {
+    "exp": 1,
+    "level": 1,
+    "coins": 1012,
+    "lastExp": 1761777438836,
+    "nextExpTime": 0,
+    "dailyCount": 1,
+    "lastDay": 29,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 16,
+    "nextRewardCmd": 167
+  },
+  "6283163421155@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 1,
+    "nextRewardCmd": 112
+  },
+  "6289612166669@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 1,
+    "nextRewardCmd": 166
+  },
+  "6285609900273@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 1,
+    "nextRewardCmd": 334
+  },
+  "62895414912177@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 2,
+    "nextRewardCmd": 268
+  },
+  "6283823792369@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 2,
+    "nextRewardCmd": 199
+  },
+  "6285864705481@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 2,
+    "nextRewardCmd": 286
+  },
+  "6282228047982@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 2,
+    "nextRewardCmd": 343
+  },
+  "6289653077060@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 1,
+    "nextRewardCmd": 191
+  },
+  "6281338278186@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 5,
+    "nextRewardCmd": 155
+  },
+  "62895381176064@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 1,
+    "nextRewardCmd": 182
+  },
+  "62882015576949@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 1,
+    "nextRewardCmd": 136
+  },
+  "6287825006100@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 5,
+    "nextRewardCmd": 288
+  },
+  "6283152743303@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 3,
+    "nextRewardCmd": 316
+  },
+  "6282281950186@s.whatsapp.net": {
+    "exp": 0,
+    "level": 1,
+    "coins": 0,
+    "lastExp": 0,
+    "nextExpTime": 0,
+    "dailyCount": 0,
+    "lastDay": 30,
+    "cooldown": {
+      "daily": 0,
+      "mining": 0,
+      "work": 0
+    },
+    "cmdCount": 2,
+    "nextRewardCmd": 152
+  }
+}
