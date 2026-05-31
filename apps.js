@@ -1633,9 +1633,9 @@ app.use((req, res) => {
 
 triggerContentErrorDemo();
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Server running at http://localhost:${PORT}`);
-    await checkForUpdates();
+    await checkForUpdate();
 });
 
 /**
