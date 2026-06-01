@@ -932,6 +932,20 @@ async function NanoBotzInd(method = null, num = null) {
       : {};
     const iswel = hasGroupSettings ? groupSettings.welcome === true : sessionWelcome.includes(anu.id);
     const isLeft = hasGroupSettings ? groupSettings.goodbye === true : sessionLeft.includes(anu.id);
+
+    console.log(color('[GROUP UPDATE DEBUG]', 'cyan'), JSON.stringify({
+      bot: targetNum,
+      groupId: anu.id,
+      action: anu.action,
+      participants: anu.participants,
+      hasGroupSettings,
+      groupSettings,
+      legacyWelcomeEnabled: sessionWelcome.includes(anu.id),
+      legacyGoodbyeEnabled: sessionLeft.includes(anu.id),
+      iswel,
+      isLeft
+    }, null, 2));
+
     await welcome(iswel, isLeft, NanoBotz, anu)
   })
 
