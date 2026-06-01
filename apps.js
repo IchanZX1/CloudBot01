@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 require('dotenv').config();
 const User = require('./models/User');
+const session = require('express-session');
 const Pricing = require('./models/Pricing');
 const Deposit = require('./models/Deposit');
 const passport = require('passport');
@@ -1727,9 +1728,27 @@ app.get('/auth/google/callback',
 );
 // ==================== END GOOGLE OAUTH ROUTES ====================
 
-app.get('/logout', (req, res) => {
-    res.clearCookie('session_id');
-    res.redirect('/');
+// app.get('/logout', (req, res) => {
+//     res.clearCookie('session_id');
+//     res.redirect('/');
+// });
+app.get('/logout', async (req, res) => {
+    if (req.user) {
+        try {
+            await User.findByIdAndUpdate(req.user._id, { currentSessionId: null });
+        } catch (e) {
+            console.error('Logout error:', e);
+        }
+    }
+    req.logout(function(err) {
+        if (err) console.error('Passport logout error:', err);
+        req.session.destroy(function(err) {
+            if (err) console.error('Session destroy error:', err);
+            res.clearCookie('session_id');
+            res.clearCookie('connect.sid');
+            res.redirect('/login?success=Berhasil keluar!');
+        });
+    });
 });
 
 // Error 404
