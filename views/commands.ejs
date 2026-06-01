@@ -21,6 +21,24 @@
                 transform: translateX(16px);
                 background: #22c55e;
             }
+
+            /* Welcome design radio card styles */
+            .welcome-design-option input:checked + div {
+                border-color: rgba(34, 197, 94, 0.75);
+                background: rgba(34, 197, 94, 0.08);
+            }
+            .welcome-design-option input:checked + div img {
+                opacity: 1;
+            }
+            .welcome-design-option input:checked + div .radio-dot {
+                border-color: #22c55e;
+            }
+            .welcome-design-option input:checked + div .radio-dot span {
+                display: block;
+            }
+            .welcome-design-option input:checked + div .label-text {
+                color: #22c55e;
+            }
         </style>
 
         <div class="min-h-screen pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 hero-gradient">
@@ -121,6 +139,75 @@
                                             </div>
                                         </label>
                                     <% }) %>
+                                </div>
+                            </div>
+
+                            <!-- Welcome Design Selector -->
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Welcome Design</p>
+                                    <span class="text-[10px] text-green-500 font-bold">Pilih tampilan gambar welcome</span>
+                                </div>
+                                <div class="grid grid-cols-2 xl:grid-cols-4 gap-3" id="welcome-design-grid">
+                                    <label class="welcome-design-option relative cursor-pointer group">
+                                        <input type="radio" name="welcome_design" value="design1" class="sr-only peer" checked>
+                                        <div class="overflow-hidden rounded-2xl border-2 border-white/10 peer-checked:border-green-500 bg-white/5 peer-checked:bg-green-500/5 hover:border-white/25 transition-all">
+                                            <div class="relative w-full" style="padding-bottom:56%">
+                                                <img src="/img/welcome-example1.jpg" alt="Design 1" class="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-opacity">
+                                                <div class="absolute top-2 right-2 w-5 h-5 rounded-full bg-green-500 items-center justify-center shadow-lg check-badge hidden peer-checked:flex">
+                                                    <i class="bi bi-check text-black text-xs font-black"></i>
+                                                </div>
+                                            </div>
+                                            <div class="px-3 py-2 flex items-center justify-between">
+                                                <span class="text-xs font-bold text-gray-400 group-hover:text-white peer-checked:text-green-500 transition-colors">Design 1</span>
+                                                <span class="radio-dot w-4 h-4 rounded-full border-2 border-white/20 peer-checked:border-green-500 bg-transparent flex items-center justify-center transition-all">
+                                                    <span class="w-2 h-2 rounded-full bg-green-500 hidden peer-checked:block"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <label class="welcome-design-option relative cursor-pointer group">
+                                        <input type="radio" name="welcome_design" value="design2" class="sr-only peer">
+                                        <div class="overflow-hidden rounded-2xl border-2 border-white/10 peer-checked:border-green-500 bg-white/5 peer-checked:bg-green-500/5 hover:border-white/25 transition-all">
+                                            <div class="relative w-full" style="padding-bottom:56%">
+                                                <img src="/img/welcome-example2.png" alt="Design 2" class="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-opacity">
+                                            </div>
+                                            <div class="px-3 py-2 flex items-center justify-between">
+                                                <span class="text-xs font-bold text-gray-400 group-hover:text-white peer-checked:text-green-500 transition-colors">Design 2</span>
+                                                <span class="radio-dot w-4 h-4 rounded-full border-2 border-white/20 peer-checked:border-green-500 bg-transparent flex items-center justify-center transition-all">
+                                                    <span class="w-2 h-2 rounded-full bg-green-500 hidden peer-checked:block"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <label class="welcome-design-option relative cursor-pointer group">
+                                        <input type="radio" name="welcome_design" value="design3" class="sr-only peer">
+                                        <div class="overflow-hidden rounded-2xl border-2 border-white/10 peer-checked:border-green-500 bg-white/5 peer-checked:bg-green-500/5 hover:border-white/25 transition-all">
+                                            <div class="relative w-full" style="padding-bottom:56%">
+                                                <img src="/img/welcome-example3.png" alt="Design 3" class="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-opacity">
+                                            </div>
+                                            <div class="px-3 py-2 flex items-center justify-between">
+                                                <span class="text-xs font-bold text-gray-400 group-hover:text-white peer-checked:text-green-500 transition-colors">Design 3</span>
+                                                <span class="radio-dot w-4 h-4 rounded-full border-2 border-white/20 peer-checked:border-green-500 bg-transparent flex items-center justify-center transition-all">
+                                                    <span class="w-2 h-2 rounded-full bg-green-500 hidden peer-checked:block"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <label class="welcome-design-option relative cursor-pointer group">
+                                        <input type="radio" name="welcome_design" value="design4" class="sr-only peer">
+                                        <div class="overflow-hidden rounded-2xl border-2 border-white/10 peer-checked:border-green-500 bg-white/5 peer-checked:bg-green-500/5 hover:border-white/25 transition-all">
+                                            <div class="relative w-full" style="padding-bottom:56%">
+                                                <img src="/img/welcome-example4.jpg" alt="Design 4" class="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-opacity">
+                                            </div>
+                                            <div class="px-3 py-2 flex items-center justify-between">
+                                                <span class="text-xs font-bold text-gray-400 group-hover:text-white peer-checked:text-green-500 transition-colors">Design 4</span>
+                                                <span class="radio-dot w-4 h-4 rounded-full border-2 border-white/20 peer-checked:border-green-500 bg-transparent flex items-center justify-center transition-all">
+                                                    <span class="w-2 h-2 rounded-full bg-green-500 hidden peer-checked:block"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
                                 </div>
                             </div>
 
@@ -247,6 +334,10 @@
                         featureKeys.forEach(key => {
                             if (form[key]) form[key].checked = !!settings[key];
                         });
+                        // Restore welcome_design selection
+                        const savedDesign = settings.welcome_design || 'design1';
+                        const designInput = form.querySelector(`input[name="welcome_design"][value="${savedDesign}"]`);
+                        if (designInput) designInput.checked = true;
                         form.welcome_text.value = settings.welcome_text || '';
                         form.goodbye_text.value = settings.goodbye_text || '';
 
@@ -270,6 +361,8 @@
 
                     const payload = {};
                     featureKeys.forEach(key => payload[key] = !!form[key]?.checked);
+                    const designRadio = form.querySelector('input[name="welcome_design"]:checked');
+                    payload.welcome_design = designRadio ? designRadio.value : 'design1';
                     payload.welcome_text = form.welcome_text.value;
                     payload.goodbye_text = form.goodbye_text.value;
 

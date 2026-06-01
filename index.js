@@ -73,6 +73,52 @@ let botStatus = {
   heartbeats: {}
 };
 
+function createDefaultBotSettings() {
+  return {
+    public: true,
+    anticall: false,
+    status: 0,
+    stock: 0,
+    autobio: false,
+    auto_ai_grup: false,
+    goodbye: false,
+    onlygrub: false,
+    onlypc: false,
+    welcome: true,
+    autoread: false
+  };
+}
+
+function ensureIsolatedBotSettings(sessionDb, targetNum) {
+  if (!sessionDb || typeof sessionDb !== 'object') return false;
+
+  const cleanNum = String(targetNum || '').replace(/[^0-9]/g, '');
+  if (!cleanNum) return false;
+
+  const botJid = `${cleanNum}@s.whatsapp.net`;
+  sessionDb.settings = sessionDb.settings && typeof sessionDb.settings === 'object'
+    ? sessionDb.settings
+    : {};
+
+  const defaults = createDefaultBotSettings();
+  const current = sessionDb.settings[botJid];
+
+  if (!current || typeof current !== 'object') {
+    sessionDb.settings[botJid] = defaults;
+    return true;
+  }
+
+  let changed = false;
+  Object.entries(defaults).forEach(([key, value]) => {
+    if (typeof current[key] === 'undefined') {
+      current[key] = value;
+      changed = true;
+    }
+  });
+
+  return changed;
+}
+
 function removeFromActivateSession(targetNum) {
   const activatePath = `./${global.sessionName}/activate_session.json`;
   if (!fs.existsSync(activatePath)) return;
@@ -354,6 +400,26 @@ async function NanoBotzInd(method = null, num = null) {
     sessionDb = JSON.parse(fs.readFileSync(dbPath));
   } catch (e) {
     console.error("Error loading isolated database:", e);
+  }
+
+  if (!sessionDb || typeof sessionDb !== 'object') {
+    sessionDb = {};
+  }
+
+  sessionDb = {
+    sticker: {},
+    database: {},
+    game: {},
+    others: {},
+    users: {},
+    chats: {},
+    settings: {},
+    ...sessionDb
+  };
+
+  if (ensureIsolatedBotSettings(sessionDb, targetNum)) {
+    fs.writeFileSync(dbPath, JSON.stringify(sessionDb, null, 2));
+    console.log(chalk.green.bold(`[SYSTEM] Default settings initialized for bot ${targetNum}.`));
   }
 
   const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) })
@@ -845,6 +911,11 @@ async function NanoBotzInd(method = null, num = null) {
     let sessionWelcome = [];
     let sessionLeft = [];
     try {
+      if (fs.existsSync(dbPath)) {
+        NanoBotz.db = JSON.parse(fs.readFileSync(dbPath));
+        NanoBotz.lastDbSync = Date.now();
+      }
+
       const welcomePath = path.join(groupDbDir, 'welcome.json');
       const leftPath = path.join(groupDbDir, 'left.json');
       if (fs.existsSync(welcomePath)) sessionWelcome = JSON.parse(fs.readFileSync(welcomePath));
@@ -855,7 +926,7 @@ async function NanoBotzInd(method = null, num = null) {
     const groupSettings = NanoBotz.db && NanoBotz.db.settings ? (NanoBotz.db.settings[anu.id] || {}) : {};
     const iswel = sessionWelcome.includes(anu.id) || !!groupSettings.welcome;
     const isLeft = sessionLeft.includes(anu.id) || !!groupSettings.goodbye;
-    welcome(iswel, isLeft, NanoBotz, anu)
+    await welcome(iswel, isLeft, NanoBotz, anu)
   })
 
   // respon cmd pollMessage

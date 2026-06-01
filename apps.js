@@ -889,8 +889,16 @@ app.get('/api/bot/commands', async (req, res) => {
 const defaultGroupSettings = {
     auto_ai_grup: false,
     goodbye: false,
-    welcome: false
+    welcome: false,
+    welcome_design: 'design1'
 };
+
+const allowedWelcomeDesigns = new Set(['design1', 'design2', 'design3', 'design4']);
+
+function normalizeWelcomeDesign(value) {
+    const design = String(value || '').trim().toLowerCase();
+    return allowedWelcomeDesigns.has(design) ? design : defaultGroupSettings.welcome_design;
+}
 
 function readJsonFile(filePath, fallback) {
     try {
@@ -1026,6 +1034,7 @@ app.post('/api/bot/group-settings/:groupId', async (req, res) => {
         boolKeys.forEach(key => {
             nextSettings[key] = !!req.body[key];
         });
+        nextSettings.welcome_design = normalizeWelcomeDesign(req.body.welcome_design);
         nextSettings.welcome_text = String(req.body.welcome_text || '').trim();
         nextSettings.goodbye_text = String(req.body.goodbye_text || '').trim();
 
