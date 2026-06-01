@@ -9,6 +9,8 @@ require('dotenv').config();
 const User = require('./models/User');
 const Pricing = require('./models/Pricing');
 const Deposit = require('./models/Deposit');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const moment = require('moment-timezone');
 const axios = require('axios');
 const crypto = require('crypto');
@@ -195,6 +197,79 @@ mongoose.connect(process.env.MONGODB_URI)
         }
     })
     .catch(err => console.error('MongoDB connection error:', err));
+
+    // Session (diperlukan untuk passport Google OAuth)
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'autoresbot-secret-key-2026',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, maxAge: 5 * 60 * 1000 } // hanya untuk OAuth flow, 5 menit
+}));
+
+// Passport setup
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL || '/auth/google/callback'
+}, async (accessToken, refreshToken, profile, done) => {
+    try {
+        const email = profile.emails[0].value;
+        const googleId = profile.id;
+        const displayName = profile.displayName || profile.name?.givenName || 'User';
+        const photo = profile.photos?.[0]?.value || '/img/default-profile.png';
+
+        let user = await User.findOne({ email });
+
+        if (user) {
+            // Update googleId jika belum ada
+            if (!user.googleId) {
+                user.googleId = googleId;
+                user.authProvider = 'google';
+                user.is_verified = true;
+                if (photo && photo !== '/img/default-profile.png') user.profilePic = photo;
+                await user.save();
+            }
+        } else {
+            // Buat user baru via Google
+            const trialPlan = await Pricing.findOne({ name: 'Trial' });
+            const trialDuration = trialPlan ? trialPlan.durationDays : 7;
+            const expiredDate = moment().tz('Asia/Jakarta').add(trialDuration, 'days').toDate();
+
+            user = new User({
+                username: displayName,
+                email: email,
+                googleId: googleId,
+                authProvider: 'google',
+                password: null,
+                no_Wa: '',
+                role: 'user',
+                paket: 'Trial',
+                _expired: expiredDate,
+                lastTrialClaim: new Date(),
+                is_verified: true,
+                profilePic: photo
+            });
+            await user.save();
+        }
+
+        return done(null, user);
+    } catch (err) {
+        return done(err, null);
+    }
+}));
+
+passport.serializeUser((user, done) => done(null, user._id));
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (err) {
+        done(err, null);
+    }
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Configuration
 app.set('view engine', 'ejs');
@@ -1620,6 +1695,37 @@ app.get('/api/admin/bot/session/:botNum', isAdmin, (req, res) => {
     }
 });
 // ============================================================
+
+// ==================== GOOGLE OAUTH ROUTES ====================
+app.get('/auth/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login?error=Login Google gagal. Coba lagi.' }),
+    async (req, res) => {
+        try {
+            const user = req.user;
+            const sessionId = crypto.randomBytes(32).toString('hex');
+            user.currentSessionId = sessionId;
+            await user.save();
+
+            res.cookie('session_id', sessionId, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                sameSite: 'Strict',
+                secure: true
+            });
+
+            const redirectUrl = (user.email === process.env.ADMIN_EMAIL) ? '/admin/dashboard' : '/dashboard';
+            return res.redirect(redirectUrl);
+        } catch (err) {
+            console.error('Google callback error:', err);
+            return res.redirect('/login?error=Terjadi kesalahan saat login Google.');
+        }
+    }
+);
+// ==================== END GOOGLE OAUTH ROUTES ====================
 
 app.get('/logout', (req, res) => {
     res.clearCookie('session_id');
