@@ -923,9 +923,15 @@ async function NanoBotzInd(method = null, num = null) {
     } catch (err) {
       console.log(color('[WELCOME]', 'yellow'), `Failed to read group settings for ${targetNum}: ${err.message}`);
     }
-    const groupSettings = NanoBotz.db && NanoBotz.db.settings ? (NanoBotz.db.settings[anu.id] || {}) : {};
-    const iswel = sessionWelcome.includes(anu.id) || !!groupSettings.welcome;
-    const isLeft = sessionLeft.includes(anu.id) || !!groupSettings.goodbye;
+    const allSettings = NanoBotz.db && NanoBotz.db.settings && typeof NanoBotz.db.settings === 'object'
+      ? NanoBotz.db.settings
+      : {};
+    const hasGroupSettings = Object.prototype.hasOwnProperty.call(allSettings, anu.id);
+    const groupSettings = hasGroupSettings && allSettings[anu.id] && typeof allSettings[anu.id] === 'object'
+      ? allSettings[anu.id]
+      : {};
+    const iswel = hasGroupSettings ? groupSettings.welcome === true : sessionWelcome.includes(anu.id);
+    const isLeft = hasGroupSettings ? groupSettings.goodbye === true : sessionLeft.includes(anu.id);
     await welcome(iswel, isLeft, NanoBotz, anu)
   })
 
