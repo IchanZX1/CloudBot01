@@ -121,6 +121,7 @@
                                 <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Feature Toggles</p>
                                 <div id="group-feature-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                                     <% const features = [
+                                        { id: 'chatbot_grup', label: 'Izinkan Bot Pada Grup', icon: 'bi bi-chat-dots' },
                                         { id: 'auto_ai_grup', label: 'AI Group', icon: 'bi-stars' },
                                         { id: 'goodbye', label: 'Goodbye', icon: 'bi-door-open' },
                                         { id: 'welcome', label: 'Welcome', icon: 'bi-person-plus' }
@@ -258,7 +259,7 @@
                 const saveBtn = document.getElementById('save-group-settings-btn');
                 let groups = [];
 
-                const featureKeys = ['auto_ai_grup', 'goodbye', 'welcome'];
+                const featureKeys = ['chatbot_grup', 'auto_ai_grup', 'goodbye', 'welcome'];
 
                 function escapeHtml(value) {
                     return String(value || '').replace(/[&<>"']/g, (char) => ({

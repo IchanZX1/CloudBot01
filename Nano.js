@@ -379,7 +379,9 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
     const antibot = true
     const AntiLinkYoutubeVid = m.isGroup ? ntilinkytvid.includes(from) : false
     const AntiLinkYoutubeChannel = m.isGroup ? ntilinkytch.includes(from) : false
-    const isMute = mute.includes(m.chat) ? true : false
+    const groupSetting = m.isGroup && db.settings && typeof db.settings[m.chat] === 'object' ? db.settings[m.chat] : {}
+    const isChatbotGroupEnabled = m.isGroup ? groupSetting.chatbot_grup !== false : true
+    const isMute = m.isGroup ? (mute.includes(m.chat) || !isChatbotGroupEnabled) : false
     const AntiLinkInstagram = m.isGroup ? ntilinkig.includes(from) : false
     const AntiLinkFacebook = m.isGroup ? ntilinkfb.includes(from) : false
     const AntiLinkTiktok = m.isGroup ? ntilinktt.includes(from) : false
@@ -13727,24 +13729,25 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join('\n')}
       }
         break
       case 'paptt': {
-        if (!isPrem) return replyprem(mess.premium)
-        global.paptt = [
-          "https://telegra.ph/file/5c62d66881100db561c9f.mp4",
-          "https://telegra.ph/file/a5730f376956d82f9689c.jpg",
-          "https://telegra.ph/file/8fb304f891b9827fa88a5.jpg",
-          "https://telegra.ph/file/0c8d173a9cb44fe54f3d3.mp4",
-          "https://telegra.ph/file/b58a5b8177521565c503b.mp4",
-          "https://telegra.ph/file/34d9348cd0b420eca47e5.jpg",
-          "https://telegra.ph/file/73c0fecd276c19560133e.jpg",
-          "https://telegra.ph/file/af029472c3fcf859fd281.jpg",
-          "https://telegra.ph/file/0e5be819fa70516f63766.jpg",
-          "https://telegra.ph/file/29146a2c1a9836c01f5a3.jpg",
-          "https://telegra.ph/file/85883c0024081ffb551b8.jpg",
-          "https://telegra.ph/file/d8b79ac5e98796efd9d7d.jpg",
-          "https://telegra.ph/file/267744a1a8c897b1636b9.jpg",
-        ]
-        let url = paptt[Math.floor(Math.random() * paptt.length)]
-        NanoBotz.sendFile(m.chat, url, null, 'Tch, dasar sangean', m)
+       // if (!isPrem) return 
+        replyprem("The Features as disable for developers does not meet official web standards and violates website terms!")
+        // global.paptt = [
+        //   "https://telegra.ph/file/5c62d66881100db561c9f.mp4",
+        //   "https://telegra.ph/file/a5730f376956d82f9689c.jpg",
+        //   "https://telegra.ph/file/8fb304f891b9827fa88a5.jpg",
+        //   "https://telegra.ph/file/0c8d173a9cb44fe54f3d3.mp4",
+        //   "https://telegra.ph/file/b58a5b8177521565c503b.mp4",
+        //   "https://telegra.ph/file/34d9348cd0b420eca47e5.jpg",
+        //   "https://telegra.ph/file/73c0fecd276c19560133e.jpg",
+        //   "https://telegra.ph/file/af029472c3fcf859fd281.jpg",
+        //   "https://telegra.ph/file/0e5be819fa70516f63766.jpg",
+        //   "https://telegra.ph/file/29146a2c1a9836c01f5a3.jpg",
+        //   "https://telegra.ph/file/85883c0024081ffb551b8.jpg",
+        //   "https://telegra.ph/file/d8b79ac5e98796efd9d7d.jpg",
+        //   "https://telegra.ph/file/267744a1a8c897b1636b9.jpg",
+        // ]
+        // let url = paptt[Math.floor(Math.random() * paptt.length)]
+        // NanoBotz.sendFile(m.chat, url, null, 'Tch, dasar sangean', m)
       }
         break
       case 'alkitab': {
@@ -13922,16 +13925,16 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
         break
       case 'reactch': case 'reactchannel': case 'rch': {
         const exampleUrl = 'https://whatsapp.com/channel/0029VbBVupfKbYMFuKLsIg2M/436'
-        if (!text) return replynano(`Format salah.\n\nContoh:\n${prefix + command} ${exampleUrl}|😍,🔥`)
+        if (!text) return replynano(`Format salah.\n\nContoh:\n${prefix + command} ${exampleUrl} 😍🔥`)
 
-        const [channelUrlRaw, reactionRaw, apiKeyRaw] = text.split('|').map(v => (v || '').trim())
+        const [channelUrlRaw, reactionRaw, apiKeyRaw] = text.split(' ').map(v => (v || '').trim())
         const apiKey = apiKeyRaw || process.env.VIP_KEY || global.VIP_KEY || global.vip_key
         const channelUrl = channelUrlRaw || ''
         let reaction = reactionRaw || ''
 
         if (!apiKey) return replynano('VIP_KEY belum disetting. Tambahkan VIP_KEY di environment atau global.VIP_KEY.')
         if (!channelUrl) return replynano(`Masukkan URL postingan channel.\nContoh: ${exampleUrl}`)
-        if (!reaction) return replynano(`Masukkan reaction.\nContoh: 😍,🔥`)
+        if (!reaction) return replynano(`Masukkan reaction.\nContoh: 😍🔥`)
           reaction = [...reaction].join(",")
 
         const channelPostRegex = /^https?:\/\/(?:www\.)?whatsapp\.com\/channel\/([^/\s]+)\/([^/\s?#]+)(?:[?#].*)?$/i
@@ -23071,14 +23074,22 @@ ${ikan1 ? `
           if (isMute) return reply(`Udah Mute`)
           mute.push(m.chat)
           fs.writeFileSync(botDir + 'mute.json', JSON.stringify(mute, null, 2))
+          db.settings = db.settings || {}
+          db.settings[m.chat] = db.settings[m.chat] && typeof db.settings[m.chat] === 'object' ? db.settings[m.chat] : {}
+          db.settings[m.chat].chatbot_grup = false
+          if (NanoBotz.dbPath) fs.writeFileSync(NanoBotz.dbPath, safeJsonStringify(db, 2))
           reply('Successfully Mute In This Group')
         }
         else if (args[0] === "off") {
           addCountCmd('#mute', m.sender, _cmd)
           if (!isMute) return reply(`Udah Unmute`)
           let anu = mute.indexOf(m.chat)
-          mute.splice(anu, 1)
+          if (anu >= 0) mute.splice(anu, 1)
           fs.writeFileSync(botDir + 'mute.json', JSON.stringify(mute, null, 2))
+          db.settings = db.settings || {}
+          db.settings[m.chat] = db.settings[m.chat] && typeof db.settings[m.chat] === 'object' ? db.settings[m.chat] : {}
+          db.settings[m.chat].chatbot_grup = true
+          if (NanoBotz.dbPath) fs.writeFileSync(NanoBotz.dbPath, safeJsonStringify(db, 2))
           reply('Successfully Unmute In This Group')
         } else {
           reply(`${prefix + command} on -- _mengaktifkan_\n${prefix + command} off -- _Menonaktifkan_`)

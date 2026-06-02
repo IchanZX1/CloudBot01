@@ -887,6 +887,7 @@ app.get('/api/bot/commands', async (req, res) => {
 });
 
 const defaultGroupSettings = {
+    chatbot_grup: true,
     auto_ai_grup: false,
     goodbye: false,
     welcome: false,
@@ -940,6 +941,10 @@ function setGroupEnabled(filePath, groupId, enabled) {
     if (enabled && !exists) current.push(groupId);
     if (!enabled && exists) current.splice(current.indexOf(groupId), 1);
     writeJsonFile(filePath, current);
+}
+
+function syncGroupMuteByChatbotSetting(dbDir, groupId, chatbotEnabled) {
+    setGroupEnabled(path.join(dbDir, 'mute.json'), groupId, chatbotEnabled === false);
 }
 
 async function getUserBotContext(req) {
@@ -997,8 +1002,8 @@ app.get('/api/bot/group-settings/:groupId', async (req, res) => {
             ...(db.settings[groupId] || {}),
             welcome: welcomeList.includes(groupId) || !!db.settings[groupId]?.welcome,
             goodbye: leftList.includes(groupId) || !!db.settings[groupId]?.goodbye,
-            welcome_text: welcomeTexts.find(item => item.id === groupId)?.text || '',
-            goodbye_text: goodbyeTexts.find(item => item.id === groupId)?.text || ''
+            welcome_text: db.settings[groupId]?.welcome_text || welcomeTexts.find(item => item.id === groupId)?.text || '',
+            goodbye_text: db.settings[groupId]?.goodbye_text || goodbyeTexts.find(item => item.id === groupId)?.text || ''
         };
 
         res.json({ success: true, groupId, settings });
@@ -1029,7 +1034,7 @@ app.post('/api/bot/group-settings/:groupId', async (req, res) => {
         });
         if (!db.settings) db.settings = {};
 
-        const boolKeys = ['auto_ai_grup', 'goodbye', 'welcome'];
+        const boolKeys = ['chatbot_grup', 'auto_ai_grup', 'goodbye', 'welcome'];
         const nextSettings = { ...defaultGroupSettings };
         boolKeys.forEach(key => {
             nextSettings[key] = !!req.body[key];
@@ -1042,6 +1047,7 @@ app.post('/api/bot/group-settings/:groupId', async (req, res) => {
 
         setGroupEnabled(path.join(dbDir, 'welcome.json'), groupId, nextSettings.welcome);
         setGroupEnabled(path.join(dbDir, 'left.json'), groupId, nextSettings.goodbye);
+        syncGroupMuteByChatbotSetting(dbDir, groupId, nextSettings.chatbot_grup);
         upsertGroupText(path.join(dbDir, 'set_welcome.json'), groupId, nextSettings.welcome_text);
         upsertGroupText(path.join(dbDir, 'set_left.json'), groupId, nextSettings.goodbye_text);
 
