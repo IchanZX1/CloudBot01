@@ -10,20 +10,18 @@ class BotService {
     }
 
     getStatus(num = null) {
-        if (num) num = num.replace(/[^0-9]/g, '');
-        let statusObj = { ...botStatus };
-        if (num) {
-            const sock = botStatus.socks[num] || null;
-            const socketReady = !!(sock && ((sock.ws && sock.ws.readyState === 1) || sock.user));
-            statusObj = {
-                status: botStatus.states[num] || 'idle',
-                qr: botStatus.qrs[num] || null,
-                pairingCode: botStatus.pairingCodes[num] || null,
-                botNumber: num,
-                socketReady,
-                isConnected: botStatus.states[num] === 'open' && socketReady
-            };
-        }
+        num = num ? String(num).replace(/[^0-9]/g, '') : '';
+        const sock = num ? (botStatus.socks[num] || null) : null;
+        const socketReady = !!(sock && ((sock.ws && sock.ws.readyState === 1) || sock.user));
+        let statusObj = {
+            status: num ? (botStatus.states[num] || 'idle') : 'idle',
+            qr: num ? (botStatus.qrs[num] || null) : null,
+            pairingCode: num ? (botStatus.pairingCodes[num] || null) : null,
+            botNumber: num || null,
+            socketReady,
+            isConnected: num ? (botStatus.states[num] === 'open' && socketReady) : false
+        };
+
         // Mock network flow for UI
         if (statusObj.status === 'open') {
             statusObj.inbound = Math.floor(Math.random() * 50) + 10;
