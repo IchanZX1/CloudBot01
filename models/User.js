@@ -4,8 +4,20 @@ const UserSchema = new mongoose.Schema({
     username: { type: String, required: true },
     role: { type: String, default: 'user' },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    no_Wa: { type: String, required: true },
+    password: {
+        type: String,
+        required: function () {
+            return this.authProvider !== 'google';
+        },
+        default: null
+    },
+    no_Wa: {
+        type: String,
+        required: function () {
+            return this.authProvider !== 'google';
+        },
+        default: ''
+    },
     no_Bot: { type: String, default: '' },
     paket: { type: String, default: 'free' },
     _expired: { type: Date, default: null },
@@ -17,7 +29,9 @@ const UserSchema = new mongoose.Schema({
     lastTrialClaim: { type: Date, default: null },
     profilePic: { type: String, default: '/img/default-profile.png' },
     currentSessionId: { type: String, default: null },
-    registerIP: { type: String, default: null }
+    registerIP: { type: String, default: null },
+    googleId: { type: String, default: null, unique: true, sparse: true },
+    authProvider: { type: String, enum: ['local', 'google'], default: 'local' }
 }, { timestamps: true });
 
 // Logic to check expiration and reset to free

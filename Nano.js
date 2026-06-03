@@ -15610,8 +15610,8 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
           reply(mess.wait)
           const media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
           let anuu = await TelegraPh(media)
-          const getimg = await fetchJson(`https://api-faa.my.id/faa/removebg?url=${anuu}`)
-          NanoBotz.sendMessage(m.chat, { image: { url: getimg.url }, caption: 'Selesai' }, { quoted: m })
+          const getimg = await fetchJson(`https://api.neoxr.eu/api/nobg?image=${anuu}&apikey=chanzxdevw`)
+          NanoBotz.sendMessage(m.chat, { image: { url: getimg.data.no_background }, caption: 'Selesai' }, { quoted: m })
         } catch {
           reply('yah Error kak laporankan ke owner agar di perbaiki')
         }
@@ -28076,19 +28076,19 @@ https://chat.whatsapp.com/${response}
         }
       }
         break
-      case 'cry': case 'kill': case 'hug': case 'pat': case 'lick':
-      case 'kiss': case 'bite': case 'yeet': case 'bully': case 'bonk':
-      case 'wink': case 'poke': case 'nom': case 'slap': case 'smile':
-      case 'wave': case 'awoo': case 'blush': case 'smug': case 'glomp':
-      case 'happy': case 'dance': case 'cringe': case 'cuddle': case 'highfive':
-      case 'shinobu': case 'handhold': {
+      // case 'cry': case 'kill': case 'hug': case 'pat': case 'lick':
+      // case 'kiss': case 'bite': case 'yeet': case 'bully': case 'bonk':
+      // case 'wink': case 'poke': case 'nom': case 'slap': case 'smile':
+      // case 'wave': case 'awoo': case 'blush': case 'smug': case 'glomp':
+      // case 'happy': case 'dance': case 'cringe': case 'cuddle': case 'highfive':
+      // case 'shinobu': case 'handhold': {
 
-        axios.get(`https://api.waifu.pics/sfw/${command}`)
-          .then(({ data }) => {
-            NanoBotz.sendImageAsSticker(from, data.url, m, { packname: packname, author: author })
-          })
-      }
-        break
+      //   axios.get(`https://api.waifu.pics/sfw/${command}`)
+      //     .then(({ data }) => {
+      //       NanoBotz.sendImageAsSticker(from, data.url, m, { packname: packname, author: author })
+      //     })
+      // }
+      //   break
       case 'woof':
       case '8ball':
       case 'goose':
@@ -28533,9 +28533,9 @@ https://chat.whatsapp.com/${response}
       }
         break;
       case 'brat': {
-        if (!q) return replynano('Enter Text');
+        if (!text) return replynano('Enter Text');
         replynano(mess.wait)
-        NanoBotz.sendImageAsSticker(m.chat, `https://api-faa.my.id/faa/brathd?text=${q}`, m, {
+        NanoBotz.sendImageAsSticker(m.chat, `https://api-faa.my.id/faa/brathd?text=${text}`, m, {
           packname: `${packname}`,
           author: `${author}`
         });
@@ -29394,25 +29394,25 @@ ${meg.result}`)
         NanoBotz.sendMessage(m.chat, { video: { url: result912.video_1 }, caption: `${themeemoji} Title : ${result912.title}\n${themeemoji} Category : ${result912.category}\n${themeemoji} Mimetype : ${result912.type}\n${themeemoji} Views : ${result912.views_count}\n${themeemoji} Shares : ${result912.share_count}\n${themeemoji} Source : ${result912.link}\n${themeemoji} Media Url : ${result912.video_1}` }, { quoted: m })
       }
         break
-      case 'trap':
-        if (!isPrem) return replyprem(mess.premium)
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/nsfw/${command}`)
-        NanoBotz.sendMessage(m.chat, { caption: mess.success, image: { url: waifudd.data.url } }, { quoted: m })
-        break
-      case 'hentai-neko':
-      case 'hneko':
-        if (!isPrem) return replyprem(mess.premium)
-        waifudd = await axios.get(`https://waifu.pics/api/nsfw/neko`)
-        NanoBotz.sendMessage(m.chat, { caption: mess.success, image: { url: waifudd.data.url } }, { quoted: m })
-        break
-      case 'hentai-waifu':
-      case 'nwaifu':
-        if (!isPrem) return replyprem(mess.premium)
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/nsfw/waifu`)
-        NanoBotz.sendMessage(m.chat, { caption: mess.success, image: { url: waifudd.data.url } }, { quoted: m })
-        break
+      // case 'trap':
+      //   if (!isPrem) return replyprem(mess.premium)
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/nsfw/${command}`)
+      //   NanoBotz.sendMessage(m.chat, { caption: mess.success, image: { url: waifudd.data.url } }, { quoted: m })
+      //   break
+      // case 'hentai-neko':
+      // case 'hneko':
+      //   if (!isPrem) return replyprem(mess.premium)
+      //   waifudd = await axios.get(`https://waifu.pics/api/nsfw/neko`)
+      //   NanoBotz.sendMessage(m.chat, { caption: mess.success, image: { url: waifudd.data.url } }, { quoted: m })
+      //   break
+      // case 'hentai-waifu':
+      // case 'nwaifu':
+      //   if (!isPrem) return replyprem(mess.premium)
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/nsfw/waifu`)
+      //   NanoBotz.sendMessage(m.chat, { caption: mess.success, image: { url: waifudd.data.url } }, { quoted: m })
+      //   break
       case 'gasm':
         if (!isPrem) return replyprem(mess.premium)
         reply(mess.wait)
@@ -29647,16 +29647,16 @@ ${meg.result}`)
         var xeonyresult = pickRandom(ahegaonsfw)
         NanoBotz.sendMessage(m.chat, { caption: mess.success, image: { url: xeonyresult.url } }, { quoted: m })
         break
-      case 'gifblowjob':
-        if (!m.isGroup) return reply(mess.only.group)
-        if (!AntiNsfw) return replynano(mess.nsfw)
-        reply(mess.wait)
-        let assss = await axios.get("https://api.waifu.pics/nsfw/blowjob")
-        var bobuff = await fetchBuffer(assss.data.url)
-        var bogif = await buffergif(bobuff)
-        await NanoBotz.sendMessage(m.chat, { video: bogif, gifPlayback: true }, { quoted: m }).catch(err => {
-        })
-        break
+      // case 'gifblowjob':
+      //   if (!m.isGroup) return reply(mess.only.group)
+      //   if (!AntiNsfw) return replynano(mess.nsfw)
+      //   reply(mess.wait)
+      //   let assss = await axios.get("https://api.waifu.pics/nsfw/blowjob")
+      //   var bobuff = await fetchBuffer(assss.data.url)
+      //   var bogif = await buffergif(bobuff)
+      //   await NanoBotz.sendMessage(m.chat, { video: bogif, gifPlayback: true }, { quoted: m }).catch(err => {
+      //   })
+      //   break
       case 'gifhentai':
         if (!m.isGroup) return reply(mess.only.group)
         if (!AntiNsfw) return replynano(mess.nsfw)
@@ -29677,182 +29677,182 @@ ${meg.result}`)
         NanoBotz.sendMessage(m.chat, { image: { url: yeha }, caption: mess.success }, { quoted: m })
       }
         break
-      case 'animeawoo': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/awoo`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animemegumin': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/megumin`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animeshinobu': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/shinobu`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animehandhold': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/handhold`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animehighfive': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/highfive`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animecringe': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/cringe`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animedance': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/dance`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animehappy': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/happy`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animeglomp': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/glomp`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animesmug': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/smug`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animeblush': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/blush`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animewave': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/wave`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animesmile': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/smile`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animepoke': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/poke`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animewink': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/wink`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animebonk': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/bonk`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animebully': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/bully`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animeyeet': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/yeet`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animebite': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/bite`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animelick': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/lick`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animekill': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/kill`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
-      case 'animecry': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/cry`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
+      // case 'animeawoo': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/awoo`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animemegumin': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/megumin`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animeshinobu': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/shinobu`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animehandhold': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/handhold`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animehighfive': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/highfive`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animecringe': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/cringe`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animedance': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/dance`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animehappy': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/happy`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animeglomp': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/glomp`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animesmug': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/smug`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animeblush': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/blush`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animewave': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/wave`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animesmile': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/smile`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animepoke': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/poke`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animewink': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/wink`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animebonk': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/bonk`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animebully': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/bully`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animeyeet': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/yeet`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animebite': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/bite`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animelick': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/lick`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animekill': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/kill`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
+      // case 'animecry': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/cry`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
       case 'animewlp': {
         reply(mess.wait)
         waifudd = await axios.get(`https://nekos.life/api/v2/img/wallpaper`)
@@ -29887,14 +29887,14 @@ ${meg.result}`)
       }
         break
 
-      case 'animeneko': {
-        reply(mess.wait)
-        waifudd = await axios.get(`https://waifu.pics/api/sfw/neko`)
-        await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
-          return ('Error!')
-        })
-      }
-        break
+      // case 'animeneko': {
+      //   reply(mess.wait)
+      //   waifudd = await axios.get(`https://waifu.pics/api/sfw/neko`)
+      //   await NanoBotz.sendMessage(m.chat, { image: { url: waifudd.data.url }, caption: mess.success }, { quoted: m }).catch(err => {
+      //     return ('Error!')
+      //   })
+      // }
+      //   break
       case 'animepat': {
         reply(mess.wait)
         waifudd = await axios.get(`https://nekos.life/api/v2/img/pat`)

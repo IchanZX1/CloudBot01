@@ -146,6 +146,35 @@ const sendOTPVerification = async (user, method, whatsapp) => {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SESSION_COOKIE_NAME = 'session_id';
+const SESSION_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+
+function isSecureRequest(req) {
+    return req.secure || req.headers['x-forwarded-proto'] === 'https' || process.env.COOKIE_SECURE === 'true';
+}
+
+function getSessionCookieOptions(req, maxAge = SESSION_MAX_AGE) {
+    return {
+        maxAge,
+        httpOnly: true,
+        sameSite: 'Strict',
+        secure: isSecureRequest(req),
+        path: '/'
+    };
+}
+
+function setSessionCookie(req, res, sessionId) {
+    res.cookie(SESSION_COOKIE_NAME, sessionId, getSessionCookieOptions(req));
+}
+
+function clearSessionCookies(req, res) {
+    const baseOptions = { httpOnly: true, sameSite: 'Strict', path: '/' };
+    res.clearCookie(SESSION_COOKIE_NAME, { ...baseOptions, secure: true });
+    res.clearCookie(SESSION_COOKIE_NAME, { ...baseOptions, secure: false });
+    res.clearCookie('connect.sid', { path: '/' });
+    res.clearCookie('connect.sid', { path: '/', httpOnly: true, sameSite: 'Lax', secure: true });
+    res.clearCookie('connect.sid', { path: '/', httpOnly: true, sameSite: 'Lax', secure: false });
+}
 
 function triggerContentErrorDemo() {
     if (process.env.TIKTOK_ERROR !== '1') return;
@@ -207,57 +236,60 @@ app.use(session({
     cookie: { secure: false, maxAge: 5 * 60 * 1000 } // hanya untuk OAuth flow, 5 menit
 }));
 
+const googleOAuthEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+
 // Passport setup
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL || '/auth/google/callback'
-}, async (accessToken, refreshToken, profile, done) => {
-    try {
-        const email = profile.emails[0].value;
-        const googleId = profile.id;
-        const displayName = profile.displayName || profile.name?.givenName || 'User';
-        const photo = profile.photos?.[0]?.value || '/img/default-profile.png';
+if (googleOAuthEnabled) {
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || '/auth/google/callback'
+    }, async (accessToken, refreshToken, profile, done) => {
+        try {
+            const email = profile.emails?.[0]?.value;
+            if (!email) return done(null, false, { message: 'Email Google tidak tersedia.' });
 
-        let user = await User.findOne({ email });
+            const googleId = profile.id;
+            const displayName = profile.displayName || profile.name?.givenName || email.split('@')[0];
+            const photo = profile.photos?.[0]?.value || '/img/default-profile.png';
 
-        if (user) {
-            // Update googleId jika belum ada
-            if (!user.googleId) {
-                user.googleId = googleId;
-                user.authProvider = 'google';
+            let user = await User.findOne({ $or: [{ googleId }, { email }] });
+
+            if (user) {
+                user.googleId = user.googleId || googleId;
+                user.authProvider = user.authProvider === 'local' ? 'google' : user.authProvider;
                 user.is_verified = true;
-                if (photo && photo !== '/img/default-profile.png') user.profilePic = photo;
+                if (!user.profilePic || user.profilePic === '/img/default-profile.png') user.profilePic = photo;
+                await user.save();
+            } else {
+                const trialPlan = await Pricing.findOne({ name: 'Trial' });
+                const trialDuration = trialPlan ? trialPlan.durationDays : 7;
+                const expiredDate = moment().tz('Asia/Jakarta').add(trialDuration, 'days').toDate();
+
+                user = new User({
+                    username: displayName,
+                    email,
+                    googleId,
+                    authProvider: 'google',
+                    role: 'user',
+                    paket: 'Trial',
+                    _expired: expiredDate,
+                    lastTrialClaim: new Date(),
+                    is_verified: true,
+                    profilePic: photo,
+                    registerIP: null
+                });
                 await user.save();
             }
-        } else {
-            // Buat user baru via Google
-            const trialPlan = await Pricing.findOne({ name: 'Trial' });
-            const trialDuration = trialPlan ? trialPlan.durationDays : 7;
-            const expiredDate = moment().tz('Asia/Jakarta').add(trialDuration, 'days').toDate();
 
-            user = new User({
-                username: displayName,
-                email: email,
-                googleId: googleId,
-                authProvider: 'google',
-                password: null,
-                no_Wa: '',
-                role: 'user',
-                paket: 'Trial',
-                _expired: expiredDate,
-                lastTrialClaim: new Date(),
-                is_verified: true,
-                profilePic: photo
-            });
-            await user.save();
+            return done(null, user);
+        } catch (err) {
+            return done(err, null);
         }
-
-        return done(null, user);
-    } catch (err) {
-        return done(err, null);
-    }
-}));
+    }));
+} else {
+    console.warn('[GOOGLE OAUTH] GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET belum diset. Login Google dinonaktifkan.');
+}
 //auth
 passport.serializeUser((user, done) => done(null, user._id));
 passport.deserializeUser(async (id, done) => {
@@ -323,7 +355,7 @@ const checkUserSession = async (req, res, next) => {
             } else {
                 // If sessionId exists but no user found with it, it means they logged in elsewhere
                 // Clear the cookie so they are prompted to login again
-                res.clearCookie('session_id');
+                clearSessionCookies(req, res);
             }
         } catch (err) {
             console.error('Session check error:', err);
@@ -759,11 +791,7 @@ app.post('/api/profile/update', profileUpload.single('profilePic'), async (req, 
 
         await user.save();
 
-        res.cookie('session_id', newSessionId, {
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-            httpOnly: true,
-            sameSite: 'Strict'
-        });
+        setSessionCookie(req, res, newSessionId);
 
         res.json({ success: true, message: 'Profil berhasil diperbarui!' });
     } catch (err) {
@@ -1288,6 +1316,11 @@ app.get('/api/bot/status', (req, res) => {
 
 
 app.get('/logout', async (req, res) => {
+    const redirectToLogin = () => {
+        clearSessionCookies(req, res);
+        res.redirect('/login?success=Berhasil keluar!');
+    };
+
     if (req.user) {
         try {
             await User.findByIdAndUpdate(req.user._id, { currentSessionId: null });
@@ -1295,8 +1328,28 @@ app.get('/logout', async (req, res) => {
             console.error('Logout error:', e);
         }
     }
-    res.clearCookie('session_id');
-    res.redirect('/login?success=Berhasil keluar!');
+
+    if (typeof req.logout === 'function') {
+        return req.logout((err) => {
+            if (err) console.error('Passport logout error:', err);
+            if (req.session) {
+                return req.session.destroy((sessionErr) => {
+                    if (sessionErr) console.error('Session destroy error:', sessionErr);
+                    redirectToLogin();
+                });
+            }
+            redirectToLogin();
+        });
+    }
+
+    if (req.session) {
+        return req.session.destroy((sessionErr) => {
+            if (sessionErr) console.error('Session destroy error:', sessionErr);
+            redirectToLogin();
+        });
+    }
+
+    redirectToLogin();
 });
 
 app.get('/login', (req, res) => {
@@ -1371,12 +1424,7 @@ app.post('/api/login', async (req, res) => {
         await user.save();
 
         // 🍪 Set cookie
-        res.cookie('session_id', sessionId, {
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-            httpOnly: true,
-            sameSite: 'Strict',
-            secure: true // WAJIB kalau HTTPS
-        });
+        setSessionCookie(req, res, sessionId);
 
         const redirectUrl = (user.email === process.env.ADMIN_EMAIL) ? '/admin/dashboard' : '/dashboard';
         return res.json({ success: true, redirect: redirectUrl });
@@ -1714,10 +1762,22 @@ app.get('/api/admin/bot/session/:botNum', isAdmin, (req, res) => {
 
 // ==================== GOOGLE OAUTH ROUTES ====================
 app.get('/auth/google',
+    (req, res, next) => {
+        if (!googleOAuthEnabled) {
+            return res.redirect('/signup?error=Google OAuth belum dikonfigurasi. Tambahkan GOOGLE_CLIENT_ID dan GOOGLE_CLIENT_SECRET.');
+        }
+        next();
+    },
     passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
 app.get('/auth/google/callback',
+    (req, res, next) => {
+        if (!googleOAuthEnabled) {
+            return res.redirect('/signup?error=Google OAuth belum dikonfigurasi.');
+        }
+        next();
+    },
     passport.authenticate('google', { failureRedirect: '/login?error=Login Google gagal. Coba lagi.' }),
     async (req, res) => {
         try {
@@ -1726,12 +1786,7 @@ app.get('/auth/google/callback',
             user.currentSessionId = sessionId;
             await user.save();
 
-            res.cookie('session_id', sessionId, {
-                maxAge: 30 * 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                sameSite: 'Strict',
-                secure: true
-            });
+            setSessionCookie(req, res, sessionId);
 
             const redirectUrl = (user.email === process.env.ADMIN_EMAIL) ? '/admin/dashboard' : '/dashboard';
             return res.redirect(redirectUrl);
@@ -1742,29 +1797,6 @@ app.get('/auth/google/callback',
     }
 );
 // ==================== END GOOGLE OAUTH ROUTES ====================
-
-// app.get('/logout', (req, res) => {
-//     res.clearCookie('session_id');
-//     res.redirect('/');
-// });
-app.get('/logout', async (req, res) => {
-    if (req.user) {
-        try {
-            await User.findByIdAndUpdate(req.user._id, { currentSessionId: null });
-        } catch (e) {
-            console.error('Logout error:', e);
-        }
-    }
-    req.logout(function(err) {
-        if (err) console.error('Passport logout error:', err);
-        req.session.destroy(function(err) {
-            if (err) console.error('Session destroy error:', err);
-            res.clearCookie('session_id');
-            res.clearCookie('connect.sid');
-            res.redirect('/login?success=Berhasil keluar!');
-        });
-    });
-});
 
 // Error 404
 app.use((req, res) => {
