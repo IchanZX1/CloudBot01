@@ -28534,14 +28534,15 @@ https://chat.whatsapp.com/${response}
         break;
       case 'brat': {
         if (!text) return replynano('Enter Text');
+     //     console.log("[DEBUG BRAT] ", text)
         replynano(mess.wait)
-        NanoBotz.sendImageAsSticker(m.chat, `https://api-faa.my.id/faa/brathd?text=${text}`, m, {
+        NanoBotz.sendImageAsSticker(m.chat, `https://api-faa.my.id/faa/brathd?text=${encodeURIComponent(text)}`, m, {
           packname: `${packname}`,
           author: `${author}`
         });
       }
         break;
-      case 's':
+        case 's':
       case 'stiker':
       case 'sticker': {
         if (!quoted) return reply(`Send/Reply Images/Videos/Gifs With Captions ${prefix + command}\nVideo Duration 1-9 Seconds`)
