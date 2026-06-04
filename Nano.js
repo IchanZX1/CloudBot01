@@ -115,6 +115,7 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
   let set_proses = JSON.parse(fs.readFileSync(botDir + 'set_proses.json'))
   let set_done = JSON.parse(fs.readFileSync(botDir + 'set_done.json'))
   let db_respon_list = JSON.parse(fs.readFileSync(botDir + 'list-message.json'));
+  const responListPath = botDir + 'list-message.json'
 
 
   // Load Isolated Messaging and Command Config
@@ -3472,22 +3473,10 @@ NEW UPDATE FEATURES! 🚀
           "id": ".islamimenu"
         },
         {
-          "header": "DOMAIN MENU",
-          "title": "click to display",
-          "description": "Displays The List Of Domain Features",
-          "id": ".domainmenu"
-        },
-        {
           "header": "PUSH MENU",
           "title": "click to display",
           "description": "Displays The List Of Push Features",
           "id": ".pushmenu"
-        },
-        {
-          "header": "CPANEL MENU",
-          "title": "click to display",
-          "description": "Displays The List Of Control Panel Features",
-          "id": ".cpanelmenu"
         },
         {
           "header": "DOWNLOAD MENU",
@@ -3532,12 +3521,6 @@ NEW UPDATE FEATURES! 🚀
           "id": ".animemenu"
         },
         {
-          "header": "NSFW MENU",
-          "title": "click to display",
-          "description": "Displays The List Of NSFW Features",
-          "id": ".nsfwmenu"
-        },
-        {
           "header": "RANDOM PHOTO MENU",
           "title": "click to display",
           "description": "Displays The List Of Random Photo Features",
@@ -3554,12 +3537,6 @@ NEW UPDATE FEATURES! 🚀
           "title": "click to display",
           "description": "Displays The List Of Stalker Features",
           "id": ".stalkermenu"
-        },
-        {
-          "header": "BUG MENU",
-          "title": "click to display",
-          "description": "Displays The List Of Bug Features",
-          "id": ".bugmenu"
         },
         {
           "header": "OTHER MENU",
@@ -3707,22 +3684,10 @@ NEW UPDATE FEATURES! 🚀
           "id": ".islamimenu"
         },
         {
-          "header": "DOMAIN MENU",
-          "title": "click to display",
-          "description": "Displays The List Of Domain Features",
-          "id": ".domainmenu"
-        },
-        {
           "header": "PUSH MENU",
           "title": "click to display",
           "description": "Displays The List Of Push Features",
           "id": ".pushmenu"
-        },
-        {
-          "header": "CPANEL MENU",
-          "title": "click to display",
-          "description": "Displays The List Of Control Panel Features",
-          "id": ".cpanelmenu"
         },
         {
           "header": "DOWNLOAD MENU",
@@ -3767,12 +3732,6 @@ NEW UPDATE FEATURES! 🚀
           "id": ".animemenu"
         },
         {
-          "header": "NSFW MENU",
-          "title": "click to display",
-          "description": "Displays The List Of NSFW Features",
-          "id": ".nsfwmenu"
-        },
-        {
           "header": "RANDOM PHOTO MENU",
           "title": "click to display",
           "description": "Displays The List Of Random Photo Features",
@@ -3789,12 +3748,6 @@ NEW UPDATE FEATURES! 🚀
           "title": "click to display",
           "description": "Displays The List Of Stalker Features",
           "id": ".stalkermenu"
-        },
-        {
-          "header": "BUG MENU",
-          "title": "click to display",
-          "description": "Displays The List Of Bug Features",
-          "id": ".bugmenu"
         },
         {
           "header": "OTHER MENU",
@@ -3867,8 +3820,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: '120363365678318064@newsletter',
+                    newsletterName: "Cloudbot Updates",
                     serverMessageId: 143
                   }
                 }
@@ -20766,6 +20719,7 @@ ${item.map(v => `${rpg.emoticon(v)}${v}`.trim()).join('\n')}
       }
         break
       //==================================================================
+      case 'shop':
       case 'buy': {
         if (!m.isGroup) return reply(mess.only.group)
         function isNumber(number) {
@@ -27283,7 +27237,7 @@ CPU: ${server.limits.cpu}%
         if (db_respon_list.length === 0) return reply(`Belum ada list message di database`)
         if (!text) return reply(`Gunakan dengan cara ${prefix + command} *key*\n\n_Contoh_\n\n${prefix + command} hello`)
         if (!isAlreadyResponList(m.chat, q.toLowerCase(), db_respon_list)) return reply(`List respon dengan key *${q}* tidak ada di database!`)
-        delResponList(m.chat, q.toLowerCase(), db_respon_list)
+        delResponList(m.chat, q.toLowerCase(), db_respon_list, responListPath)
         reply(`Sukses delete list message dengan key *${q}*`)
         break
       case 'addlist':
@@ -27302,12 +27256,12 @@ CPU: ${server.limits.cpu}%
             body: fd
           }).then(res => res.json())
             .then((json) => {
-              addResponList(m.chat, args1, args2, true, `https://telegra.ph${json[0].src}`, db_respon_list)
+              addResponList(m.chat, args1, args2, true, `https://telegra.ph${json[0].src}`, db_respon_list, responListPath)
               reply(`Sukses set list message dengan key : *${args1}*`)
               if (fs.existsSync(media)) fs.unlinkSync(media)
             })
         } else {
-          addResponList(m.chat, args1, args2, false, '-', db_respon_list)
+          addResponList(m.chat, args1, args2, false, '-', db_respon_list, responListPath)
           reply(`Sukses set list message dengan key : *${args1}*`)
         }
         break
@@ -27317,7 +27271,7 @@ CPU: ${server.limits.cpu}%
         var args1 = q.split("|")[0].toLowerCase()
         var args2 = q.split("|")[1]
         if (!q.includes("|")) return reply(`Gunakan dengan cara ${prefix + command} *key|response*\n\n_Contoh_\n\n${prefix + command} tes|apa`)
-        if (!isAlreadyResponListGroup(m.chat, db_respon_list)) return reply(`Maaf, untuk key *${args1}* belum terdaftar di group ini`)
+        if (!isAlreadyResponList(m.chat, args1, db_respon_list)) return reply(`Maaf, untuk key *${args1}* belum terdaftar di group ini`)
         if (/image/.test(mime)) {
           let media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
           const fd = new FormData();
@@ -27327,12 +27281,12 @@ CPU: ${server.limits.cpu}%
             body: fd
           }).then(res => res.json())
             .then((json) => {
-              updateResponList(m.chat, args1, args2, true, `https://telegra.ph${json[0].src}`, db_respon_list)
+              updateResponList(m.chat, args1, args2, true, `https://telegra.ph${json[0].src}`, db_respon_list, responListPath)
               reply(`Sukses update respon list dengan key *${args1}*`)
               if (fs.existsSync(media)) fs.unlinkSync(media)
             })
         } else {
-          updateResponList(m.chat, args1, args2, false, '-', db_respon_list)
+          updateResponList(m.chat, args1, args2, false, '-', db_respon_list, responListPath)
           reply(`Sukses update respon list dengan key *${args1}*`)
         }
         break
