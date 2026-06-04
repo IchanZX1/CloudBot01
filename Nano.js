@@ -16,6 +16,7 @@ const { isSetWelcome, addSetWelcome, changeSetWelcome, removeSetWelcome } = requ
 const { Primbon } = require('scrape-primbon')
 const primbon = new Primbon()
 const canvafy = require('canvafy')
+const CanvasFFLobby = require('./classes/canvasFF')
 const { isSetLeft, addSetLeft, removeSetLeft, changeSetLeft } = require('./lib/setleft.js');
 const { getTextSetWelcome } = require('./lib/setwelcome.js');
 const { getTextSetLeft } = require('./lib/setleft.js');
@@ -3180,6 +3181,94 @@ Type *surrender* to surrender and admit defeat`
           if (fs.existsSync(mee)) fs.unlinkSync(mee)
         } else {
           replynano(`Kirim/Balas Gambar Dengan Caption ${prefix + command} text1|text2`)
+        }
+      }
+        break
+      case 'fakeff': case 'fakelobbyff': case 'fflobby': {
+        const ffLobby = new CanvasFFLobby()
+        const templates = ffLobby.listTemplates()
+        const listText = `*FAKE LOBBY FF*
+
+Template single:
+${templates.single.map((v) => `- ${v}`).join('\n')}
+
+Template duo:
+${templates.duo.map((v) => `- ${v}`).join('\n')}
+
+Cara pakai:
+${prefix + command} single_01|Ichandev
+${prefix + command} duo_01|NamaKiri|NamaKanan
+
+Maksimal nama: 25 karakter`
+
+        if (!text || ['list', 'template', 'templates'].includes(text.trim().toLowerCase())) {
+          return replynano(listText)
+        }
+
+        const rawInput = text.trim()
+        const parts = rawInput.includes('|')
+          ? rawInput.split('|').map((item) => item.trim())
+          : rawInput.split(/\s+/)
+        const template = (parts.shift() || '').toLowerCase()
+        const type = ffLobby.getTemplateType(template)
+
+        if (!type) return replynano(`Template tidak ditemukan.\n\n${listText}`)
+
+        try {
+          let buffer
+          if (type === 'single') {
+            const name = rawInput.includes('|') ? parts.join('|').trim() : parts.join(' ').trim()
+            if (!name) return replynano(`Masukkan nama.\nContoh: ${prefix + command} ${template}|mylia ai`)
+            buffer = await ffLobby.renderSingle(name, { template })
+          } else {
+            let leftName
+            let rightName
+
+            if (rawInput.includes('|')) {
+              leftName = parts[0]
+              rightName = parts[1]
+            } else {
+              const names = parts.join(' ').split(',').map((item) => item.trim())
+              leftName = names[0]
+              rightName = names[1]
+            }
+
+            if (!leftName || !rightName) {
+              return replynano(`Masukkan nama kiri dan kanan.\nContoh: ${prefix + command} ${template}|NamaKiri|NamaKanan`)
+            }
+
+            buffer = await ffLobby.renderDuo(leftName, rightName, { template })
+          }
+
+          await NanoBotz.sendMessage(m.chat, { image: buffer, caption: `Done by ${botname}` }, { quoted: m })
+        } catch (err) {
+          replynano(err.message || String(err))
+        }
+      }
+        break
+      case 'hytamkan': case 'tohitam': case 'irengkan': {
+        if (!/webp/.test(mime) && /image/.test(mime)) {
+          let { TelegraPh } = require('./lib/uploader.js')
+          mee = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+          mem = await TelegraPh(mee)
+          meme = `https://api-faa.my.id/faa/tohitam?url=${mem}`
+          memek = await NanoBotz.sendImageAsSticker(m.chat, meme, m, { packname: packname, author: author })
+          if (fs.existsSync(mee)) fs.unlinkSync(mee)
+        } else {
+          replynano(`Kirim/Balas Gambar Dengan Caption ${prefix + command}`)
+        }
+      }
+        break
+      case 'toputih': case 'putihkan': {
+        if (!/webp/.test(mime) && /image/.test(mime)) {
+          let { TelegraPh } = require('./lib/uploader.js')
+          mee = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+          mem = await TelegraPh(mee)
+          meme = `https://api-faa.my.id/faa/toputih?url=${mem}`
+          memek = await NanoBotz.sendImageAsSticker(m.chat, meme, m, { packname: packname, author: author })
+          if (fs.existsSync(mee)) fs.unlinkSync(mee)
+        } else {
+          replynano(`Kirim/Balas Gambar Dengan Caption ${prefix + command}`)
         }
       }
         break
