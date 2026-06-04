@@ -1076,7 +1076,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -- Signup Page --
-    const signupForm = document.querySelector('form[action="/signup"]');
+    const signupForm = document.querySelector('form[action="/signup"]:not(#signup-form)');
     if (signupForm) {
         signupForm.addEventListener('submit', async function (e) {
             e.preventDefault();

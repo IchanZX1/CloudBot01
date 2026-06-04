@@ -30,9 +30,17 @@ const UserSchema = new mongoose.Schema({
     profilePic: { type: String, default: '/img/default-profile.png' },
     currentSessionId: { type: String, default: null },
     registerIP: { type: String, default: null },
-    googleId: { type: String, default: null, unique: true, sparse: true },
+    googleId: { type: String, default: undefined },
     authProvider: { type: String, enum: ['local', 'google'], default: 'local' }
 }, { timestamps: true });
+
+UserSchema.index(
+    { googleId: 1 },
+    {
+        unique: true,
+        partialFilterExpression: { googleId: { $type: 'string' } }
+    }
+);
 
 // Logic to check expiration and reset to free
 UserSchema.methods.checkExpiration = function () {

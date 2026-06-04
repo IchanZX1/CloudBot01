@@ -196,13 +196,22 @@ mongoose.set('strictQuery', false);
 async function ensureGoogleIdIndex() {
     try {
         const indexes = await User.collection.indexes();
-        const googleIndex = indexes.find(index => index.name === 'googleId_1');
-        const hasPartialStringIndex = googleIndex?.partialFilterExpression?.googleId?.$type === 'string';
+        const googleIndexes = indexes.filter(index => {
+            return index.key && index.key.googleId === 1 && Object.keys(index.key).length === 1;
+        });
 
-        if (googleIndex && !hasPartialStringIndex) {
-            await User.collection.dropIndex('googleId_1');
-            console.log('[MONGODB] Dropped legacy googleId_1 index.');
+        for (const googleIndex of googleIndexes) {
+            const hasPartialStringIndex = googleIndex.partialFilterExpression?.googleId?.$type === 'string';
+            if (!hasPartialStringIndex) {
+                await User.collection.dropIndex(googleIndex.name);
+                console.log(`[MONGODB] Dropped legacy ${googleIndex.name} index.`);
+            }
         }
+
+        await User.updateMany(
+            { $or: [{ googleId: null }, { googleId: '' }] },
+            { $unset: { googleId: '' } }
+        );
 
         await User.collection.createIndex(
             { googleId: 1 },
@@ -212,10 +221,25 @@ async function ensureGoogleIdIndex() {
                 partialFilterExpression: { googleId: { $type: 'string' } }
             }
         );
-        await User.updateMany({ googleId: null }, { $unset: { googleId: '' } });
     } catch (err) {
         console.error('[MONGODB] Failed ensuring googleId index:', err.message);
     }
+}
+
+function isDuplicateGoogleIdError(err) {
+    return err?.code === 11000 && (
+        err?.keyPattern?.googleId === 1 ||
+        Object.prototype.hasOwnProperty.call(err?.keyValue || {}, 'googleId') ||
+        /index:\s*googleId_1/.test(err?.message || '')
+    );
+}
+
+function isDuplicateEmailError(err) {
+    return err?.code === 11000 && (
+        err?.keyPattern?.email === 1 ||
+        Object.prototype.hasOwnProperty.call(err?.keyValue || {}, 'email') ||
+        /index:\s*email_1/.test(err?.message || '')
+    );
 }
 
 // Database Connection
@@ -1585,7 +1609,7 @@ app.post('/api/signup', async (req, res) => {
             normalizedWa = '62' + normalizedWa.slice(1);
         }
 
-        const newUser = new User({
+        const userPayload = {
             username,
             email,
             password,
@@ -1596,9 +1620,19 @@ app.post('/api/signup', async (req, res) => {
             lastTrialClaim: new Date(),
             verify_method,
             registerIP: clientIP
-        });
+        };
 
-        await newUser.save();
+        let newUser = new User(userPayload);
+        try {
+            await newUser.save();
+        } catch (err) {
+            if (!isDuplicateGoogleIdError(err)) throw err;
+
+            console.warn('[MONGODB] Signup hit legacy googleId duplicate index. Repairing index and retrying once...');
+            await ensureGoogleIdIndex();
+            newUser = new User(userPayload);
+            await newUser.save();
+        }
 
         const otpResult = await sendOTPVerification(newUser, verify_method, normalizedWa);
 
@@ -1615,6 +1649,12 @@ app.post('/api/signup', async (req, res) => {
 
     } catch (err) {
         console.error('Signup error:', err);
+        if (isDuplicateEmailError(err)) {
+            return res.status(400).json({ error: 'Email sudah terdaftar!' });
+        }
+        if (isDuplicateGoogleIdError(err)) {
+            return res.status(400).json({ error: 'Sistem login Google sedang diperbarui. Silakan coba daftar lagi.' });
+        }
         return res.status(500).json({ error: 'Terjadi kesalahan saat mendaftar!' });
     }
 });
