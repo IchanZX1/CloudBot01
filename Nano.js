@@ -282,6 +282,9 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
     const from = m.key.remoteJid
 
      // Helper Functions
+
+     const qtoko = {key: {participant: '0@s.whatsapp.net', ...(m.chat ? {remoteJid: `status@broadcast`} : {})}, message: {locationMessage: {name: `${botname}\nIndonesia 🇮🇩 , central java자바 섬`,jpegThumbnail: ""}}}
+
     const imgUrl = "https://i.pinimg.com/736x/07/51/1f/07511f145dce3079aade94edd1f936d2.jpg"
 
 const reply = async (teks) => {
@@ -293,17 +296,20 @@ const reply = async (teks) => {
     NanoBotz.sendMessage(m.chat, {
         text: teks,
         contextInfo: {
+          isForwarded: true,
+          forwardingScore: 256,
       externalAdReply: {
-        showAdAttribution: true,
+        showAdAttribution: false,
         mediaType: 2,
-        mediaUrl: "https://whatsapp.com/channel/0029Vb6q78jBPzjTckXWh83l",
-        title: "WELCOME FORM ME",
-        body: "Botnya Ichan",
+        mediaUrl: "https://whatsapp.com/channel/0029Var18czJpe8edCUDZF3e",
+        title: "ִ ࣪𖤐 𝑪𝒍𝒐𝒖𝒅𝑯𝒐𝒔𝒕𝒊𝒏𝒈 𝑩𝒐𝒕.ᐟ",
+        body: `‎ᴠͥɪͣᴘͫ✮⃝@${botname}࿐✮𝄟⃝
+‎`,
         sourceUrl: "",
-        thumbnail: thumbBuffer
+        thumbnail: thumbnail
       }
     }
-      }, { quoted: m })
+      }, { quoted: qtoko })
 }
 
     const replynano = (teks) => {
@@ -317,28 +323,45 @@ const reply = async (teks) => {
       NanoBotz.sendMessage(m.chat, {
         text: teks,
         contextInfo: {
-          mentionedJid: [sender],
-          groupMentions: [],
           isForwarded: true,
-          forwardedNewsletterMessageInfo: {
-            newsletterJid: idsal,
-            newsletterName: saluran,
-            serverMessageId: -1
-          },
-          businessMessageForwardInfo: {
-            businessOwnerJid: NanoBotz.user.id
-          },
           forwardingScore: 256,
-          externalAdReply: {
-            title: `${namaowner} ( ${wm} )`,
-            body: namabot,
-            thumbnail: thumbnail,
-            sourceUrl: "https://zxcoderid.web.id/",
-            mediaType: 1,
-            renderLargerThumbnail: false
-          }
-        }
-      }, { quoted: m })
+      externalAdReply: {
+        showAdAttribution: false,
+        mediaType: 2,
+        mediaUrl: "https://whatsapp.com/channel/0029Var18czJpe8edCUDZF3e",
+        title: "ִ ࣪𖤐 𝑪𝒍𝒐𝒖𝒅𝑯𝒐𝒔𝒕𝒊𝒏𝒈 𝑩𝒐𝒕.ᐟ",
+        body: `‎ᴠͥɪͣᴘͫ✮⃝@${botname}࿐✮𝄟⃝
+‎`,
+        sourceUrl: "",
+        thumbnail: thumbnail
+      }
+    }
+      }, { quoted: qtoko })
+      // NanoBotz.sendMessage(m.chat, {
+      //   text: teks,
+      //   contextInfo: {
+      //     mentionedJid: [sender],
+      //     groupMentions: [],
+      //     isForwarded: true,
+      //     forwardedNewsletterMessageInfo: {
+      //       newsletterJid: idsal,
+      //       newsletterName: saluran,
+      //       serverMessageId: -1
+      //     },
+      //     businessMessageForwardInfo: {
+      //       businessOwnerJid: NanoBotz.user.id
+      //     },
+      //     forwardingScore: 256,
+      //     externalAdReply: {
+      //       title: `${namaowner} ( ${wm} )`,
+      //       body: namabot,
+      //       thumbnail: thumbnail,
+      //       sourceUrl: "https://zxcoderid.web.id/",
+      //       mediaType: 1,
+      //       renderLargerThumbnail: false
+      //     }
+      //   }
+      // }, { quoted: m })
     }
 
     function clockString(ms) {
@@ -3613,8 +3636,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: '120363365678318064@newsletter',
+                    newsletterName: "Cloudbot Updates",
                     serverMessageId: 143
                   }
                 }
