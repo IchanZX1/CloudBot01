@@ -204,10 +204,10 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
     const nativeSendMessage = NanoBotz.sendMessage.bind(NanoBotz)
     const nativeRelayMessage = NanoBotz.relayMessage.bind(NanoBotz)
     NanoBotz.sendMessage = (jid, message, options = {}) => {
-      return nativeSendMessage(jid, sanitizeSendMessagePayload(message), sanitizeSendMessageOptions(options))
+      return nativeSendMessage(jid, message, options)
     }
     NanoBotz.relayMessage = (jid, message, options = {}) => {
-      return nativeRelayMessage(jid, stripContextInfoDeep(message), sanitizeSendMessageOptions(options))
+      return nativeRelayMessage(jid, message, options)
     }
     NanoBotz.__contextInfoSanitized = true
   }
@@ -281,10 +281,30 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
     const sender = m.isGroup ? (m.key.participant ? m.key.participant : m.participant) : m.key.remoteJid
     const from = m.key.remoteJid
 
-    // Helper Functions
-    const reply = (teks) => {
-      NanoBotz.sendMessage(from, { text: teks }, { quoted: m })
+     // Helper Functions
+    const imgUrl = "https://i.pinimg.com/736x/07/51/1f/07511f145dce3079aade94edd1f936d2.jpg"
+
+const reply = async (teks) => {
+  // ambil buffer thumbnail
+  const thumbBuffer = Buffer.from(
+    await (await fetch(imgUrl)).arrayBuffer()
+  )
+    
+    NanoBotz.sendMessage(m.chat, {
+        text: teks,
+        contextInfo: {
+      externalAdReply: {
+        showAdAttribution: true,
+        mediaType: 2,
+        mediaUrl: "https://whatsapp.com/channel/0029Vb6q78jBPzjTckXWh83l",
+        title: "WELCOME FORM ME",
+        body: "Botnya Ichan",
+        sourceUrl: "",
+        thumbnail: thumbBuffer
+      }
     }
+      }, { quoted: m })
+}
 
     const replynano = (teks) => {
       const namabot = NanoBotz.userConfig?.botname || global.botname;
@@ -983,11 +1003,8 @@ During ${clockString(new Date - user.afkTime)}
       }
     }
     async function sendNanoBotzMessage(chatId, message, options = {}) {
-      const cleanMessage = sanitizeSendMessagePayload(message)
-      const cleanOptions = sanitizeSendMessageOptions(options)
-      let generate = await generateWAMessage(chatId, cleanMessage, cleanOptions)
+      let generate = await generateWAMessage(chatId, message, options)
       let type2 = getContentType(generate.message)
-      if (type2 && generate.message[type2]) delete generate.message[type2].contextInfo
       return await NanoBotz.relayMessage(chatId, generate.message, { messageId: generate.key.id })
     }
 
@@ -1656,11 +1673,9 @@ During ${clockString(new Date - user.afkTime)}
       let mtype = Object.keys(message.message)[0]
       let content = await generateForwardMessageContent(message, forceForward)
       let ctype = Object.keys(content)[0]
-      if (content[ctype]) delete content[ctype].contextInfo
-      const cleanOptions = sanitizeSendMessageOptions(options)
-      const waMessage = await generateWAMessageFromContent(jid, content, cleanOptions ? {
+      const waMessage = await generateWAMessageFromContent(jid, content, options ? {
         ...content[ctype],
-        ...cleanOptions
+        ...options
       } : {})
       await NanoBotz.relayMessage(jid, waMessage.message, { messageId: waMessage.key.id })
       return waMessage

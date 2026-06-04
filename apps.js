@@ -193,10 +193,36 @@ app.locals.version = Date.now();
 // Configuration
 mongoose.set('strictQuery', false);
 
+async function ensureGoogleIdIndex() {
+    try {
+        const indexes = await User.collection.indexes();
+        const googleIndex = indexes.find(index => index.name === 'googleId_1');
+        const hasPartialStringIndex = googleIndex?.partialFilterExpression?.googleId?.$type === 'string';
+
+        if (googleIndex && !hasPartialStringIndex) {
+            await User.collection.dropIndex('googleId_1');
+            console.log('[MONGODB] Dropped legacy googleId_1 index.');
+        }
+
+        await User.collection.createIndex(
+            { googleId: 1 },
+            {
+                unique: true,
+                name: 'googleId_1',
+                partialFilterExpression: { googleId: { $type: 'string' } }
+            }
+        );
+        await User.updateMany({ googleId: null }, { $unset: { googleId: '' } });
+    } catch (err) {
+        console.error('[MONGODB] Failed ensuring googleId index:', err.message);
+    }
+}
+
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI)
     .then(async () => {
         console.log('Connected to MongoDB Atlas');
+        await ensureGoogleIdIndex();
         // Seed default plans if they don't exist
         const count = await Pricing.countDocuments();
         if (count === 0) {
