@@ -6,6 +6,8 @@ class CanvasFFLobby {
   constructor(options = {}) {
     this.rootDir = options.rootDir || path.join(__dirname, '..', '..');
     this.fontsDir = options.fontsDir || path.join(this.rootDir, 'fonts');
+    this.fontPath = options.fontPath || path.join(__dirname, 'Oxanium-VariableFont_wght.ttf');
+    this.fontAlias = options.fontAlias || 'FFLobbyOxanium';
     this.templateDir = options.templateDir || path.join(this.rootDir, 'lib', 'free fire');
     this.maxNameLength = options.maxNameLength || 25;
 
@@ -34,61 +36,141 @@ class CanvasFFLobby {
     };
 
     this.nameLayouts = {
-      single: {
-        default: {
-          main: { x: 0.58, y: 0.805, maxWidth: 0.35, maxSize: 38, minSize: 24, color: '#ffd447' },
-        },
-        single_01: {
-          main: { x: 0.58, y: 0.797, maxWidth: 0.37, maxSize: 46, minSize: 24, color: '#ffd447' },
-        },
-        single_02: {
-          main: { x: 0.49, y: 0.797, maxWidth: 0.37, maxSize: 46, minSize: 24, color: '#ffd447' },
-        },
-        single_03: {
-          main: { x: 0.52, y: 0.797, maxWidth: 0.37, maxSize: 46, minSize: 24, color: '#ffd447' },
-        },
-        single_04: {
-          main: { x: 0.50, y: 0.797, maxWidth: 0.37, maxSize: 46, minSize: 24, color: '#ffd447' },
-        },
-        single_05: {
-          main: { x: 0.52, y: 0.799, maxWidth: 0.37, maxSize: 46, minSize: 24, color: '#ffd447' },
-        },
-        single_06: {
-          main: { x: 0.51, y: 0.797, maxWidth: 0.37, maxSize: 46, minSize: 24, color: '#ffd447' },
-        },
-      },
-      duo: {
-        default: {
-          left: { x: 0.25, y: 0.79, maxWidth: 0.28, maxSize: 34, minSize: 22, color: '#ffd447' },
-          right: { x: 0.76, y: 0.71, maxWidth: 0.25, maxSize: 34, minSize: 22, color: '#ffd447' },
-        },
-        duo_01: {
-          left: { x: 0.22, y: 0.797, maxWidth: 0.37, maxSize: 46, minSize: 24, color: '#ffd447' },
-          right: { x: 0.79, y: 0.72, maxWidth: 0.25, maxSize: 34, minSize: 22, color: '#ffd447' },
-        },
-        duo_02: {
-          left: { x: 0.20, y: 0.797, maxWidth: 0.37, maxSize: 46, minSize: 24, color: '#ffd447' },
-          right: { x: 0.79, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
-        },
-        duo_03: {
-          left: { x: 0.20, y: 0.797, maxWidth: 0.37, maxSize: 46, minSize: 24, color: '#ffd447' },
-          right: { x: 0.74, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
-        },
-        duo_04: {
-          left: { x: 0.20, y: 0.797, maxWidth: 0.37, maxSize: 46, minSize: 24, color: '#ffd447' },
-          right: { x: 0.79, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
-        },
-        duo_05: {
-          left: { x: 0.22, y: 0.797, maxWidth: 0.37, maxSize: 46, minSize: 24, color: '#ffd447' },
-          right: { x: 0.77, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
-        },
-      },
-    };
+  single: {
+    default: {
+      main: { x: 0.58, y: 0.805, maxWidth: 0.35, maxSize: 38, minSize: 24, color: '#ffd447' },
+    },
+    single_01: {
+  main: {
+    x: 0.58,        // kiri kanan
+    y: 0.797,       // atas bawah
+    maxWidth: 0.37, // batas lebar teks
+    maxSize: 46,    // ukuran maksimal
+    minSize: 24,    // ukuran minimal
+    color: '#ffd447'
+  },
+},
+    single_02: {
+  main: {
+    x: 0.49,        // kiri kanan
+    y: 0.797,       // atas bawah
+    maxWidth: 0.37, // batas lebar teks
+    maxSize: 46,    // ukuran maksimal
+    minSize: 24,    // ukuran minimal
+    color: '#ffd447'
+  },
+},
+    single_03: {
+  main: {
+    x: 0.52,        // kiri kanan
+    y: 0.797,       // atas bawah
+    maxWidth: 0.37, // batas lebar teks
+    maxSize: 46,    // ukuran maksimal
+    minSize: 24,    // ukuran minimal
+    color: '#ffd447'
+  },
+},
+    single_04: {
+  main: {
+    x: 0.50,        // kiri kanan
+    y: 0.797,       // atas bawah
+    maxWidth: 0.37, // batas lebar teks
+    maxSize: 46,    // ukuran maksimal
+    minSize: 24,    // ukuran minimal
+    color: '#ffd447'
+  },
+},
+    single_05: {
+  main: {
+    x: 0.52,        // kiri kanan
+    y: 0.799,       // atas bawah
+    maxWidth: 0.37, // batas lebar teks
+    maxSize: 46,    // ukuran maksimal
+    minSize: 24,    // ukuran minimal
+    color: '#ffd447'
+  },
+},
+    single_06: {
+  main: {
+    x: 0.51,        // kiri kanan
+    y: 0.797,       // atas bawah
+    maxWidth: 0.37, // batas lebar teks
+    maxSize: 46,    // ukuran maksimal
+    minSize: 24,    // ukuran minimal
+    color: '#ffd447'
+  },
+},
+  },
+  duo: {
+    default: {
+      left: { x: 0.25, y: 0.79, maxWidth: 0.28, maxSize: 34, minSize: 22, color: '#ffd447' },
+      right: { x: 0.76, y: 0.71, maxWidth: 0.25, maxSize: 34, minSize: 22, color: '#ffd447' },
+    },
+    duo_01: {
+      left: {
+    x: 0.22,        // kiri kanan
+    y: 0.797,       // atas bawah
+    maxWidth: 0.37, // batas lebar teks
+    maxSize: 46,    // ukuran maksimal
+    minSize: 24,    // ukuran minimal
+    color: '#ffd447'
+  },
+      right: { x: 0.79, y: 0.72, maxWidth: 0.25, maxSize: 34, minSize: 22, color: '#ffd447' },
+    },
+    duo_02: {
+      left: {
+    x: 0.20,        // kiri kanan
+    y: 0.797,       // atas bawah
+    maxWidth: 0.37, // batas lebar teks
+    maxSize: 46,    // ukuran maksimal
+    minSize: 24,    // ukuran minimal
+    color: '#ffd447'
+  },
+      right: { x: 0.79, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
+    },
+    duo_03: {
+      left: {
+    x: 0.20,        // kiri kanan
+    y: 0.797,       // atas bawah
+    maxWidth: 0.37, // batas lebar teks
+    maxSize: 46,    // ukuran maksimal
+    minSize: 24,    // ukuran minimal
+    color: '#ffd447'
+  },
+      right: { x: 0.74, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
+    },
+    duo_04: {
+      left: {
+    x: 0.20,        // kiri kanan
+    y: 0.797,       // atas bawah
+    maxWidth: 0.37, // batas lebar teks
+    maxSize: 46,    // ukuran maksimal
+    minSize: 24,    // ukuran minimal
+    color: '#ffd447'
+  },
+      right: { x: 0.79, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
+    },
+    duo_05: {
+      left: {
+    x: 0.22,        // kiri kanan
+    y: 0.797,       // atas bawah
+    maxWidth: 0.37, // batas lebar teks
+    maxSize: 46,    // ukuran maksimal
+    minSize: 24,    // ukuran minimal
+    color: '#ffd447'
+  },
+      right: { x: 0.77, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
+    },
+  },
+};
 
     this.loadFonts();
   }
 
   loadFonts() {
+    if (fs.existsSync(this.fontPath)) {
+      GlobalFonts.registerFromPath(this.fontPath, this.fontAlias);
+    }
     if (fs.existsSync(this.fontsDir)) GlobalFonts.loadFontsFromDir(this.fontsDir);
     GlobalFonts.loadSystemFonts();
   }
@@ -149,22 +231,24 @@ class CanvasFFLobby {
   }
 
   drawNameText(ctx, text, x, y, fontSize, color = '#ffd447') {
-    ctx.save();
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = `800 ${fontSize}px "Rajdhani", "Russo One", "Orbitron", sans-serif`;
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = Math.max(3, fontSize * 0.08);
-    ctx.strokeStyle = 'rgba(40,20,0,0.85)';
-    ctx.shadowColor = 'rgba(0,0,0,0.85)';
-    ctx.shadowBlur = 5;
-    ctx.strokeText(text, x, y);
-    ctx.shadowColor = '#ffbd22';
-    ctx.shadowBlur = 4;
-    ctx.fillStyle = color;
-    ctx.fillText(text, x, y);
-    ctx.restore();
-  }
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `800 ${fontSize}px "${this.fontAlias}", "Oxanium", "Rajdhani", "Russo One", "Orbitron", sans-serif`;
+  ctx.lineJoin = 'round';
+
+  ctx.lineWidth = Math.max(3, fontSize * 0.08);
+  ctx.strokeStyle = 'rgba(40,20,0,0.85)';
+  ctx.shadowColor = 'rgba(0,0,0,0.85)';
+  ctx.shadowBlur = 5;
+  ctx.strokeText(text, x, y);
+
+  ctx.shadowColor = '#ffbd22';
+  ctx.shadowBlur = 4;
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
 
   drawNameByLayout(ctx, text, layout, W, H) {
     const x = this.toPixel(layout.x, W);
