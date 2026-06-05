@@ -3259,6 +3259,25 @@ Maksimal nama: 25 karakter`
         }
       }
         break
+      case 'ipquote': case 'iqc': {
+        if(!text) return replynano(`Usage: ${prefix + command} ZXcoderID Solution Hosting`)
+          function getJakartaTime() {
+  return new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(new Date())
+    .replace(".", ":");
+}
+
+const time = getJakartaTime();
+const chat_time = getJakartaTime();
+          meme = `https://api.neoxr.eu/api/iqc?text=${encodeURIComponent(text)}&time=${time}&chat_time=${chat_time}&apikey=chanzxdevw`
+          await NanoBotz.sendMessage(m.chat, { image: { url: meme }, caption: mess.success }, { quoted: m })
+      }
+        break
       case 'toputih': case 'putihkan': {
         if (!/webp/.test(mime) && /image/.test(mime)) {
           let { TelegraPh } = require('./lib/uploader.js')
@@ -28599,18 +28618,6 @@ https://chat.whatsapp.com/${response}
           packname: `${packname}`,
           author: `${author}`
         });
-      }
-        break;
-      case 'pukii': {
-        if (!q) return replynano('Enter Text');
-        replynano(mess.wait)
-        await NanoBotz.sendMessage(m.chat, { image: { url: `https://api-faa.my.id/faa/iqc?prompt=${text}` }, caption: mess.success }, { quoted: m })
-      }
-        break;
-      case 'iqc': {
-        if (!q) return replynano('Enter Text');
-        replynano(mess.wait)
-        await NanoBotz.sendMessage(m.chat, { image: { url: `https://api-faa.my.id/faa/iqc?prompt=${text}` }, caption: mess.success }, { quoted: m })
       }
         break;
       case 'brat': {
