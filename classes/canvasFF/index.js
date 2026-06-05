@@ -52,7 +52,7 @@ class CanvasFFLobby {
 },
     single_02: {
   main: {
-    x: 0.49,        // kiri kanan
+    x: 0.52,        // kiri kanan
     y: 0.797,       // atas bawah
     maxWidth: 0.37, // batas lebar teks
     maxSize: 46,    // ukuran maksimal
@@ -115,29 +115,29 @@ class CanvasFFLobby {
     minSize: 24,    // ukuran minimal
     color: '#ffd447'
   },
-      right: { x: 0.79, y: 0.72, maxWidth: 0.25, maxSize: 34, minSize: 22, color: '#ffd447' },
+     right: { x: 618, y: 950, maxWidth: 220, maxSize: 38, minSize: 15, color: '#ffd447' },
     },
     duo_02: {
       left: {
-    x: 0.20,        // kiri kanan
+    x: 0.22,        // kiri kanan
     y: 0.797,       // atas bawah
     maxWidth: 0.37, // batas lebar teks
     maxSize: 46,    // ukuran maksimal
     minSize: 24,    // ukuran minimal
     color: '#ffd447'
   },
-      right: { x: 0.79, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
+      right: { x: 618, y: 950, maxWidth: 220, maxSize: 38, minSize: 15, color: '#ffd447' },
     },
     duo_03: {
       left: {
-    x: 0.20,        // kiri kanan
+    x: 0.22,        // kiri kanan
     y: 0.797,       // atas bawah
     maxWidth: 0.37, // batas lebar teks
     maxSize: 46,    // ukuran maksimal
     minSize: 24,    // ukuran minimal
     color: '#ffd447'
   },
-      right: { x: 0.74, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
+      right: { x: 572, y: 858, maxWidth: 200, maxSize: 38, minSize: 15, color: '#ffd447' },
     },
     duo_04: {
       left: {
@@ -148,7 +148,7 @@ class CanvasFFLobby {
     minSize: 24,    // ukuran minimal
     color: '#ffd447'
   },
-      right: { x: 0.79, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
+      right: { x: 605, y: 950, maxWidth: 220, maxSize: 38, minSize: 15, color: '#ffd447' },
     },
     duo_05: {
       left: {
@@ -159,7 +159,7 @@ class CanvasFFLobby {
     minSize: 24,    // ukuran minimal
     color: '#ffd447'
   },
-      right: { x: 0.77, y: 0.72, maxWidth: 0.25, maxSize: 36, minSize: 22, color: '#ffd447' },
+      right: { x: 579, y: 855, maxWidth: 199, maxSize: 38, minSize: 15, color: '#ffd447' },
     },
   },
 };
