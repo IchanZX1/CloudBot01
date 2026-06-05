@@ -538,10 +538,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const editMsgActualForm = document.getElementById('editmsg-actual-form');
         const submitEditMsgBtn = document.getElementById('submit-editmsg');
         const waLogsContainer = document.getElementById('wa-logs-container');
+        const sholatProvinceSelect = document.getElementById('sholat-province-select');
+        const sholatCitySelect = document.getElementById('sholat-city-select');
+        const sholatCityCurrent = document.getElementById('sholat-city-current');
 
         let pollingInterval = null;
         let flowChart = null;
         let lastLoggedStatus = null;
+        let sholatProvincesLoaded = false;
+        const sholatRegencyCache = new Map();
+        const wilayahBaseUrl = 'https://www.emsifa.com/api-wilayah-indonesia/api';
 
         function getSelectedBotNumber() {
             const countrySelect = document.getElementById('country-code');
@@ -608,6 +614,86 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        function cleanSholatCityName(name) {
+            return String(name || '')
+                .replace(/^(KABUPATEN|KOTA ADMINISTRASI|KOTA)\s+/i, '')
+                .trim();
+        }
+
+        function setSholatCityValue(cityName, displayName = cityName) {
+            if (configForm?.['settings_sholat_city']) {
+                configForm['settings_sholat_city'].value = cleanSholatCityName(cityName);
+            }
+            if (sholatCityCurrent) {
+                const value = cleanSholatCityName(cityName);
+                sholatCityCurrent.textContent = value
+                    ? `Kota jadwal sholat aktif: ${displayName} -> disimpan sebagai ${value}`
+                    : 'Pilih provinsi lalu kota untuk jadwal sholat.';
+            }
+        }
+
+        async function loadSholatProvinces() {
+            if (!sholatProvinceSelect || sholatProvincesLoaded) return;
+            try {
+                sholatProvinceSelect.innerHTML = '<option value="">Memuat provinsi...</option>';
+                const response = await fetch(`${wilayahBaseUrl}/provinces.json`);
+                const provinces = await response.json();
+                sholatProvinceSelect.innerHTML = '<option value="">Pilih Provinsi</option>' + provinces
+                    .map(province => `<option value="${province.id}">${province.name}</option>`)
+                    .join('');
+                sholatProvincesLoaded = true;
+            } catch (err) {
+                sholatProvinceSelect.innerHTML = '<option value="">Gagal memuat provinsi</option>';
+            }
+        }
+
+        async function loadSholatCities(provinceId, selectedCity = '') {
+            if (!sholatCitySelect) return [];
+            sholatCitySelect.disabled = true;
+            sholatCitySelect.innerHTML = provinceId ? '<option value="">Memuat kota...</option>' : '<option value="">Pilih provinsi dulu</option>';
+            if (!provinceId) return [];
+
+            try {
+                let cities = sholatRegencyCache.get(provinceId);
+                if (!cities) {
+                    const response = await fetch(`${wilayahBaseUrl}/regencies/${provinceId}.json`);
+                    cities = await response.json();
+                    sholatRegencyCache.set(provinceId, cities);
+                }
+
+                sholatCitySelect.innerHTML = '<option value="">Pilih Kota / Kabupaten</option>' + cities
+                    .map(city => {
+                        const cleanName = cleanSholatCityName(city.name);
+                        const selected = selectedCity && cleanName.toLowerCase() === selectedCity.toLowerCase() ? 'selected' : '';
+                        return `<option value="${cleanName}" data-display="${city.name}" ${selected}>${city.name}</option>`;
+                    })
+                    .join('');
+                sholatCitySelect.disabled = false;
+                return cities;
+            } catch (err) {
+                sholatCitySelect.innerHTML = '<option value="">Gagal memuat kota</option>';
+                return [];
+            }
+        }
+
+        async function initializeSholatLocation(savedCity = '') {
+            await loadSholatProvinces();
+            setSholatCityValue(savedCity);
+            if (!sholatCitySelect || !savedCity) return;
+            sholatCitySelect.innerHTML = `<option value="${savedCity}" selected>${savedCity}</option>`;
+            sholatCitySelect.disabled = false;
+        }
+
+        sholatProvinceSelect?.addEventListener('change', async () => {
+            setSholatCityValue('');
+            await loadSholatCities(sholatProvinceSelect.value);
+        });
+
+        sholatCitySelect?.addEventListener('change', () => {
+            const selectedOption = sholatCitySelect.options[sholatCitySelect.selectedIndex];
+            setSholatCityValue(sholatCitySelect.value, selectedOption?.dataset?.display || sholatCitySelect.value);
+        });
+
         async function loadCountryCodes() {
             const countrySelect = document.getElementById('country-code');
             if (!countrySelect) return;
@@ -661,15 +747,71 @@ document.addEventListener('DOMContentLoaded', () => {
         tabConfig?.addEventListener('click', () => switchTab('config'));
         tabEditMsg?.addEventListener('click', () => switchTab('editmsg'));
 
+        function applyEditMsgPackageLocks() {
+            const userPkg = (document.getElementById('msg-group-1')?.getAttribute('data-package') || 'free').toLowerCase();
+            const ranks = { free: 0, trial: 0, basic: 1, starter: 2 };
+            const currentRank = ranks[userPkg] ?? 0;
+            const lockConfigs = [
+                {
+                    id: 'msg-group-2',
+                    required: 'basic',
+                    title: 'Akses Terkunci (Eksklusif Basic)',
+                    benefit: 'Upgrade ke Basic untuk membuka Query & Error Messages agar respon bot terasa lebih rapi dan personal.'
+                },
+                {
+                    id: 'msg-group-4',
+                    required: 'basic',
+                    title: 'Akses Terkunci (Eksklusif Basic)',
+                    benefit: 'Paket Basic membuka template Sewa, tombol pembayaran, dan pesan promosi bot yang lebih lengkap.'
+                },
+                {
+                    id: 'msg-group-3',
+                    required: 'starter',
+                    title: 'Akses Terkunci (Eksklusif Starter)',
+                    benefit: 'Upgrade ke Starter untuk membuka pesan restriction lengkap seperti Only Group, Owner, Admin, dan Premium.'
+                }
+            ];
+
+            lockConfigs.forEach(config => {
+                const group = document.getElementById(config.id);
+                if (!group) return;
+
+                const requiredRank = ranks[config.required] ?? 0;
+                const locked = currentRank < requiredRank;
+                group.classList.remove('hidden');
+                group.classList.add('relative', 'rounded-2xl', 'overflow-hidden');
+                group.querySelector('.msg-lock-overlay')?.remove();
+                group.querySelectorAll('input, textarea, select, button').forEach(control => {
+                    control.disabled = locked;
+                    control.classList.toggle('opacity-50', locked);
+                });
+
+                if (!locked) return;
+
+                const overlay = document.createElement('div');
+                overlay.className = 'msg-lock-overlay absolute inset-0 z-20 bg-black/70 border border-yellow-400/25 rounded-2xl flex items-center justify-center p-5 text-center';
+                overlay.innerHTML = `
+                    <div class="max-w-md">
+                        <div class="w-14 h-14 rounded-2xl bg-yellow-500 text-black flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(234,179,8,0.35)]">
+                            <i class="bi bi-crown-fill text-2xl"></i>
+                        </div>
+                        <h5 class="text-white text-base md:text-lg font-black mb-2">${config.title}</h5>
+                        <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                            Anda saat ini menggunakan paket <span class="px-2 py-0.5 rounded bg-white/10 text-white font-bold capitalize">${userPkg}</span>.
+                            ${config.benefit}
+                        </p>
+                        <a href="/pricing" class="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-yellow-500 text-black text-xs font-black uppercase tracking-widest hover:bg-yellow-400 transition-all">
+                            <i class="bi bi-gem"></i>
+                            Upgrade Paket
+                        </a>
+                    </div>
+                `;
+                group.appendChild(overlay);
+            });
+        }
+
         async function loadEditMsg() {
-            const userPkg = document.getElementById('msg-group-1')?.getAttribute('data-package')?.toLowerCase();
-            if (userPkg === 'basic' || userPkg === 'starter') {
-                document.getElementById('msg-group-2')?.classList.remove('hidden');
-                document.getElementById('msg-group-4')?.classList.remove('hidden'); // Sewa customization
-            }
-            if (userPkg === 'starter') {
-                document.getElementById('msg-group-3')?.classList.remove('hidden');
-            }
+            applyEditMsgPackageLocks();
 
             try {
                 const response = await fetch('/api/bot/mess');
@@ -758,7 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const cb = configForm[`settings_${feat}`];
                         if (cb) cb.checked = !!settings[feat];
                     });
-                    if (configForm['settings_sholat_city']) configForm['settings_sholat_city'].value = settings.sholat_city || '';
+                    await initializeSholatLocation(settings.sholat_city || '');
                     if (configForm['settings_prefixes']) configForm['settings_prefixes'].value = settings.prefixes || '!,.,#,,,$';
                 }
             } catch (err) { }

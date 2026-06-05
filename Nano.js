@@ -3275,7 +3275,8 @@ Maksimal nama: 25 karakter`
 const time = getJakartaTime();
 const chat_time = getJakartaTime();
           meme = `https://api.neoxr.eu/api/iqc?text=${encodeURIComponent(text)}&time=${time}&chat_time=${chat_time}&apikey=chanzxdevw`
-          await NanoBotz.sendMessage(m.chat, { image: { url: meme }, caption: mess.success }, { quoted: m })
+          let resultss = await fetchJson(meme).then(res => res.data.url)
+          await NanoBotz.sendMessage(m.chat, { image: { url: resultss }, caption: mess.success }, { quoted: m })
       }
         break
       case 'toputih': case 'putihkan': {

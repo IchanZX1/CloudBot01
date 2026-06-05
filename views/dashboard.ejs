@@ -51,6 +51,11 @@
                     transform: rotate(-1deg);
                 }
             }
+
+            .msg-lock-overlay {
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
         </style>
 
         <div id="connect-page" class="min-h-screen pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 hero-gradient relative">
@@ -252,8 +257,22 @@
                             </div>
                             <div class="mt-4">
                                 <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Auto Sholat City</label>
-                                <input type="text" name="settings_sholat_city" class="auth-input w-full py-2.5 px-4 rounded-xl text-xs"
-                                    placeholder="Contoh: Jakarta">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div class="relative">
+                                        <select id="sholat-province-select" class="auth-input w-full py-2.5 px-4 pr-9 rounded-xl text-xs appearance-none cursor-pointer">
+                                            <option value="">Memuat provinsi...</option>
+                                        </select>
+                                        <i class="bi bi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px] pointer-events-none"></i>
+                                    </div>
+                                    <div class="relative">
+                                        <select id="sholat-city-select" class="auth-input w-full py-2.5 px-4 pr-9 rounded-xl text-xs appearance-none cursor-pointer" disabled>
+                                            <option value="">Pilih provinsi dulu</option>
+                                        </select>
+                                        <i class="bi bi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px] pointer-events-none"></i>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="settings_sholat_city">
+                                <p id="sholat-city-current" class="text-[9px] text-gray-500 mt-1">Pilih provinsi lalu kota untuk jadwal sholat.</p>
                             </div>
                             <div class="mt-4">
                                 <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Command Prefixes</label>
