@@ -1,5 +1,10 @@
 <%- include('partials/head') %>
     <%- include('partials/nav') %>
+        <%
+            const dashboardPackage = String(user.paket || '').toLowerCase();
+            const isStarterPackage = dashboardPackage === 'starter';
+            const canEditWhatsappChannel = ['basic', 'starter'].includes(dashboardPackage);
+        %>
 
         <style>
             .feature-toggle input:checked + .feature-card {
@@ -86,8 +91,6 @@
                     </h3>
                     <p class="text-sm md:text-[15px] text-gray-300 leading-relaxed font-semibold">
                         Dapatkan pengalaman hosting bot WhatsApp yang cepat, andal, dan mudah digunakan dengan paket hosting kami yang dirancang khusus untuk kebutuhan bot WhatsApp Anda. Nikmati koneksi stabil, fitur lengkap, dan dukungan teknis 24/7 untuk memastikan bot Anda selalu online dan siap melayani pengguna Anda kapan saja.
-                        <br>
-                        Mulai dari Rp20.000, Anda sudah bisa memiliki hosting bot WhatsApp dengan panel kontrol yang mudah digunakan, dan dukungan selama 30 hari untuk memastikan Anda mendapatkan pengalaman terbaik dalam mengelola bot WhatsApp Anda. Jangan lewatkan kesempatan ini untuk meningkatkan performa bot WhatsApp Anda dengan paket hosting terbaik kami!
                     </p>
                     <div class="mt-4 flex flex-wrap items-center gap-2 text-[11px] font-bold text-gray-400">
                         <span class="px-2.5 py-1 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400">Mulai Rp20.000</span>
@@ -105,14 +108,20 @@
 
                 <div class="container-responsive grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
                     <div
-                        class="glass p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 flex items-center space-x-4 popup-float transition-all hover:border-green-500/20">
+                        class="glass relative overflow-hidden p-5 md:p-6 rounded-2xl md:rounded-3xl border flex items-center space-x-4 popup-float transition-all <%= isStarterPackage ? 'border-yellow-400/60 bg-yellow-500/10 shadow-[0_0_28px_rgba(234,179,8,0.16)] hover:border-yellow-300/80' : 'border-white/5 hover:border-green-500/20' %>">
+                        <% if (isStarterPackage) { %>
+                            <div class="absolute right-3 top-3 px-2.5 py-1 rounded-full border border-yellow-300/50 bg-yellow-400/15 text-[9px] font-black tracking-widest text-yellow-300 flex items-center gap-1">
+                                <i class="bi bi-gem"></i>
+                                VIP TOP
+                            </div>
+                        <% } %>
                         <div
-                            class="w-10 h-10 md:w-12 md:h-12 bg-green-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-green-500 text-lg md:text-xl shrink-0">
-                            <i class="bi bi-box-seam-fill"></i>
+                            class="w-10 h-10 md:w-12 md:h-12 <%= isStarterPackage ? 'bg-yellow-400/20 text-yellow-300' : 'bg-green-500/20 text-green-500' %> rounded-xl md:rounded-2xl flex items-center justify-center text-lg md:text-xl shrink-0">
+                            <i class="bi <%= isStarterPackage ? 'bi-gem' : 'bi-box-seam-fill' %>"></i>
                         </div>
                         <div>
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Type Paket</p>
-                            <h4 class="text-lg font-extrabold text-white capitalize">
+                            <h4 class="text-lg font-extrabold <%= isStarterPackage ? 'text-yellow-300' : 'text-white' %> capitalize">
                                 <%= user.paket %>
                             </h4>
                         </div>
@@ -284,6 +293,22 @@
                                         placeholder="!,.,#,,,$">
                                 </div>
                                 <p class="text-[9px] text-gray-500 mt-1">Pisahkan dengan koma. Prefix yang diizinkan: ! . # , $</p>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex flex-wrap items-center justify-between gap-2 mb-2 ml-1">
+                                    <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest">Saluran Whatsapp</label>
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-widest text-cyan-300">
+                                        <i class="bi bi-gem"></i>
+                                        Khusus Paket Basic & Starter
+                                    </span>
+                                </div>
+                                <div class="relative">
+                                    <i class="bi bi-whatsapp absolute left-3 top-1/2 -translate-y-1/2 <%= canEditWhatsappChannel ? 'text-green-500' : 'text-gray-600' %> text-xs"></i>
+                                    <input type="text" name="settings_whatsapp_channel" class="auth-input w-full py-2.5 pl-9 pr-4 rounded-xl text-xs font-mono <%= canEditWhatsappChannel ? '' : 'opacity-60 cursor-not-allowed' %>"
+                                        placeholder="<%= canEditWhatsappChannel ? 'https://whatsapp.com/channel/xxxxxx' : 'Upgrade ke Basic atau Starter untuk mengedit' %>"
+                                        <%= canEditWhatsappChannel ? '' : 'disabled aria-disabled="true"' %>>
+                                </div>
+                                <p class="text-[9px] text-gray-500 mt-1"><%= canEditWhatsappChannel ? 'Muncul pada reply pesan bot' : 'Fitur ini terkunci untuk paket saat ini.' %></p>
                             </div>
                         </div>
 

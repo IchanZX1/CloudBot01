@@ -251,6 +251,11 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
     )]
     if (allowedPrefixes.length === 0) allowedPrefixes.push(...defaultCommandPrefixes)
     prefix = typeof body === 'string' && allowedPrefixes.includes(body.charAt(0)) ? body.charAt(0) : ''
+    const defaultWhatsappChannelUrl = 'https://whatsapp.com/channel/0029Var18czJpe8edCUDZF3e'
+    const savedWhatsappChannelUrl = String(db?.settings?.[botNumber]?.whatsapp_channel || '').trim()
+    const whatsappChannelUrl = /^https:\/\/whatsapp\.com\/channel\/[A-Za-z0-9_-]+\/?$/i.test(savedWhatsappChannelUrl)
+      ? savedWhatsappChannelUrl
+      : defaultWhatsappChannelUrl
 
     async function appenTextMessage(text, chatUpdate) {
       let messages = await generateWAMessage(m.chat, { text: text, mentions: m.mentionedJid }, {
@@ -303,7 +308,7 @@ const reply = async (teks) => {
       externalAdReply: {
         showAdAttribution: false,
         mediaType: 2,
-        mediaUrl: "https://whatsapp.com/channel/0029Var18czJpe8edCUDZF3e",
+        mediaUrl: whatsappChannelUrl,
         title: "ִ ࣪𖤐 𝑪𝒍𝒐𝒖𝒅𝑯𝒐𝒔𝒕𝒊𝒏𝒈 𝑩𝒐𝒕.ᐟ",
         body: `‎ᴠͥɪͣᴘͫ✮⃝@${botname}࿐✮𝄟⃝
 ‎`,
@@ -330,7 +335,7 @@ const reply = async (teks) => {
       externalAdReply: {
         showAdAttribution: false,
         mediaType: 2,
-        mediaUrl: "https://whatsapp.com/channel/0029Var18czJpe8edCUDZF3e",
+        mediaUrl: whatsappChannelUrl,
         title: "ִ ࣪𖤐 𝑪𝒍𝒐𝒖𝒅𝑯𝒐𝒔𝒕𝒊𝒏𝒈 𝑩𝒐𝒕.ᐟ",
         body: `‎ᴠͥɪͣᴘͫ✮⃝@${botname}࿐✮𝄟⃝
 ‎`,

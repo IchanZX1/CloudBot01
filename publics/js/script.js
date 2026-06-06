@@ -902,6 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     await initializeSholatLocation(settings.sholat_city || '');
                     if (configForm['settings_prefixes']) configForm['settings_prefixes'].value = settings.prefixes || '!,.,#,,,$';
+                    if (configForm['settings_whatsapp_channel']) configForm['settings_whatsapp_channel'].value = settings.whatsapp_channel || '';
                 }
             } catch (err) { }
         }
@@ -920,6 +921,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             settings.sholat_city = configForm['settings_sholat_city']?.value || '';
             settings.prefixes = configForm['settings_prefixes']?.value || '!,.,#,,,$';
+            settings.whatsapp_channel = configForm['settings_whatsapp_channel']?.value || '';
 
             try {
                 const [configRes, settingsRes] = await Promise.all([

@@ -1479,6 +1479,15 @@ app.post('/api/bot/settings', async (req, res) => {
                 .filter(char => allowedPrefixes.includes(char)))];
             cleanBody.prefixes = prefixes.length ? prefixes.join(',') : allowedPrefixes.join(',');
         }
+        if ('whatsapp_channel' in cleanBody) {
+            const canEditWhatsappChannel = ['basic', 'starter'].includes(String(req.user.paket || '').toLowerCase());
+            if (canEditWhatsappChannel) {
+                const channelUrl = String(cleanBody.whatsapp_channel || '').trim();
+                cleanBody.whatsapp_channel = /^https:\/\/whatsapp\.com\/channel\/[A-Za-z0-9_-]+\/?$/i.test(channelUrl) ? channelUrl : '';
+            } else {
+                delete cleanBody.whatsapp_channel;
+            }
+        }
 
         // Merge settings only on JID key (matching Nano.js)
         db.settings[botJid] = { ...(db.settings[botJid] || {}), ...cleanBody };
