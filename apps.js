@@ -18,6 +18,8 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const { GopayClient } = require('./lib/gopay/gopay.client');
 const { checkForUpdate } = require('./classes/_autoUpdate');
+const QRCode = require('qrcode');
+const QRISPayment = require('./config/qris-payment/src');
 const gopayClient = new GopayClient();
 
 // Email Transporter (Gunakan Gmail App Password atau SMTP lain)
@@ -174,6 +176,36 @@ function clearSessionCookies(req, res) {
     res.clearCookie('connect.sid', { path: '/' });
     res.clearCookie('connect.sid', { path: '/', httpOnly: true, sameSite: 'Lax', secure: true });
     res.clearCookie('connect.sid', { path: '/', httpOnly: true, sameSite: 'Lax', secure: false });
+}
+
+function getBaseQrisString() {
+    const qrisPath = path.join(__dirname, 'config', 'qris-payment', 'QrisString.txt');
+    return fs.readFileSync(qrisPath, 'utf8').trim();
+}
+
+async function generateDynamicQrisData(amount) {
+    const baseQrString = getBaseQrisString();
+    const qris = new QRISPayment({
+        merchantId: process.env.QRIS_MERCHANT_ID || 'ZXcoderID',
+        baseQrString
+    });
+    const { qrString } = await qris.generateQR(amount);
+    const qrImage = await QRCode.toDataURL(qrString, {
+        errorCorrectionLevel: 'H',
+        margin: 2,
+        width: 700,
+        color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+        }
+    });
+
+    return {
+        qr_string: qrString,
+        qr_image: qrImage,
+        dynamic: true,
+        generatedAt: new Date()
+    };
 }
 
 function triggerContentErrorDemo() {
@@ -537,6 +569,7 @@ app.get('/checkout/:packageId', async (req, res) => {
             // Generate Unique Code (10-250)
             const uniqueCode = Math.floor(10 + Math.random() * 241);
             const totalNominal = plan.price + uniqueCode;
+            const dynamicQris = await generateDynamicQrisData(totalNominal);
 
             deposit = new Deposit({
                 userId: req.user._id,
@@ -548,9 +581,16 @@ app.get('/checkout/:packageId', async (req, res) => {
                 paymentData: {
                     originalPrice: plan.price,
                     uniqueCode: uniqueCode,
-                    qr_image: '/img/qris.jpg'
+                    ...dynamicQris
                 }
             });
+            await deposit.save();
+        } else if (!deposit.paymentData?.dynamic || !deposit.paymentData?.qr_image) {
+            const dynamicQris = await generateDynamicQrisData(deposit.nominal);
+            deposit.paymentData = {
+                ...(deposit.paymentData || {}),
+                ...dynamicQris
+            };
             await deposit.save();
         }
 
@@ -969,7 +1009,14 @@ const defaultGroupSettings = {
     auto_ai_grup: false,
     goodbye: false,
     welcome: false,
-    welcome_design: 'design1'
+    welcome_design: 'design1',
+    sewa_group: {
+        enabled: false,
+        group_url: '',
+        group_name: '',
+        duration_type: '',
+        expired_at: null
+    }
 };
 
 const allowedWelcomeDesigns = new Set(['design1', 'design2', 'design3', 'design4']);
@@ -995,6 +1042,24 @@ function writeJsonFile(filePath, data) {
 function normalizeGroupId(groupId) {
     const clean = String(groupId || '').trim();
     return clean.endsWith('@g.us') ? clean : '';
+}
+
+function normalizeGroupRental(value = {}) {
+    const expiredAt = value.expired_at ? new Date(value.expired_at) : null;
+    const validExpiredAt = expiredAt && !Number.isNaN(expiredAt.getTime()) ? expiredAt.toISOString() : null;
+    return {
+        enabled: !!(value.enabled && validExpiredAt && new Date(validExpiredAt) > new Date()),
+        group_url: String(value.group_url || '').trim(),
+        group_name: String(value.group_name || '').trim(),
+        duration_type: String(value.duration_type || '').trim(),
+        expired_at: validExpiredAt
+    };
+}
+
+function extractGroupInviteCode(url = '') {
+    const clean = String(url || '').trim();
+    const match = clean.match(/(?:chat\.whatsapp\.com\/|whatsapp\.com\/invite\/)([A-Za-z0-9_-]+)/i);
+    return match ? match[1] : '';
 }
 
 function upsertGroupText(filePath, groupId, text) {
@@ -1081,7 +1146,8 @@ app.get('/api/bot/group-settings/:groupId', async (req, res) => {
             welcome: welcomeList.includes(groupId) || !!db.settings[groupId]?.welcome,
             goodbye: leftList.includes(groupId) || !!db.settings[groupId]?.goodbye,
             welcome_text: db.settings[groupId]?.welcome_text || welcomeTexts.find(item => item.id === groupId)?.text || '',
-            goodbye_text: db.settings[groupId]?.goodbye_text || goodbyeTexts.find(item => item.id === groupId)?.text || ''
+            goodbye_text: db.settings[groupId]?.goodbye_text || goodbyeTexts.find(item => item.id === groupId)?.text || '',
+            sewa_group: normalizeGroupRental(db.settings[groupId]?.sewa_group)
         };
 
         res.json({ success: true, groupId, settings });
@@ -1113,7 +1179,8 @@ app.post('/api/bot/group-settings/:groupId', async (req, res) => {
         if (!db.settings) db.settings = {};
 
         const boolKeys = ['chatbot_grup', 'auto_ai_grup', 'goodbye', 'welcome'];
-        const nextSettings = { ...defaultGroupSettings };
+        const previousSettings = db.settings[groupId] && typeof db.settings[groupId] === 'object' ? db.settings[groupId] : {};
+        const nextSettings = { ...defaultGroupSettings, sewa_group: normalizeGroupRental(previousSettings.sewa_group) };
         boolKeys.forEach(key => {
             nextSettings[key] = !!req.body[key];
         });
@@ -1121,7 +1188,7 @@ app.post('/api/bot/group-settings/:groupId', async (req, res) => {
         nextSettings.welcome_text = String(req.body.welcome_text || '').trim();
         nextSettings.goodbye_text = String(req.body.goodbye_text || '').trim();
 
-        db.settings[groupId] = nextSettings;
+        db.settings[groupId] = { ...previousSettings, ...nextSettings };
 
         setGroupEnabled(path.join(dbDir, 'welcome.json'), groupId, nextSettings.welcome);
         setGroupEnabled(path.join(dbDir, 'left.json'), groupId, nextSettings.goodbye);
@@ -1139,6 +1206,104 @@ app.post('/api/bot/group-settings/:groupId', async (req, res) => {
     } catch (err) {
         console.error('[GROUP SETTINGS] Failed to save settings:', err);
         res.status(500).json({ error: 'Gagal menyimpan pengaturan grup: ' + err.message });
+    }
+});
+
+app.get('/api/bot/group-invite-preview', async (req, res) => {
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+
+    try {
+        const inviteUrl = String(req.query.url || '').trim();
+        const inviteCode = extractGroupInviteCode(inviteUrl);
+        if (!inviteCode) return res.status(400).json({ error: 'URL invite group WhatsApp tidak valid' });
+
+        const { sock } = await getUserBotContext(req);
+        if (!sock || typeof sock.groupGetInviteInfo !== 'function') {
+            return res.status(400).json({ error: 'Bot belum tersambung atau tidak dapat membaca invite group' });
+        }
+
+        const info = await sock.groupGetInviteInfo(inviteCode);
+        res.json({
+            success: true,
+            group: {
+                id: info?.id || '',
+                subject: info?.subject || info?.name || 'Group WhatsApp',
+                desc: info?.desc || '',
+                size: Array.isArray(info?.participants) ? info.participants.length : (info?.size || 0)
+            }
+        });
+    } catch (err) {
+        console.error('[GROUP RENTAL] Failed to preview invite:', err);
+        res.status(500).json({ error: 'Gagal mengambil nama group dari URL invite' });
+    }
+});
+
+app.post('/api/bot/group-rental/:groupId', async (req, res) => {
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+
+    try {
+        const groupId = normalizeGroupId(req.params.groupId);
+        if (!groupId) return res.status(400).json({ error: 'Group ID tidak valid' });
+
+        const groupUrl = String(req.body.group_url || '').trim();
+        const durationType = String(req.body.duration_type || '').trim();
+        const customDate = String(req.body.custom_date || '').trim();
+        const groupName = String(req.body.group_name || '').trim();
+
+        if (!groupUrl) return res.status(400).json({ error: 'URL group wajib diisi' });
+        if (!extractGroupInviteCode(groupUrl)) return res.status(400).json({ error: 'URL invite group WhatsApp tidak valid' });
+
+        let expiredAt;
+        if (['7', '15', '30'].includes(durationType)) {
+            expiredAt = moment().tz('Asia/Jakarta').add(Number(durationType), 'days').endOf('day').toDate();
+        } else if (durationType === 'custom' && customDate) {
+            expiredAt = moment.tz(customDate, 'YYYY-MM-DD', 'Asia/Jakarta').endOf('day').toDate();
+        }
+
+        if (!expiredAt || Number.isNaN(expiredAt.getTime()) || expiredAt <= new Date()) {
+            return res.status(400).json({ error: 'Durasi atau tanggal masa aktif tidak valid' });
+        }
+
+        const { dbDir, dbPath, sock } = await getUserBotContext(req);
+        if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+        const db = sock && sock.db ? sock.db : readJsonFile(dbPath, {
+            sticker: {},
+            database: {},
+            game: {},
+            others: {},
+            users: {},
+            chats: {},
+            settings: {}
+        });
+        if (!db.settings) db.settings = {};
+        const previousSettings = db.settings[groupId] && typeof db.settings[groupId] === 'object' ? db.settings[groupId] : {};
+
+        db.settings[groupId] = {
+            ...defaultGroupSettings,
+            ...previousSettings,
+            sewa_group: {
+                enabled: true,
+                group_url: groupUrl,
+                group_name: groupName,
+                duration_type: durationType,
+                expired_at: expiredAt.toISOString()
+            }
+        };
+
+        writeJsonFile(dbPath, db);
+        if (sock) {
+            sock.db = db;
+            sock.lastDbSync = Date.now();
+        }
+
+        res.json({
+            success: true,
+            message: 'Sewa group berhasil disimpan',
+            sewa_group: normalizeGroupRental(db.settings[groupId].sewa_group)
+        });
+    } catch (err) {
+        console.error('[GROUP RENTAL] Failed to save rental:', err);
+        res.status(500).json({ error: 'Gagal menyimpan sewa group: ' + err.message });
     }
 });
 

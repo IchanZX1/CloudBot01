@@ -793,7 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 overlay.innerHTML = `
                     <div class="max-w-md">
                         <div class="w-14 h-14 rounded-2xl bg-yellow-500 text-black flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(234,179,8,0.35)]">
-                            <i class="bi bi-crown-fill text-2xl"></i>
+                            <i class="bi bi-box-seam text-2xl"></i>
                         </div>
                         <h5 class="text-white text-base md:text-lg font-black mb-2">${config.title}</h5>
                         <p class="text-xs md:text-sm text-gray-300 leading-relaxed">

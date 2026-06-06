@@ -115,13 +115,14 @@
                 </div>
 
                 <div class="bg-white p-4 rounded-3xl mb-5 shadow-2xl mx-auto w-[230px] md:w-[270px] aspect-square flex items-center justify-center relative overflow-hidden">
-                    <img id="qris-image" src="<%= deposit.paymentData.qr_image %>" alt="QRIS Code" class="w-full h-full object-contain">
+                    <img id="qris-image" src="<%= deposit.paymentData && deposit.paymentData.qr_image ? deposit.paymentData.qr_image : '/img/qris.jpg' %>" alt="QRIS Code" class="w-full h-full object-contain">
                 </div>
 
                 <div class="flex items-center justify-center space-x-2 text-red-400 font-bold text-xs bg-red-500/10 px-4 py-3 rounded-xl border border-red-500/20 w-full mx-auto mb-5">
                     <i class="bi bi-clock-history"></i>
                     <span>Kadaluarsa: <span id="countdown" class="font-mono text-sm tracking-wider">Memuat...</span></span>
                 </div>
+                <p class="text-[10px] text-gray-500 text-center mb-5">Status pembayaran dicek otomatis setiap 13 detik.</p>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button onclick="cancelOrder()" class="w-full py-4 rounded-2xl bg-red-500 text-white text-xs font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-600 active:scale-[0.99] transition-all">
@@ -298,7 +299,7 @@
             } catch (err) {
                 console.error('Polling error:', err);
             }
-        }, 10000); // 10 detik delay
+        }, 13000); // 13 detik delay
     }
 
     startCountdown();
