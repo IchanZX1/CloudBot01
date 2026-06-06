@@ -338,6 +338,7 @@
                 const settingsPanelSubtitle = document.getElementById('settings-panel-subtitle');
                 let groups = [];
                 let currentSettings = {};
+                let rentalPreviewGroup = null;
 
                 const featureKeys = ['chatbot_grup', 'auto_ai_grup', 'goodbye', 'welcome'];
 
@@ -397,6 +398,7 @@
 
                 function syncRentalForm(sewaGroup = {}) {
                     if (!rentalForm) return;
+                    rentalPreviewGroup = null;
                     rentalForm.group_url.value = sewaGroup.group_url || '';
                     rentalForm.group_name.value = sewaGroup.group_name || '';
                     rentalPreview.textContent = sewaGroup.group_name
@@ -434,6 +436,15 @@
                         groupSelect.innerHTML = `<option value="">${err.message}</option>`;
                         setStatus(err.message, 'error');
                     }
+                }
+
+                async function selectGroupById(groupId) {
+                    if (!groupId) return false;
+                    const exists = groups.some(group => group.id === groupId);
+                    if (!exists) return false;
+                    groupSelect.value = groupId;
+                    await loadGroupSettings(groupId);
+                    return true;
                 }
 
                 async function loadGroupSettings(groupId) {
@@ -502,6 +513,7 @@
                 rentalForm?.group_url?.addEventListener('input', () => {
                     clearTimeout(rentalPreviewTimer);
                     rentalForm.group_name.value = '';
+                    rentalPreviewGroup = null;
                     const url = rentalForm.group_url.value.trim();
                     if (!url) {
                         rentalPreview.textContent = 'Masukkan URL invite untuk mengambil nama group.';
@@ -514,8 +526,15 @@
                             const response = await fetch(`/api/bot/group-invite-preview?url=${encodeURIComponent(url)}`);
                             const result = await response.json();
                             if (!result.success) throw new Error(result.error || 'Gagal mengambil nama group');
-                            rentalForm.group_name.value = result.group.subject || '';
-                            rentalPreview.innerHTML = `Group terdeteksi: <span class="text-yellow-500 font-bold">${escapeHtml(result.group.subject || 'Group WhatsApp')}</span>`;
+                            rentalPreviewGroup = result.group || null;
+                            const detectedName = result.group?.subject || 'Group WhatsApp';
+                            const detectedUrl = url;
+                            const selected = result.group?.id ? await selectGroupById(result.group.id) : false;
+                            rentalForm.group_url.value = detectedUrl;
+                            rentalForm.group_name.value = detectedName;
+                            rentalPreview.innerHTML = selected || result.group?.joined
+                                ? `Group terdeteksi dan sudah dipilih: <span class="text-yellow-500 font-bold">${escapeHtml(detectedName)}</span><br><span class="text-green-500">Bot sudah ada di group ini, tinggal setup waktu sewa.</span>`
+                                : `Group terdeteksi: <span class="text-yellow-500 font-bold">${escapeHtml(detectedName)}</span><br><span class="text-gray-500">Bot belum ada di group ini. Saat disimpan, bot akan join otomatis melalui URL.</span>`;
                         } catch (err) {
                             rentalPreview.textContent = err.message;
                         }
@@ -556,8 +575,7 @@
 
                 rentalForm?.addEventListener('submit', async (event) => {
                     event.preventDefault();
-                    const groupId = groupSelect.value;
-                    if (!groupId) return showToast('Pilih group terlebih dahulu.', 'error');
+                    const groupId = groupSelect.value || rentalPreviewGroup?.id || 'from-url';
 
                     saveRentalBtn.disabled = true;
                     saveRentalBtn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-2"></i>Menyimpan...';
@@ -581,6 +599,12 @@
                         currentSettings.sewa_group = result.sewa_group;
                         updateRentalStatus(result.sewa_group);
                         syncRentalForm(result.sewa_group);
+                        if (result.groupId) {
+                            await loadGroups();
+                            await selectGroupById(result.groupId);
+                            setRentalMode(true);
+                            rentalPreview.innerHTML = `Group sewa aktif: <span class="text-yellow-500 font-bold">${escapeHtml(result.group?.subject || result.sewa_group?.group_name || 'Group WhatsApp')}</span>`;
+                        }
                         showToast(result.message || 'Sewa group berhasil disimpan!', 'success');
                     } catch (err) {
                         showToast(err.message, 'error');

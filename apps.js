@@ -1062,6 +1062,21 @@ function extractGroupInviteCode(url = '') {
     return match ? match[1] : '';
 }
 
+function normalizeInviteGroupId(groupId = '') {
+    const clean = String(groupId || '').trim();
+    if (!clean) return '';
+    return clean.endsWith('@g.us') ? clean : `${clean}@g.us`;
+}
+
+function getAcceptedInviteGroupId(value) {
+    if (!value) return '';
+    if (typeof value === 'string') return normalizeInviteGroupId(value);
+    if (typeof value === 'object') {
+        return normalizeInviteGroupId(value.gid || value.id || value.groupId || value.jid || value?.group?.id || '');
+    }
+    return '';
+}
+
 function upsertGroupText(filePath, groupId, text) {
     const current = readJsonFile(filePath, []);
     const idx = current.findIndex(item => item.id === groupId);
@@ -1223,13 +1238,17 @@ app.get('/api/bot/group-invite-preview', async (req, res) => {
         }
 
         const info = await sock.groupGetInviteInfo(inviteCode);
+        const inviteGroupId = normalizeInviteGroupId(info?.id);
+        const groupsObj = typeof sock.groupFetchAllParticipating === 'function' ? await sock.groupFetchAllParticipating() : {};
+        const joined = inviteGroupId ? Object.prototype.hasOwnProperty.call(groupsObj || {}, inviteGroupId) : false;
         res.json({
             success: true,
             group: {
-                id: info?.id || '',
+                id: inviteGroupId,
                 subject: info?.subject || info?.name || 'Group WhatsApp',
                 desc: info?.desc || '',
-                size: Array.isArray(info?.participants) ? info.participants.length : (info?.size || 0)
+                size: Array.isArray(info?.participants) ? info.participants.length : (info?.size || 0),
+                joined
             }
         });
     } catch (err) {
@@ -1242,16 +1261,16 @@ app.post('/api/bot/group-rental/:groupId', async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
     try {
-        const groupId = normalizeGroupId(req.params.groupId);
-        if (!groupId) return res.status(400).json({ error: 'Group ID tidak valid' });
+        const selectedGroupId = normalizeGroupId(req.params.groupId);
 
         const groupUrl = String(req.body.group_url || '').trim();
         const durationType = String(req.body.duration_type || '').trim();
         const customDate = String(req.body.custom_date || '').trim();
         const groupName = String(req.body.group_name || '').trim();
+        const inviteCode = extractGroupInviteCode(groupUrl);
 
         if (!groupUrl) return res.status(400).json({ error: 'URL group wajib diisi' });
-        if (!extractGroupInviteCode(groupUrl)) return res.status(400).json({ error: 'URL invite group WhatsApp tidak valid' });
+        if (!inviteCode) return res.status(400).json({ error: 'URL invite group WhatsApp tidak valid' });
 
         let expiredAt;
         if (['7', '15', '30'].includes(durationType)) {
@@ -1265,6 +1284,30 @@ app.post('/api/bot/group-rental/:groupId', async (req, res) => {
         }
 
         const { dbDir, dbPath, sock } = await getUserBotContext(req);
+        if (!sock) return res.status(400).json({ error: 'Bot belum tersambung. Silakan connect bot terlebih dahulu.' });
+
+        let inviteInfo = null;
+        if (typeof sock.groupGetInviteInfo === 'function') {
+            inviteInfo = await sock.groupGetInviteInfo(inviteCode);
+        }
+
+        let targetGroupId = normalizeInviteGroupId(inviteInfo?.id) || selectedGroupId;
+        let joinedByBot = false;
+
+        const groupsObj = typeof sock.groupFetchAllParticipating === 'function' ? await sock.groupFetchAllParticipating() : {};
+        const alreadyJoined = targetGroupId && Object.prototype.hasOwnProperty.call(groupsObj || {}, targetGroupId);
+
+        if (!alreadyJoined) {
+            if (typeof sock.groupAcceptInvite !== 'function') {
+                return res.status(400).json({ error: 'Bot tidak mendukung join group otomatis dari URL invite' });
+            }
+            const joinedId = await sock.groupAcceptInvite(inviteCode);
+            targetGroupId = getAcceptedInviteGroupId(joinedId) || targetGroupId;
+            joinedByBot = true;
+        }
+
+        if (!targetGroupId) return res.status(400).json({ error: 'Group ID dari URL invite tidak valid' });
+
         if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
         const db = sock && sock.db ? sock.db : readJsonFile(dbPath, {
             sticker: {},
@@ -1276,15 +1319,15 @@ app.post('/api/bot/group-rental/:groupId', async (req, res) => {
             settings: {}
         });
         if (!db.settings) db.settings = {};
-        const previousSettings = db.settings[groupId] && typeof db.settings[groupId] === 'object' ? db.settings[groupId] : {};
+        const previousSettings = db.settings[targetGroupId] && typeof db.settings[targetGroupId] === 'object' ? db.settings[targetGroupId] : {};
 
-        db.settings[groupId] = {
+        db.settings[targetGroupId] = {
             ...defaultGroupSettings,
             ...previousSettings,
             sewa_group: {
                 enabled: true,
                 group_url: groupUrl,
-                group_name: groupName,
+                group_name: groupName || inviteInfo?.subject || inviteInfo?.name || '',
                 duration_type: durationType,
                 expired_at: expiredAt.toISOString()
             }
@@ -1298,8 +1341,14 @@ app.post('/api/bot/group-rental/:groupId', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Sewa group berhasil disimpan',
-            sewa_group: normalizeGroupRental(db.settings[groupId].sewa_group)
+            message: joinedByBot ? 'Bot berhasil join dan sewa group berhasil disimpan' : 'Sewa group berhasil disimpan',
+            joined: joinedByBot,
+            groupId: targetGroupId,
+            group: {
+                id: targetGroupId,
+                subject: db.settings[targetGroupId].sewa_group.group_name || inviteInfo?.subject || 'Group WhatsApp'
+            },
+            sewa_group: normalizeGroupRental(db.settings[targetGroupId].sewa_group)
         });
     } catch (err) {
         console.error('[GROUP RENTAL] Failed to save rental:', err);
