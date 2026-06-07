@@ -1451,8 +1451,10 @@ async function loadSessions() {
   }
 }
 
-// Call loadSessions when the module is loaded
-loadSessions();
+// Call loadSessions when the module is loaded, except for allocation workers.
+if (process.env.ZX_SKIP_AUTO_LOAD !== '1') {
+  loadSessions();
+}
 
 // Global database saving interval
 setInterval(() => {
@@ -1542,8 +1544,10 @@ async function checkExpiredPackagesAndStopBots() {
   }
 }
 
-setInterval(checkExpiredPackagesAndStopBots, 60 * 1000);
-setTimeout(checkExpiredPackagesAndStopBots, 15 * 1000);
+if (process.env.ZX_SKIP_AUTO_LOAD !== '1') {
+  setInterval(checkExpiredPackagesAndStopBots, 60 * 1000);
+  setTimeout(checkExpiredPackagesAndStopBots, 15 * 1000);
+}
 
 module.exports = { NanoBotzInd, botStatus, loadSessions }
 
@@ -1558,6 +1562,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Periodic Session Watchdog (Uptime Guard)
 // Every 10 minutes, ensure all sessions in activate_session,json are actually connected
+if (process.env.ZX_SKIP_AUTO_LOAD !== '1') {
 setInterval(async () => {
   const activatePath = `./${global.sessionName}/activate_session.json`;
   if (fs.existsSync(activatePath)) {
@@ -1621,3 +1626,4 @@ setInterval(async () => {
     } catch (e) { }
   }
 }, 10 * 60 * 1000);
+}

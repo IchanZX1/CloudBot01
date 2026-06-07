@@ -3383,7 +3383,7 @@ tambah banyak yaa..... terimakasih.🔥🔥`)
                           buttons: [
                             {
                               name: "cta_url",
-                              buttonParamsJson: `{"display_text":"👤 Chat Owner ( IchanZX )","url":"https://wa.me/${global.botnumber}","merchant_url":"https://wa.me/${global.botnumber}"}`
+                              buttonParamsJson: `{"display_text":"👤 Chat Owner ( IchanZX )","url":"https://t.me/ichanxd","merchant_url":"https://t.me/ichanxd"}`
                             },
                           ],
                         },
@@ -3399,7 +3399,7 @@ tambah banyak yaa..... terimakasih.🔥🔥`)
                         body: {
                           text: `
 ┏───────────────┈ 
-┆     「 *\`[OWNER BOT]\`* 」
+┆     「 *\`[PEMILIK BOT]\`* 」
 ┣───────────────┈ 
 ┣──=[ *\`[ ${ownername} ]\`* ]==─
 ┆ • Jangan Spam Bot

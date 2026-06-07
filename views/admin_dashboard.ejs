@@ -149,6 +149,66 @@
 
             <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent my-10"></div>
 
+            <!-- Wings Allocation Management -->
+            <div class="glass-panel rounded-3xl p-6 relative overflow-hidden border-t-[3px] border-t-emerald-500/50">
+                <div class="absolute -right-16 -bottom-16 w-56 h-56 bg-emerald-500/10 blur-3xl rounded-full"></div>
+                <div class="relative flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                    <div class="max-w-2xl">
+                        <h2 class="text-2xl font-black"><i class="bi bi-diagram-3-fill mr-2 text-emerald-400"></i> Wings Allocations</h2>
+                        <p class="text-sm text-gray-400 mt-1">Buat allocation lalu jalankan command wings yang digenerate. Bot baru akan otomatis diarahkan ke allocation online paling ringan.</p>
+                    </div>
+                    <button onclick="createAllocation()" class="px-5 py-3 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-white font-bold transition-all border border-emerald-500/30 flex items-center justify-center gap-2">
+                        <i class="bi bi-plus-circle"></i> Create Allocation
+                    </button>
+                </div>
+
+                <div class="relative grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
+                    <% const allocationList = typeof allocations !== 'undefined' ? allocations : []; %>
+                    <% if (!allocationList.length) { %>
+                        <div class="lg:col-span-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-6 text-center text-sm text-gray-400">
+                            Belum ada allocation. Buat allocation pertama untuk menjalankan bot di proses wings terpisah.
+                        </div>
+                    <% } %>
+                    <% allocationList.forEach(allocation => { 
+                        const botCount = allocation.bots ? Object.keys(allocation.bots).length : 0;
+                    %>
+                    <div class="rounded-2xl bg-black/30 border border-white/10 p-5 flex flex-col gap-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h3 class="font-black text-white"><%= allocation.name %></h3>
+                                <p class="text-[11px] text-gray-500 font-mono break-all"><%= allocation.uuid %></p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black border <%= allocation.online ? 'bg-green-500/15 text-green-400 border-green-500/25' : 'bg-red-500/15 text-red-400 border-red-500/25' %>">
+                                <%= allocation.online ? 'ONLINE' : 'OFFLINE' %>
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="rounded-xl bg-white/5 p-3">
+                                <p class="text-[10px] text-gray-500 uppercase font-bold">Port</p>
+                                <p class="text-sm font-mono text-gray-200"><%= allocation.port %></p>
+                            </div>
+                            <div class="rounded-xl bg-white/5 p-3">
+                                <p class="text-[10px] text-gray-500 uppercase font-bold">Bots</p>
+                                <p class="text-sm font-mono text-gray-200"><%= botCount %>/<%= allocation.maxBots %></p>
+                            </div>
+                            <div class="col-span-2 rounded-xl bg-white/5 p-3">
+                                <p class="text-[10px] text-gray-500 uppercase font-bold">URL</p>
+                                <p class="text-xs font-mono text-gray-300 break-all"><%= allocation.url || 'Belum register' %></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 text-xs text-gray-500">
+                            <span>Last seen: <%= allocation.lastSeen ? moment(allocation.lastSeen).tz('Asia/Jakarta').format('DD/MM HH:mm:ss') : '-' %></span>
+                            <button onclick="deleteAllocation('<%= allocation.uuid %>')" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white font-bold transition-all">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent my-10"></div>
+
             <!-- Server User / Bot Management List -->
             <div>
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 px-2">
@@ -327,6 +387,99 @@
                         }).then(() => location.reload());
                     }
                 } catch(err) {}
+            }
+        }
+
+        async function createAllocation() {
+            const { value: formValues } = await Swal.fire({
+                title: 'Create Wings Allocation',
+                html: `
+                    <div class="text-left space-y-3 mt-4">
+                        <div>
+                            <label class="text-xs font-bold text-gray-400">Nama Allocation</label>
+                            <input id="allocation-name" class="swal2-input !m-0 !w-full" placeholder="allocation01">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-400">Port Wings</label>
+                            <input id="allocation-port" type="number" class="swal2-input !m-0 !w-full" placeholder="3101">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-400">Max Bot di Allocation Ini</label>
+                            <input id="allocation-max" type="number" class="swal2-input !m-0 !w-full" value="5">
+                        </div>
+                    </div>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonColor: '#22c55e',
+                background: '#121212',
+                color: '#fff',
+                preConfirm: () => ({
+                    name: document.getElementById('allocation-name').value,
+                    port: document.getElementById('allocation-port').value,
+                    maxBots: document.getElementById('allocation-max').value
+                })
+            });
+
+            if (!formValues) return;
+
+            try {
+                const res = await fetch('/api/admin/allocations/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formValues)
+                });
+                const result = await res.json();
+                if (!result.success) return Swal.fire('Error', result.error, 'error');
+
+                const command = result.allocation.command;
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Allocation Dibuat',
+                    html: `
+                        <p class="text-sm text-gray-300 mb-3">Jalankan command ini di terminal/server wings:</p>
+                        <textarea id="wings-command" class="swal2-textarea !w-full !h-28 !m-0 font-mono text-xs" readonly>${command}</textarea>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Copy Command',
+                    cancelButtonText: 'Tutup',
+                    confirmButtonColor: '#22c55e',
+                    background: '#121212',
+                    color: '#fff',
+                    preConfirm: async () => {
+                        const textarea = document.getElementById('wings-command');
+                        textarea.select();
+                        await navigator.clipboard.writeText(textarea.value);
+                    }
+                });
+                location.reload();
+            } catch (err) {
+                Swal.fire('Error', 'Gagal komunikasi server', 'error');
+            }
+        }
+
+        async function deleteAllocation(uuid) {
+            const confirmed = await Swal.fire({
+                title: 'Hapus Allocation?',
+                text: 'Bot yang sedang berjalan di wings ini harus dihentikan/manual start ulang di allocation lain.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#333',
+                confirmButtonText: 'Hapus',
+                background: '#121212',
+                color: '#fff'
+            });
+
+            if (!confirmed.isConfirmed) return;
+
+            try {
+                const res = await fetch('/api/admin/allocations/delete/' + uuid, { method: 'POST' });
+                const result = await res.json();
+                if (result.success) return location.reload();
+                Swal.fire('Error', result.error, 'error');
+            } catch (err) {
+                Swal.fire('Error', 'Gagal komunikasi server', 'error');
             }
         }
 

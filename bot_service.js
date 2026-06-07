@@ -2,15 +2,44 @@ const { NanoBotzInd, botStatus } = require('./index');
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
+const allocationManager = require('./lib/allocationManager');
+
+function allocationIsOnline(allocation) {
+    const lastSeen = allocation && allocation.lastSeen ? new Date(allocation.lastSeen).getTime() : 0;
+    return Boolean(allocation && allocation.url && lastSeen && Date.now() - lastSeen <= allocationManager.HEARTBEAT_TIMEOUT_MS);
+}
 
 class BotService {
     async start(method, botNumber) {
+        botNumber = botNumber ? String(botNumber).replace(/[^0-9]/g, '') : '';
+        if (process.env.ZX_WINGS_WORKER !== '1') {
+            const currentAllocation = allocationManager.getBotAllocation(botNumber);
+            const allocation = allocationIsOnline(currentAllocation)
+                ? currentAllocation
+                : allocationManager.chooseAllocation();
+
+            if (allocation) {
+                const result = await allocationManager.sendBotAction(allocation, 'start', botNumber, method || 'pairing');
+                allocationManager.markBotAssigned(allocation.uuid, botNumber);
+                return result;
+            }
+        }
+
+        return this.startLocal(method, botNumber);
+    }
+
+    async startLocal(method, botNumber) {
         // Trigger the start logic from index.js
         return NanoBotzInd(method, botNumber);
     }
 
     getStatus(num = null) {
         num = num ? String(num).replace(/[^0-9]/g, '') : '';
+        const remoteStatus = process.env.ZX_WINGS_WORKER !== '1'
+            ? allocationManager.getCachedBotStatus(num)
+            : null;
+        if (remoteStatus) return remoteStatus;
+
         const sock = num ? (botStatus.socks[num] || null) : null;
         const socketReady = !!(sock && ((sock.ws && sock.ws.readyState === 1) || sock.user));
         let statusObj = {
@@ -34,6 +63,21 @@ class BotService {
     }
 
     async stop(botNumber) {
+        botNumber = botNumber ? botNumber.replace(/[^0-9]/g, '') : '';
+        if (process.env.ZX_WINGS_WORKER !== '1') {
+            const allocation = allocationManager.getBotAllocation(botNumber);
+            if (allocationIsOnline(allocation)) {
+                const result = await allocationManager.sendBotAction(allocation, 'stop', botNumber);
+                allocationManager.unassignBot(botNumber);
+                return result;
+            }
+            allocationManager.unassignBot(botNumber);
+        }
+
+        return this.stopLocal(botNumber);
+    }
+
+    async stopLocal(botNumber) {
         botNumber = botNumber ? botNumber.replace(/[^0-9]/g, '') : '';
         botStatus.states[botNumber] = 'stopped';
         const sock = botStatus.socks[botNumber];
@@ -66,6 +110,7 @@ class BotService {
 
     async deleteSession(botNumber) {
         botNumber = botNumber ? botNumber.replace(/[^0-9]/g, '') : '';
+        if (process.env.ZX_WINGS_WORKER !== '1') allocationManager.unassignBot(botNumber);
         botStatus.states[botNumber] = 'deleted';
         const sock = botStatus.socks[botNumber];
         if (sock) {
@@ -106,6 +151,29 @@ class BotService {
 
     getBot(num) {
         return botStatus.socks[num] || botStatus.sock || this.getRandomBot();
+    }
+
+    getLocalStatuses() {
+        const statuses = {};
+        const nums = new Set([
+            ...Object.keys(botStatus.states || {}),
+            ...Object.keys(botStatus.socks || {})
+        ]);
+
+        nums.forEach(num => {
+            const sock = botStatus.socks[num] || null;
+            const socketReady = !!(sock && ((sock.ws && sock.ws.readyState === 1) || sock.user));
+            statuses[num] = {
+                status: botStatus.states[num] || 'idle',
+                qr: botStatus.qrs[num] || null,
+                pairingCode: botStatus.pairingCodes[num] || null,
+                socketReady,
+                inbound: socketReady ? Math.floor(Math.random() * 50) + 10 : 0,
+                outbound: socketReady ? Math.floor(Math.random() * 50) + 10 : 0
+            };
+        });
+
+        return statuses;
     }
 
     get bot() {

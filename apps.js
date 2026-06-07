@@ -20,6 +20,7 @@ const { GopayClient } = require('./lib/gopay/gopay.client');
 const { checkForUpdate } = require('./classes/_autoUpdate');
 const QRCode = require('qrcode');
 const QRISPayment = require('./config/qris-payment/src');
+const allocationManager = require('./lib/allocationManager');
 const gopayClient = new GopayClient();
 
 // Email Transporter (Gunakan Gmail App Password atau SMTP lain)
@@ -1972,6 +1973,7 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
             title: 'Admin Panel',
             user: req.user,
             users: users,
+            allocations: allocationManager.listAllocations(),
             botStatus: botStatus,
             uptime: uptimeStr,
             uptimeSeconds: Math.floor(uptime),
@@ -2014,6 +2016,25 @@ app.post('/api/admin/server/restart', isAdmin, (req, res) => {
     }, 1000);
 });
 
+app.post('/api/admin/allocations/create', isAdmin, (req, res) => {
+    try {
+        const allocation = allocationManager.createAllocation(req.body || {}, req);
+        res.json({ success: true, allocation });
+    } catch (err) {
+        res.status(500).json({ error: 'Gagal membuat allocation: ' + err.message });
+    }
+});
+
+app.post('/api/admin/allocations/delete/:uuid', isAdmin, (req, res) => {
+    try {
+        const deleted = allocationManager.deleteAllocation(req.params.uuid);
+        if (!deleted) return res.status(404).json({ error: 'Allocation tidak ditemukan' });
+        res.json({ success: true, message: 'Allocation deleted' });
+    } catch (err) {
+        res.status(500).json({ error: 'Gagal menghapus allocation: ' + err.message });
+    }
+});
+
 app.post('/api/admin/bot/action', isAdmin, async (req, res) => {
     const { action, botNum } = req.body;
     if (!botNum) return res.status(400).json({ error: 'Nomor bot dibutuhkan' });
@@ -2046,6 +2067,13 @@ app.get('/api/admin/bot/session/:botNum', isAdmin, (req, res) => {
     } else {
         res.status(404).send('Session file not found for this bot.');
     }
+});
+
+app.post('/api/wings/heartbeat', (req, res) => {
+    const { uuid, token } = req.body || {};
+    const allocation = allocationManager.updateHeartbeat(uuid, token, req.body || {});
+    if (!allocation) return res.status(403).json({ error: 'Invalid allocation credentials' });
+    res.json({ success: true, allocation });
 });
 // ============================================================
 
