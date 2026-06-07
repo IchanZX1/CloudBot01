@@ -1955,13 +1955,71 @@ const isAdmin = (req, res, next) => {
 
 app.get('/admin/dashboard', isAdmin, async (req, res) => {
     try {
-        const users = await User.find({}).sort({ createdAt: -1 });
         const { botStatus } = require('./index');
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const allowedLimits = [12, 24, 48, 96];
+        const requestedLimit = parseInt(req.query.limit, 10) || 24;
+        const limit = allowedLimits.includes(requestedLimit) ? requestedLimit : 24;
+        const search = String(req.query.search || '').trim();
+        const status = ['all', 'active', 'inactive'].includes(req.query.status) ? req.query.status : 'all';
+        const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const activeBotNums = Object.entries(botStatus.states || {})
+            .filter(([, state]) => state === 'open')
+            .map(([num]) => num);
+
+        const filters = [];
+        if (search) {
+            const regex = new RegExp(escapeRegex(search), 'i');
+            filters.push({
+                $or: [
+                    { username: regex },
+                    { email: regex },
+                    { no_Wa: regex },
+                    { no_Bot: regex },
+                    { paket: regex },
+                    { role: regex }
+                ]
+            });
+        }
+
+        if (status === 'active') {
+            filters.push(activeBotNums.length ? { $or: [{ no_Bot: { $in: activeBotNums } }, { no_Wa: { $in: activeBotNums } }] } : { _id: null });
+        } else if (status === 'inactive' && activeBotNums.length) {
+            filters.push({ no_Bot: { $nin: activeBotNums }, no_Wa: { $nin: activeBotNums } });
+        }
+
+        const query = filters.length ? { $and: filters } : {};
+        const [users, filteredUsers, totalUsers] = await Promise.all([
+            User.find(query)
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .lean(),
+            User.countDocuments(query),
+            User.countDocuments({})
+        ]);
+        const totalPages = Math.max(Math.ceil(filteredUsers / limit), 1);
+        if (page > totalPages) {
+            const params = new URLSearchParams({
+                page: String(totalPages),
+                limit: String(limit),
+                status
+            });
+            if (search) params.set('search', search);
+            return res.redirect('/admin/dashboard?' + params.toString());
+        }
 
         let logContent = '';
         const logPath = path.join(__dirname, 'log_reportError.txt');
         if (fs.existsSync(logPath)) {
-            logContent = fs.readFileSync(logPath, 'utf8');
+            const stats = fs.statSync(logPath);
+            const maxLogBytes = 80 * 1024;
+            const start = Math.max(stats.size - maxLogBytes, 0);
+            const fd = fs.openSync(logPath, 'r');
+            const buffer = Buffer.alloc(stats.size - start);
+            fs.readSync(fd, buffer, 0, buffer.length, start);
+            fs.closeSync(fd);
+            logContent = (start > 0 ? '[Log dipotong: menampilkan bagian terbaru]\n\n' : '') + buffer.toString('utf8');
         } else {
             logContent = 'No logs available.';
         }
@@ -1973,6 +2031,15 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
             title: 'Admin Panel',
             user: req.user,
             users: users,
+            pagination: {
+                page,
+                limit,
+                totalPages,
+                filteredUsers,
+                totalUsers,
+                search,
+                status
+            },
             allocations: allocationManager.listAllocations(),
             botStatus: botStatus,
             uptime: uptimeStr,

@@ -211,28 +211,56 @@
 
             <!-- Server User / Bot Management List -->
             <div>
+                <% 
+                    const pageInfo = typeof pagination !== 'undefined' ? pagination : { page: 1, limit: 24, totalPages: 1, filteredUsers: users.length, totalUsers: users.length, search: '', status: 'all' };
+                    const buildAdminPageUrl = (page, extra = {}) => {
+                        const params = new URLSearchParams({
+                            page: String(page),
+                            limit: String(extra.limit || pageInfo.limit),
+                            status: extra.status || pageInfo.status || 'all'
+                        });
+                        const searchValue = extra.search !== undefined ? extra.search : pageInfo.search;
+                        if (searchValue) params.set('search', searchValue);
+                        return '/admin/dashboard?' + params.toString();
+                    };
+                    const pageWindowStart = Math.max(1, pageInfo.page - 2);
+                    const pageWindowEnd = Math.min(pageInfo.totalPages, pageInfo.page + 2);
+                %>
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 px-2">
                     <div>
                         <h2 class="text-2xl font-black"><i class="bi bi-people-fill mr-2 text-indigo-500"></i> Server Users Management</h2>
-                        <p class="text-sm text-gray-400 font-bold"><%= users.length %> Total DB Accounts</p>
+                        <p class="text-sm text-gray-400 font-bold"><%= pageInfo.filteredUsers %> ditampilkan dari <%= pageInfo.totalUsers %> Total DB Accounts</p>
                     </div>
 
-                    <!-- Search and Filter Controls -->
-                    <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                    <form method="GET" action="/admin/dashboard" class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                        <input type="hidden" name="page" value="1">
                         <div class="relative w-full sm:w-64">
                             <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input type="text" id="searchInput" onkeyup="filterUsers()" placeholder="Search username, email, bot..." 
+                            <input type="text" name="search" value="<%= pageInfo.search %>" placeholder="Search username, email, bot..." 
                                 class="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
                         </div>
-                        <div class="flex items-center gap-2 w-full sm:w-auto bg-white/5 p-1 rounded-xl border border-white/10">
-                            <button onclick="setFilter('all', this)" class="filter-btn active flex-1 sm:flex-none px-4 py-1.5 rounded-lg bg-indigo-500 text-white font-bold text-xs transition-all">All</button>
-                            <button onclick="setFilter('active', this)" class="filter-btn flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-gray-400 hover:text-white font-bold text-xs transition-all">Aktif</button>
-                            <button onclick="setFilter('inactive', this)" class="filter-btn flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-gray-400 hover:text-white font-bold text-xs transition-all">Mati</button>
-                        </div>
-                    </div>
+                        <select name="status" class="bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <option value="all" <%= pageInfo.status === 'all' ? 'selected' : '' %>>All</option>
+                            <option value="active" <%= pageInfo.status === 'active' ? 'selected' : '' %>>Aktif</option>
+                            <option value="inactive" <%= pageInfo.status === 'inactive' ? 'selected' : '' %>>Mati</option>
+                        </select>
+                        <select name="limit" class="bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <% [12, 24, 48, 96].forEach(size => { %>
+                                <option value="<%= size %>" <%= pageInfo.limit === size ? 'selected' : '' %>><%= size %>/page</option>
+                            <% }) %>
+                        </select>
+                        <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-500 text-white font-bold text-sm hover:bg-indigo-600 transition-all">
+                            Filter
+                        </button>
+                    </form>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 relative" id="usersGrid">
+                    <% if (!users.length) { %>
+                        <div class="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center text-sm text-gray-400">
+                            Tidak ada user yang cocok dengan filter saat ini.
+                        </div>
+                    <% } %>
                     <% users.forEach(u => { 
                         const botNum = (u.no_Bot || u.no_Wa || '').replace(/[^0-9]/g, '');
                         // get actual stat
@@ -310,33 +338,32 @@
                     </div>
                     <% }) %>
                 </div>
+
+                <div class="mt-8 flex flex-col md:flex-row items-center justify-between gap-4 rounded-2xl bg-white/[0.03] border border-white/10 p-4">
+                    <p class="text-xs text-gray-400 font-bold">
+                        Page <span class="text-white"><%= pageInfo.page %></span> of <span class="text-white"><%= pageInfo.totalPages %></span>
+                    </p>
+                    <div class="flex items-center gap-2 flex-wrap justify-center">
+                        <a href="<%= buildAdminPageUrl(Math.max(pageInfo.page - 1, 1)) %>" class="px-3 py-2 rounded-lg border border-white/10 text-xs font-bold <%= pageInfo.page <= 1 ? 'pointer-events-none text-gray-600 bg-white/[0.02]' : 'text-gray-300 hover:bg-white/10' %>">
+                            Prev
+                        </a>
+                        <% for (let pageNumber = pageWindowStart; pageNumber <= pageWindowEnd; pageNumber++) { %>
+                            <a href="<%= buildAdminPageUrl(pageNumber) %>" class="px-3 py-2 rounded-lg border text-xs font-bold <%= pageNumber === pageInfo.page ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-white/10 text-gray-300 hover:bg-white/10' %>">
+                                <%= pageNumber %>
+                            </a>
+                        <% } %>
+                        <a href="<%= buildAdminPageUrl(Math.min(pageInfo.page + 1, pageInfo.totalPages)) %>" class="px-3 py-2 rounded-lg border border-white/10 text-xs font-bold <%= pageInfo.page >= pageInfo.totalPages ? 'pointer-events-none text-gray-600 bg-white/[0.02]' : 'text-gray-300 hover:bg-white/10' %>">
+                            Next
+                        </a>
+                    </div>
+                </div>
             </div>
 
         </main>
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        // Particles Effect Config
-        particlesJS("particles-js", {
-            "particles": {
-                "number": { "value": 60, "density": { "enable": true, "value_area": 800 } },
-                "color": { "value": "#6366f1" },
-                "shape": { "type": "circle" },
-                "opacity": { "value": 0.5, "random": true, "anim": { "enable": true, "speed": 1, "opacity_min": 0.1, "sync": false } },
-                "size": { "value": 3, "random": true, "anim": { "enable": false } },
-                "line_linked": { "enable": true, "distance": 150, "color": "#6366f1", "opacity": 0.2, "width": 1 },
-                "move": { "enable": true, "speed": 1, "direction": "none", "random": true, "straight": false, "out_mode": "out", "bounce": false }
-            },
-            "interactivity": {
-                "detect_on": "canvas",
-                "events": { "onhover": { "enable": true, "mode": "bubble" }, "onclick": { "enable": false }, "resize": true },
-                "modes": { "bubble": { "distance": 200, "size": 6, "duration": 2, "opacity": 0.8, "speed": 3 } }
-            },
-            "retina_detect": true
-        });
-
         // Realtime Clock Asia/Jakarta
         function updateClock() {
             const now = new Date();
@@ -612,47 +639,6 @@
             }
         }
 
-        // Realtime Search and Filter logic
-        let currentStatusFilter = 'all';
-
-        function setFilter(filterType, btnElem) {
-            currentStatusFilter = filterType;
-            
-            // Highlight active button
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-500', 'text-white');
-                btn.classList.add('text-gray-400', 'hover:text-white');
-            });
-            btnElem.classList.remove('text-gray-400', 'hover:text-white');
-            btnElem.classList.add('bg-indigo-500', 'text-white');
-
-            filterUsers();
-        }
-
-        function filterUsers() {
-            const searchVal = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.user-card');
-            
-            cards.forEach(card => {
-                const textContent = card.innerText.toLowerCase();
-                const cardStatus = card.getAttribute('data-status');
-                
-                const matchesSearch = textContent.includes(searchVal);
-                let matchesStatus = true;
-
-                if (currentStatusFilter === 'active') {
-                    matchesStatus = cardStatus === 'active';
-                } else if (currentStatusFilter === 'inactive') {
-                    matchesStatus = cardStatus === 'inactive';
-                }
-
-                if (matchesSearch && matchesStatus) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
     </script>
 </body>
 </html>
