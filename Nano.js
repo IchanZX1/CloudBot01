@@ -796,11 +796,12 @@ const reply = async (teks) => {
           NanoBotz.readMessages([m.key])
         }
 
-        // Only Group (Block PC IF active)
-        if (setting.onlygrub && !m.isGroup && !m.key.fromMe) return
-
-        // Only PC (Block Group IF active)
-        if (setting.onlypc && m.isGroup && !m.key.fromMe) return
+        const groupAccessEnabled = !!setting.onlygrub
+        const privateAccessEnabled = !!setting.onlypc
+        if (!m.key.fromMe) {
+          if (m.isGroup && !groupAccessEnabled) return
+          if (!m.isGroup && !privateAccessEnabled) return
+        }
       }
 
     } catch (err) {
@@ -812,8 +813,8 @@ const reply = async (teks) => {
     }
 
 
-    // Final Public check - Owner/Bot key bypass
-    if (!NanoBotz.public && !m.key.fromMe && !DanzTheCreator) return;
+    // Final Public check: self mode only accepts messages from the bot account.
+    if (!NanoBotz.public && !m.key.fromMe) return;
 
     // auto message
 
@@ -1935,13 +1936,6 @@ Desc : ${PlXz.player_response.videoDetails.shortDescription}`
         reply(`${error}`)
       }
     }
-    //=================================================================
-    if (!m.isGroup && db.settings[botNumber].onlygrub) {
-      if (command) {
-        return;
-      }
-    }
-    //=================================================================
     async function makeSticker(media, Sticker, StickerTypes) {
       const getRandom = (ext) => {
         return `${Math.floor(Math.random() * 10000)}${ext}`
@@ -2389,19 +2383,6 @@ ${themeemoji} Title: ${result.title}`;
         }, {
           quoted: m
         })
-      }
-    }
-    //=========================================\\
-    // Grup Only
-    if (!m.isGroup && db.settings[botNumber].onlygrub) {
-      if (isCmd) {
-        return
-      }
-    }
-    // Private Only
-    if (db.settings[botNumber].onlypc && m.isGroup) {
-      if (isCmd) {
-        return;
       }
     }
     if (Antilinkgc) {

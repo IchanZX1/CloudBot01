@@ -76,13 +76,13 @@ let botStatus = {
 function createDefaultBotSettings() {
   return {
     public: true,
-    anticall: false,
+    anticall: true,
     status: 0,
     stock: 0,
     autobio: false,
     auto_ai_grup: false,
     goodbye: false,
-    onlygrub: false,
+    onlygrub: true,
     onlypc: false,
     welcome: true,
     autoread: false
@@ -895,8 +895,12 @@ async function NanoBotzInd(method = null, num = null) {
       await sendTrialAdIfNeeded(NanoBotz, m, botNumberJid);
       m.__trialAdChecked = true;
 
-      if (botSettings.onlygrub && !m.isGroup) return;
-      if (botSettings.onlypc && m.isGroup) return;
+      const groupAccessEnabled = !!botSettings.onlygrub;
+      const privateAccessEnabled = !!botSettings.onlypc;
+      if (!kay.key.fromMe) {
+        if (m.isGroup && !groupAccessEnabled) return;
+        if (!m.isGroup && !privateAccessEnabled) return;
+      }
 
       require('./Nano')(NanoBotz, m, chatUpdate, store)
     } catch (err) {
