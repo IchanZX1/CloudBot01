@@ -22,6 +22,7 @@ const master = getArg('master', 'http://localhost:3000').replace(/\/$/, '');
 const port = Number(getArg('port', '3101'));
 const publicUrl = getArg('url', `http://localhost:${port}`).replace(/\/$/, '');
 const restoreDelayMs = Math.max(Number(getArg('restore-delay', '8000')) || 8000, 1000);
+const restoreTimeoutMs = Math.max(Number(getArg('restore-timeout', '300000')) || 300000, 60000);
 const autoRestoreEnabled = getArg('auto-restore', '1') !== '0';
 
 if (!uuid || !token) {
@@ -218,7 +219,7 @@ async function restoreAssignedBots() {
         return;
     }
 
-    console.log(`[WINGS] Auto-restore ${botNums.length} bot assigned dengan delay ${restoreDelayMs}ms.`);
+    console.log(`[WINGS] Auto-restore ${botNums.length} bot assigned dengan delay ${restoreDelayMs}ms dan timeout ${restoreTimeoutMs}ms.`);
     for (const botNum of botNums) {
         try {
             const status = botService.getStatus(botNum);
@@ -228,12 +229,30 @@ async function restoreAssignedBots() {
                 console.log(`[WINGS] Restoring bot ${botNum}...`);
                 await botService.startLocal(null, botNum);
                 await sendHeartbeat();
+                scheduleRestoreCleanup(botNum);
             }
         } catch (err) {
             console.error(`[WINGS] Gagal restore bot ${botNum}:`, err.message);
         }
         await sleep(restoreDelayMs);
     }
+}
+
+function scheduleRestoreCleanup(botNum) {
+    setTimeout(async () => {
+        try {
+            const status = botService.getStatus(botNum);
+            if (status.isConnected || status.status === 'open') return;
+
+            if (['connecting', 'qr', 'pairing', 'idle'].includes(status.status)) {
+                console.log(`[WINGS] Auto-restore cleanup ${botNum}; status ${status.status} lebih dari ${restoreTimeoutMs}ms tanpa koneksi masuk.`);
+                await botService.stopLocal(botNum);
+                await sendHeartbeat();
+            }
+        } catch (err) {
+            console.error(`[WINGS] Gagal cleanup restore bot ${botNum}:`, err.message);
+        }
+    }, restoreTimeoutMs);
 }
 
 function requireMaster(req, res, next) {

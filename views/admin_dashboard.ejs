@@ -198,9 +198,14 @@
                         </div>
                         <div class="flex items-center justify-between gap-2 text-xs text-gray-500">
                             <span>Last seen: <%= allocation.lastSeen ? moment(allocation.lastSeen).tz('Asia/Jakarta').format('DD/MM HH:mm:ss') : '-' %></span>
-                            <button onclick="deleteAllocation('<%= allocation.uuid %>')" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white font-bold transition-all">
-                                <i class="bi bi-trash3"></i>
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <button onclick="editAllocation('<%= allocation.uuid %>', '<%= allocation.name %>', '<%= allocation.port %>', '<%= allocation.maxBots %>')" class="px-3 py-2 rounded-lg bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500 hover:text-white font-bold transition-all" title="Edit Allocation">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button onclick="deleteAllocation('<%= allocation.uuid %>')" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white font-bold transition-all" title="Delete Allocation">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <% }) %>
@@ -505,6 +510,63 @@
                 const result = await res.json();
                 if (result.success) return location.reload();
                 Swal.fire('Error', result.error, 'error');
+            } catch (err) {
+                Swal.fire('Error', 'Gagal komunikasi server', 'error');
+            }
+        }
+
+        async function editAllocation(uuid, name, port, maxBots) {
+            const { value: formValues } = await Swal.fire({
+                title: 'Edit Allocation',
+                html: `
+                    <div class="text-left space-y-3 mt-4">
+                        <div>
+                            <label class="text-xs font-bold text-gray-400">Nama Allocation</label>
+                            <input id="edit-allocation-name" class="swal2-input !m-0 !w-full" value="${name}">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-400">Port Wings</label>
+                            <input id="edit-allocation-port" type="number" class="swal2-input !m-0 !w-full" value="${port}">
+                            <p class="text-[11px] text-gray-500 mt-1">Ubah port hanya kalau command wings dan reverse proxy juga ikut diubah.</p>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-400">Max Bot</label>
+                            <input id="edit-allocation-max" type="number" min="1" max="1000" class="swal2-input !m-0 !w-full" value="${maxBots}">
+                        </div>
+                    </div>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonColor: '#6366f1',
+                background: '#121212',
+                color: '#fff',
+                preConfirm: () => ({
+                    name: document.getElementById('edit-allocation-name').value,
+                    port: document.getElementById('edit-allocation-port').value,
+                    maxBots: document.getElementById('edit-allocation-max').value
+                })
+            });
+
+            if (!formValues) return;
+
+            try {
+                const res = await fetch('/api/admin/allocations/update/' + uuid, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formValues)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Allocation Updated',
+                        text: 'Limit bot allocation berhasil diperbarui.',
+                        background: '#121212',
+                        color: '#fff'
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire('Error', result.error, 'error');
+                }
             } catch (err) {
                 Swal.fire('Error', 'Gagal komunikasi server', 'error');
             }

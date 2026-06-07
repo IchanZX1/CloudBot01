@@ -2167,6 +2167,16 @@ app.post('/api/admin/allocations/delete/:uuid', isAdmin, (req, res) => {
     }
 });
 
+app.post('/api/admin/allocations/update/:uuid', isAdmin, (req, res) => {
+    try {
+        const allocation = allocationManager.updateAllocation(req.params.uuid, req.body || {});
+        if (!allocation) return res.status(404).json({ error: 'Allocation tidak ditemukan' });
+        res.json({ success: true, allocation, message: 'Allocation updated' });
+    } catch (err) {
+        res.status(500).json({ error: 'Gagal update allocation: ' + err.message });
+    }
+});
+
 app.post('/api/admin/bot/action', isAdmin, async (req, res) => {
     const { action, botNum } = req.body;
     if (!botNum) return res.status(400).json({ error: 'Nomor bot dibutuhkan' });
