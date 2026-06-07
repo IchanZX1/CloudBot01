@@ -19,9 +19,14 @@ class BotService {
                 : allocationManager.chooseAllocation();
 
             if (allocation) {
-                const result = await allocationManager.sendBotAction(allocation, 'start', botNumber, method || 'pairing');
-                allocationManager.markBotAssigned(allocation.uuid, botNumber);
-                return result;
+                try {
+                    const result = await allocationManager.sendBotAction(allocation, 'start', botNumber, method || 'pairing');
+                    allocationManager.markBotAssigned(allocation.uuid, botNumber);
+                    return result;
+                } catch (err) {
+                    console.error(`[ALLOCATION] Failed starting bot ${botNumber} on ${allocation.name || allocation.uuid}. Falling back to local server:`, err.message);
+                    allocationManager.unassignBot(botNumber);
+                }
             }
         }
 
