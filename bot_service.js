@@ -113,7 +113,21 @@ class BotService {
 
     async deleteSession(botNumber) {
         botNumber = botNumber ? botNumber.replace(/[^0-9]/g, '') : '';
-        if (process.env.ZX_WINGS_WORKER !== '1') allocationManager.unassignBot(botNumber);
+        if (process.env.ZX_WINGS_WORKER !== '1') {
+            const allocation = allocationManager.getBotAllocation(botNumber);
+            if (allocationIsOnline(allocation)) {
+                try {
+                    await allocationManager.sendBotAction(allocation, 'delete', botNumber);
+                } catch (err) {
+                    console.error(`[ALLOCATION] Failed deleting remote session ${botNumber} on ${allocation.name || allocation.uuid}:`, err.message);
+                    throw err;
+                } finally {
+                    allocationManager.unassignBot(botNumber);
+                }
+                return { success: true };
+            }
+            allocationManager.unassignBot(botNumber);
+        }
         botStatus.states[botNumber] = 'deleted';
         const sock = botStatus.socks[botNumber];
         if (sock) {

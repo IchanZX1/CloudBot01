@@ -300,6 +300,12 @@ app.post('/api/wings/bot/action', requireMaster, async (req, res) => {
             return res.json({ success: true, message: `Bot ${botNum} stopped on ${uuid}` });
         }
 
+        if (action === 'delete') {
+            await botService.deleteSession(botNum);
+            await sendHeartbeat();
+            return res.json({ success: true, message: `Bot ${botNum} session deleted on ${uuid}` });
+        }
+
         return res.status(400).json({ error: 'Invalid action' });
     } catch (err) {
         return res.status(500).json({ error: err.message });
