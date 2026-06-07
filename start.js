@@ -5,7 +5,7 @@ const path = require('path');
 const readline = require('readline');
 const { spawn, spawnSync } = require('child_process');
 
-const REPO_URL = 'https://github.com/IchanZX1/CloudBot01.git';
+const DEFAULT_REPO_URL = 'https://github.com/IchanZX1/CloudBot01.git';
 const DEFAULT_DIR_NAME = 'CloudBot01';
 const CONFIG_FILE = '.wings-start.json';
 
@@ -35,8 +35,16 @@ function commandExists(command) {
     return result.status === 0;
 }
 
+function getRepoUrl() {
+    return process.env.REPOSITORY_URL || process.env.GIT_REPO_URL || process.env.BASE_URL || DEFAULT_REPO_URL;
+}
+
 function hasProjectFiles(dir) {
     return fs.existsSync(path.join(dir, 'package.json')) && fs.existsSync(path.join(dir, 'wings.js'));
+}
+
+function isGitRepo(dir) {
+    return fs.existsSync(path.join(dir, '.git'));
 }
 
 function resolveAppDir() {
@@ -115,6 +123,7 @@ function ask(question) {
 async function ensureProject(appDir) {
     if (hasProjectFiles(appDir)) {
         log(`Project ditemukan di ${appDir}`);
+        updateProject(appDir);
         return;
     }
 
@@ -126,8 +135,34 @@ async function ensureProject(appDir) {
         throw new Error(`Folder ${appDir} sudah ada dan tidak kosong, tapi bukan project CloudBot.`);
     }
 
-    log(`Mengambil data dari ${REPO_URL}`);
-    run('git', ['clone', REPO_URL, appDir], { cwd: process.cwd() });
+    const repoUrl = getRepoUrl();
+    log(`Mengambil data dari ${repoUrl}`);
+    run('git', ['clone', repoUrl, appDir], { cwd: process.cwd() });
+}
+
+function updateProject(appDir) {
+    if (!isGitRepo(appDir)) {
+        log('Auto update dilewati karena folder project bukan git repository.');
+        return;
+    }
+
+    if (!commandExists('git')) {
+        log('Auto update dilewati karena git belum tersedia.');
+        return;
+    }
+
+    log('Mengecek update repository...');
+    run('git', ['fetch', '--all', '--prune'], { cwd: appDir });
+
+    const branchResult = spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+        cwd: appDir,
+        encoding: 'utf8',
+        shell: process.platform === 'win32'
+    });
+    const branch = String(branchResult.stdout || '').trim() || 'main';
+
+    run('git', ['pull', '--ff-only', 'origin', branch], { cwd: appDir });
+    log(`Auto update selesai pada branch ${branch}.`);
 }
 
 function ensureDependencies(appDir) {

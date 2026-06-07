@@ -543,6 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sholatCityCurrent = document.getElementById('sholat-city-current');
 
         let pollingInterval = null;
+        let connectStartedAt = 0;
         let flowChart = null;
         let lastLoggedStatus = null;
         let sholatProvincesLoaded = false;
@@ -584,6 +585,14 @@ document.addEventListener('DOMContentLoaded', () => {
             while (waLogsContainer.children.length > maxRows) {
                 waLogsContainer.removeChild(waLogsContainer.firstElementChild);
             }
+        }
+
+        function resetConnectButton(label = 'Start Connect') {
+            if (!submitBtn) return;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = label;
+            submitBtn.classList.remove('opacity-50');
+            submitBtn.classList.remove('text-green-500');
         }
 
         function logConnectionStatus(data) {
@@ -953,6 +962,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-2"></i>Connecting...';
+            connectStartedAt = Date.now();
 
             const countryCode = document.getElementById('country-code').value;
             let rawNum = botNumberInput.value.replace(/[^0-9]/g, '');
@@ -978,14 +988,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 else {
                     writeWaLog(`START_REJECTED bot ${fullBotNumber}: ${data.error || 'Gagal memulai koneksi'}`, 'error');
                     showToast(data.error || 'Gagal memulai koneksi', 'error');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Start Connect';
+                    resetConnectButton();
                 }
             } catch (err) {
                 writeWaLog(`START_FAILED bot ${fullBotNumber} request koneksi gagal dikirim.`, 'error');
                 showToast('Terjadi kesalahan koneksi!', 'error');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Start Connect';
+                resetConnectButton();
             }
         });
 
@@ -998,6 +1006,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     logConnectionStatus(data);
                     updateStatusUI(data);
                     const isTerminal = ['error', 'deleted', 'stopped', 'idle'].includes(data.status);
+                    const timedOut = connectStartedAt && !data.isConnected && !isTerminal && (Date.now() - connectStartedAt > 90000);
+                    if (timedOut) {
+                        writeWaLog(`TIMEOUT bot ${data.botNumber || getSelectedBotNumber()} belum memberi QR/pairing setelah 90 detik. Silakan cek allocation wings lalu coba lagi.`, 'warning');
+                        showToast('Koneksi belum memberi QR/pairing. Cek wings lalu coba lagi.', 'warning');
+                        connectStartedAt = 0;
+                        resetConnectButton();
+                        return;
+                    }
+                    if (isTerminal) connectStartedAt = 0;
                     submitBtn.disabled = !isTerminal;
                     submitBtn.innerHTML = isTerminal ? 'Start Connect' : (data.isConnected ? 'Connected' : 'Processing...');
                     submitBtn.classList.toggle('text-green-500', !!data.isConnected);
