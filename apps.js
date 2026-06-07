@@ -1115,12 +1115,31 @@ async function getUserBotContext(req) {
     return { botNum, dbDir, dbPath, sock };
 }
 
+function getOnlineBotAllocation(botNum) {
+    const allocation = allocationManager.getBotAllocation(botNum);
+    const lastSeen = allocation && allocation.lastSeen ? new Date(allocation.lastSeen).getTime() : 0;
+    const online = Boolean(allocation && allocation.url && lastSeen && Date.now() - lastSeen <= allocationManager.HEARTBEAT_TIMEOUT_MS);
+    return online ? allocation : null;
+}
+
+async function forwardToWings(botNum, endpoint, payload = {}, options = {}) {
+    const allocation = getOnlineBotAllocation(botNum);
+    if (!allocation) return null;
+    return allocationManager.sendWorkerRequest(allocation, endpoint, {
+        method: 'POST',
+        data: { botNum, ...payload },
+        timeout: options.timeout || 30000
+    });
+}
+
 app.get('/api/bot/groups', async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
     try {
         const { botNum, sock } = await getUserBotContext(req);
         if (!botNum) return res.status(400).json({ error: 'Nomor bot belum tersedia' });
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/groups');
+        if (remoteResult) return res.json(remoteResult);
         if (!sock || botService.getStatus(botNum).status !== 'open') {
             return res.status(400).json({ error: 'Bot belum tersambung. Silakan connect bot terlebih dahulu.' });
         }
@@ -1147,7 +1166,9 @@ app.get('/api/bot/group-settings/:groupId', async (req, res) => {
         const groupId = normalizeGroupId(req.params.groupId);
         if (!groupId) return res.status(400).json({ error: 'Group ID tidak valid' });
 
-        const { dbDir, dbPath, sock } = await getUserBotContext(req);
+        const { botNum, dbDir, dbPath, sock } = await getUserBotContext(req);
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/group-settings/get', { groupId });
+        if (remoteResult) return res.json(remoteResult);
         const db = sock && sock.db ? sock.db : readJsonFile(dbPath, { settings: {} });
         if (!db.settings) db.settings = {};
 
@@ -1180,7 +1201,9 @@ app.post('/api/bot/group-settings/:groupId', async (req, res) => {
         const groupId = normalizeGroupId(req.params.groupId);
         if (!groupId) return res.status(400).json({ error: 'Group ID tidak valid' });
 
-        const { dbDir, dbPath, sock } = await getUserBotContext(req);
+        const { botNum, dbDir, dbPath, sock } = await getUserBotContext(req);
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/group-settings/save', { groupId, settings: req.body });
+        if (remoteResult) return res.json(remoteResult);
         if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 
         const db = sock && sock.db ? sock.db : readJsonFile(dbPath, {
@@ -1225,6 +1248,18 @@ app.post('/api/bot/group-settings/:groupId', async (req, res) => {
     }
 });
 
+const configUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only images are allowed (max 10MB)'));
+        }
+    }
+});
+
 app.get('/api/bot/group-invite-preview', async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -1233,7 +1268,9 @@ app.get('/api/bot/group-invite-preview', async (req, res) => {
         const inviteCode = extractGroupInviteCode(inviteUrl);
         if (!inviteCode) return res.status(400).json({ error: 'URL invite group WhatsApp tidak valid' });
 
-        const { sock } = await getUserBotContext(req);
+        const { botNum, sock } = await getUserBotContext(req);
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/group-invite-preview', { url: inviteUrl });
+        if (remoteResult) return res.json(remoteResult);
         if (!sock || typeof sock.groupGetInviteInfo !== 'function') {
             return res.status(400).json({ error: 'Bot belum tersambung atau tidak dapat membaca invite group' });
         }
@@ -1284,7 +1321,12 @@ app.post('/api/bot/group-rental/:groupId', async (req, res) => {
             return res.status(400).json({ error: 'Durasi atau tanggal masa aktif tidak valid' });
         }
 
-        const { dbDir, dbPath, sock } = await getUserBotContext(req);
+        const { botNum, dbDir, dbPath, sock } = await getUserBotContext(req);
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/group-rental/save', {
+            groupId: selectedGroupId,
+            rental: { group_url: groupUrl, duration_type: durationType, custom_date: customDate, group_name: groupName }
+        }, { timeout: 45000 });
+        if (remoteResult) return res.json(remoteResult);
         if (!sock) return res.status(400).json({ error: 'Bot belum tersambung. Silakan connect bot terlebih dahulu.' });
 
         let inviteInfo = null;
@@ -1361,6 +1403,12 @@ app.get('/api/bot/config', async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
     const botNum = (req.user.no_Bot || req.user.no_Wa || '').replace(/[^0-9]/g, '');
+    try {
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/config/get');
+        if (remoteResult) return res.json(remoteResult);
+    } catch (err) {
+        console.error('[WINGS CONFIG] Failed to load remote config:', err.message);
+    }
     const configPath = path.join(__dirname, 'session', `device${botNum}`, 'config.json');
 
     if (fs.existsSync(configPath)) {
@@ -1375,7 +1423,7 @@ app.get('/api/bot/config', async (req, res) => {
 });
 
 // Bot Config Endpoints
-app.post('/api/bot/config', upload.single('thumbnail'), async (req, res) => {
+app.post('/api/bot/config', configUpload.single('thumbnail'), async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
     // Multer populates req.body with text fields when processing multipart/form-data
@@ -1385,6 +1433,12 @@ app.post('/api/bot/config', upload.single('thumbnail'), async (req, res) => {
     const configPath = path.join(dirPath, 'config.json');
 
     try {
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/config/save', {
+            config,
+            thumbnailBase64: req.file ? req.file.buffer.toString('base64') : null
+        });
+        if (remoteResult) return res.json(remoteResult);
+
         if (!fs.existsSync(dirPath)) {
             return res.status(400).json({ error: 'Bot belum connect. Silahkan connect terlebih dahulu.' });
         }
@@ -1396,6 +1450,7 @@ app.post('/api/bot/config', upload.single('thumbnail'), async (req, res) => {
 
         const newConfig = { ...oldConfig, ...config };
 
+        if (req.file) fs.writeFileSync(path.join(dirPath, 'thumb.jpg'), req.file.buffer);
         fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2));
         res.json({ success: true, message: 'Configuration saved' });
     } catch (err) {
@@ -1409,6 +1464,13 @@ app.get('/api/bot/settings', async (req, res) => {
     const botNum = (req.user.no_Bot || req.user.no_Wa || '').replace(/[^0-9]/g, '');
     const botJid = botNum + '@s.whatsapp.net';
     const dbPath = path.join(__dirname, 'database', `data${botNum}`, 'database.json');
+
+    try {
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/settings/get');
+        if (remoteResult) return res.json(remoteResult);
+    } catch (err) {
+        console.error('[WINGS SETTINGS] Failed to load remote settings:', err.message);
+    }
 
     // Priority: In-memory database of running bot
     const { botStatus } = require('./index');
@@ -1443,6 +1505,9 @@ app.post('/api/bot/settings', async (req, res) => {
     const botJid = botNum + '@s.whatsapp.net';
 
     try {
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/settings/save', { settings: req.body });
+        if (remoteResult) return res.json(remoteResult);
+
         if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 
         // Priority: In-memory database of running bot
@@ -2141,6 +2206,13 @@ app.post('/api/wings/heartbeat', (req, res) => {
     const allocation = allocationManager.updateHeartbeat(uuid, token, req.body || {});
     if (!allocation) return res.status(403).json({ error: 'Invalid allocation credentials' });
     res.json({ success: true, allocation });
+});
+
+app.post('/api/wings/restore-list', (req, res) => {
+    const { uuid, token } = req.body || {};
+    const botNums = allocationManager.getAssignedBots(uuid, token);
+    if (!botNums) return res.status(403).json({ error: 'Invalid allocation credentials' });
+    res.json({ success: true, botNums });
 });
 // ============================================================
 
