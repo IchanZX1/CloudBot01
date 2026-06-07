@@ -170,7 +170,9 @@
                         </div>
                     <% } %>
                     <% allocationList.forEach(allocation => { 
-                        const botCount = allocation.bots ? Object.keys(allocation.bots).length : 0;
+                        const botCount = Array.isArray(allocation.activeSessionBots)
+                            ? allocation.activeSessionBots.length
+                            : (allocation.bots ? Object.values(allocation.bots).filter(bot => bot && bot.status === 'open').length : 0);
                     %>
                     <div class="rounded-2xl bg-black/30 border border-white/10 p-5 flex flex-col gap-4">
                         <div class="flex items-start justify-between gap-3">

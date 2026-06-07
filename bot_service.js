@@ -73,10 +73,8 @@ class BotService {
             const allocation = allocationManager.getBotAllocation(botNumber);
             if (allocationIsOnline(allocation)) {
                 const result = await allocationManager.sendBotAction(allocation, 'stop', botNumber);
-                allocationManager.unassignBot(botNumber);
                 return result;
             }
-            allocationManager.unassignBot(botNumber);
         }
 
         return this.stopLocal(botNumber);

@@ -179,8 +179,22 @@ function heartbeatPayload() {
         hostname: os.hostname(),
         pid: process.pid,
         stats: statsPayload(),
-        bots: botService.getLocalStatuses()
+        bots: botService.getLocalStatuses(),
+        activeSessionBots: readActiveSessionBots()
     };
+}
+
+function readActiveSessionBots() {
+    const activatePath = path.join(__dirname, 'session', 'activate_session.json');
+    try {
+        if (!fs.existsSync(activatePath)) return [];
+        const active = JSON.parse(fs.readFileSync(activatePath, 'utf8'));
+        return Array.isArray(active)
+            ? active.map(botNum => normalizeBotNum(botNum)).filter(Boolean)
+            : [];
+    } catch (err) {
+        return [];
+    }
 }
 
 async function sendHeartbeat() {
@@ -229,7 +243,7 @@ async function restoreAssignedBots() {
                 console.log(`[WINGS] Restoring bot ${botNum}...`);
                 await botService.startLocal(null, botNum);
                 await sendHeartbeat();
-                scheduleRestoreCleanup(botNum);
+                scheduleStartCleanup(botNum);
             }
         } catch (err) {
             console.error(`[WINGS] Gagal restore bot ${botNum}:`, err.message);
@@ -238,19 +252,19 @@ async function restoreAssignedBots() {
     }
 }
 
-function scheduleRestoreCleanup(botNum) {
+function scheduleStartCleanup(botNum) {
     setTimeout(async () => {
         try {
             const status = botService.getStatus(botNum);
             if (status.isConnected || status.status === 'open') return;
 
             if (['connecting', 'qr', 'pairing', 'idle'].includes(status.status)) {
-                console.log(`[WINGS] Auto-restore cleanup ${botNum}; status ${status.status} lebih dari ${restoreTimeoutMs}ms tanpa koneksi masuk.`);
+                console.log(`[WINGS] Start cleanup ${botNum}; status ${status.status} lebih dari ${restoreTimeoutMs}ms tanpa koneksi masuk.`);
                 await botService.stopLocal(botNum);
                 await sendHeartbeat();
             }
         } catch (err) {
-            console.error(`[WINGS] Gagal cleanup restore bot ${botNum}:`, err.message);
+            console.error(`[WINGS] Gagal cleanup start bot ${botNum}:`, err.message);
         }
     }, restoreTimeoutMs);
 }
@@ -265,7 +279,7 @@ function requireMaster(req, res, next) {
 }
 
 app.get('/health', (req, res) => {
-    res.json({ success: true, uuid, hostname: os.hostname(), stats: statsPayload(), bots: botService.getLocalStatuses() });
+    res.json({ success: true, uuid, hostname: os.hostname(), stats: statsPayload(), bots: botService.getLocalStatuses(), activeSessionBots: readActiveSessionBots() });
 });
 
 app.post('/api/wings/bot/action', requireMaster, async (req, res) => {
@@ -275,6 +289,7 @@ app.post('/api/wings/bot/action', requireMaster, async (req, res) => {
     try {
         if (action === 'start') {
             await botService.startLocal(method || 'pairing', botNum);
+            scheduleStartCleanup(botNum);
             await sendHeartbeat();
             return res.json({ success: true, message: `Bot ${botNum} started on ${uuid}` });
         }
