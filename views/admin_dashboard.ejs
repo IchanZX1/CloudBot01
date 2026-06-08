@@ -201,7 +201,7 @@
                         <div class="flex items-center justify-between gap-2 text-xs text-gray-500">
                             <span>Last seen: <%= allocation.lastSeen ? moment(allocation.lastSeen).tz('Asia/Jakarta').format('DD/MM HH:mm:ss') : '-' %></span>
                             <div class="flex items-center gap-2">
-                                <button onclick="editAllocation('<%= allocation.uuid %>', '<%= allocation.name %>', '<%= allocation.port %>', '<%= allocation.maxBots %>')" class="px-3 py-2 rounded-lg bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500 hover:text-white font-bold transition-all" title="Edit Allocation">
+                                <button onclick="editAllocation('<%= allocation.uuid %>', '<%= allocation.name %>', '<%= allocation.port %>', '<%= allocation.maxBots %>', '<%= allocation.publicUrl || '' %>', '<%= allocation.restoreDelay || 12000 %>', '<%= allocation.restoreTimeout || 300000 %>', '<%= allocation.cleanupMinAge || 300000 %>')" class="px-3 py-2 rounded-lg bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500 hover:text-white font-bold transition-all" title="Edit Allocation">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
                                 <button onclick="deleteAllocation('<%= allocation.uuid %>')" class="px-3 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white font-bold transition-all" title="Delete Allocation">
@@ -441,6 +441,25 @@
                             <label class="text-xs font-bold text-gray-400">Max Bot di Allocation Ini</label>
                             <input id="allocation-max" type="number" class="swal2-input !m-0 !w-full" value="5">
                         </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-400">Public URL Wings</label>
+                            <input id="allocation-url" class="swal2-input !m-0 !w-full" placeholder="https://wings1.zxcoderid.web.id">
+                            <p class="text-[11px] text-gray-500 mt-1">Alamat publik yang bisa diakses server utama. Kosongkan jika ingin placeholder IP.</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="text-xs font-bold text-gray-400">Restore Delay</label>
+                                <input id="allocation-restore-delay" type="number" class="swal2-input !m-0 !w-full" value="12000">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-400">Restore Timeout</label>
+                                <input id="allocation-restore-timeout" type="number" class="swal2-input !m-0 !w-full" value="300000">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-400">Cleanup Age</label>
+                                <input id="allocation-cleanup-age" type="number" class="swal2-input !m-0 !w-full" value="300000">
+                            </div>
+                        </div>
                     </div>
                 `,
                 focusConfirm: false,
@@ -451,7 +470,11 @@
                 preConfirm: () => ({
                     name: document.getElementById('allocation-name').value,
                     port: document.getElementById('allocation-port').value,
-                    maxBots: document.getElementById('allocation-max').value
+                    maxBots: document.getElementById('allocation-max').value,
+                    publicUrl: document.getElementById('allocation-url').value,
+                    restoreDelay: document.getElementById('allocation-restore-delay').value,
+                    restoreTimeout: document.getElementById('allocation-restore-timeout').value,
+                    cleanupMinAge: document.getElementById('allocation-cleanup-age').value
                 })
             });
 
@@ -517,7 +540,7 @@
             }
         }
 
-        async function editAllocation(uuid, name, port, maxBots) {
+        async function editAllocation(uuid, name, port, maxBots, publicUrl, restoreDelay, restoreTimeout, cleanupMinAge) {
             const { value: formValues } = await Swal.fire({
                 title: 'Edit Allocation',
                 html: `
@@ -535,6 +558,24 @@
                             <label class="text-xs font-bold text-gray-400">Max Bot</label>
                             <input id="edit-allocation-max" type="number" min="1" max="1000" class="swal2-input !m-0 !w-full" value="${maxBots}">
                         </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-400">Public URL Wings</label>
+                            <input id="edit-allocation-url" class="swal2-input !m-0 !w-full" value="${publicUrl || ''}" placeholder="https://wings1.zxcoderid.web.id">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="text-xs font-bold text-gray-400">Restore Delay</label>
+                                <input id="edit-allocation-restore-delay" type="number" class="swal2-input !m-0 !w-full" value="${restoreDelay || 12000}">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-400">Restore Timeout</label>
+                                <input id="edit-allocation-restore-timeout" type="number" class="swal2-input !m-0 !w-full" value="${restoreTimeout || 300000}">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-400">Cleanup Age</label>
+                                <input id="edit-allocation-cleanup-age" type="number" class="swal2-input !m-0 !w-full" value="${cleanupMinAge || 300000}">
+                            </div>
+                        </div>
                     </div>
                 `,
                 focusConfirm: false,
@@ -545,7 +586,11 @@
                 preConfirm: () => ({
                     name: document.getElementById('edit-allocation-name').value,
                     port: document.getElementById('edit-allocation-port').value,
-                    maxBots: document.getElementById('edit-allocation-max').value
+                    maxBots: document.getElementById('edit-allocation-max').value,
+                    publicUrl: document.getElementById('edit-allocation-url').value,
+                    restoreDelay: document.getElementById('edit-allocation-restore-delay').value,
+                    restoreTimeout: document.getElementById('edit-allocation-restore-timeout').value,
+                    cleanupMinAge: document.getElementById('edit-allocation-cleanup-age').value
                 })
             });
 

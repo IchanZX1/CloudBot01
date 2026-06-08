@@ -3,6 +3,8 @@
         <%
             const dashboardPackage = String(user.paket || '').toLowerCase();
             const isStarterPackage = dashboardPackage === 'starter';
+            const isBasicPackage = dashboardPackage === 'basic';
+            const isFreePackage = dashboardPackage === 'free';
             const canEditWhatsappChannel = ['basic', 'starter'].includes(dashboardPackage);
         %>
 
@@ -124,6 +126,12 @@
                             <h4 class="text-lg font-extrabold <%= isStarterPackage ? 'text-yellow-300' : 'text-white' %> capitalize">
                                 <%= user.paket %>
                             </h4>
+                            <% if (isFreePackage || isBasicPackage) { %>
+                                <a href="/pricing" class="mt-1 inline-flex items-center gap-1 rounded-full border <%= isFreePackage ? 'border-green-400/30 bg-green-400/10 text-green-300 hover:border-green-300/60' : 'border-yellow-300/40 bg-yellow-400/10 text-yellow-300 hover:border-yellow-200/70' %> px-2.5 py-1 text-[9px] font-black uppercase tracking-widest transition-all">
+                                    <i class="bi <%= isFreePackage ? 'bi-arrow-up-circle' : 'bi-gem' %>"></i>
+                                    <%= isFreePackage ? 'Upgrade Ke Paket Basic' : 'Upgrade ke VIP FULL' %>
+                                </a>
+                            <% } %>
                         </div>
                     </div>
                     <div class="glass p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 flex items-center space-x-4 popup-float transition-all hover:border-blue-500/20"

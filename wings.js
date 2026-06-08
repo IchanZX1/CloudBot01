@@ -23,6 +23,8 @@ const port = Number(getArg('port', '3101'));
 const publicUrl = getArg('url', `http://localhost:${port}`).replace(/\/$/, '');
 const restoreDelayMs = Math.max(Number(getArg('restore-delay', '8000')) || 8000, 1000);
 const restoreTimeoutMs = Math.max(Number(getArg('restore-timeout', '300000')) || 300000, 60000);
+const cleanupIntervalMs = Math.max(Number(getArg('cleanup-interval', '120000')) || 120000, 30000);
+const cleanupMinAgeMs = Math.max(Number(getArg('cleanup-min-age', '1800000')) || 1800000, 60000);
 const autoRestoreEnabled = getArg('auto-restore', '1') !== '0';
 
 if (!uuid || !token) {
@@ -76,6 +78,53 @@ function writeJsonFile(filePath, data) {
     const dir = path.dirname(filePath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+function cleanupTemporaryFiles() {
+    try {
+        const rootDir = __dirname;
+        const files = fs.readdirSync(rootDir);
+        const extensions = new Set(['.mp3', '.m4a', '.webp', '.jpg', '.jpeg', '.png', '.mp4']);
+        const now = Date.now();
+        let count = 0;
+        let freedBytes = 0;
+
+        for (const file of files) {
+            const filePath = path.join(rootDir, file);
+            let stats;
+            try {
+                stats = fs.statSync(filePath);
+            } catch (err) {
+                continue;
+            }
+
+            if (!stats.isFile()) continue;
+
+            const ext = path.extname(file).toLowerCase();
+            const name = path.basename(file, ext);
+            const isNumeric = /^\d+$/.test(name);
+            const isTemp = name.startsWith('temp_');
+            const isAdHoc = file === 'undefined.jpg';
+            const isOldEnough = now - stats.mtimeMs >= cleanupMinAgeMs;
+
+            if (((extensions.has(ext) && (isNumeric || isTemp)) || isAdHoc) && isOldEnough) {
+                try {
+                    fs.unlinkSync(filePath);
+                    count++;
+                    freedBytes += stats.size;
+                } catch (err) {
+                    console.error(`[WINGS CLEANUP] Gagal hapus ${file}:`, err.message);
+                }
+            }
+        }
+
+        if (count > 0) {
+            const freedMb = (freedBytes / 1024 / 1024).toFixed(2);
+            console.log(`[WINGS CLEANUP] Removed ${count} temporary files from root, freed ${freedMb} MiB.`);
+        }
+    } catch (err) {
+        console.error('[WINGS CLEANUP] Error:', err.message);
+    }
 }
 
 function getDb(botNum) {
@@ -480,6 +529,8 @@ app.listen(port, async () => {
     console.log(`[WINGS] Register ke master ${master}`);
     await sendHeartbeat();
     setInterval(sendHeartbeat, 15000);
+    setTimeout(cleanupTemporaryFiles, 5000);
+    setInterval(cleanupTemporaryFiles, cleanupIntervalMs);
     setTimeout(() => {
         restoreAssignedBots().catch(err => console.error('[WINGS] Auto restore error:', err.message));
     }, 3000);

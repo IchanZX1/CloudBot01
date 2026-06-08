@@ -83,7 +83,7 @@ function createDefaultBotSettings() {
     auto_ai_grup: false,
     goodbye: false,
     onlygrub: true,
-    onlypc: false,
+    onlypc: true,
     welcome: true,
     autoread: false
   };
