@@ -643,7 +643,7 @@ async function NanoBotzInd(method = null, num = null) {
           const cityName = settings.sholat_city;
           const today = moment().tz('Asia/Jakarta').format('YYYY-MM-DD');
 
-          if (NanoBotz.autoshalat.lastFetch !== today || NanoBotz.autoshalat.city !== cityName) {
+          if (NanoBotz.autoshalat.lastFetch !== today || NanoBotz.autoshalat.city !== cityName || !NanoBotz.autoshalat.imageBuffer) {
             console.log(color('[SHOLAT]', 'green'), `Fetching timings for ${cityName}...`);
             try {
               // Switch to api.myquran.com for more stable Indonesian prayer timings
@@ -665,7 +665,9 @@ async function NanoBotzInd(method = null, num = null) {
 
                   // Generate Image Buffer
                   try {
-                    const backgroundPath = path.join(__dirname, 'background_sholat.jpg');
+                    const backgroundPath = fs.existsSync(path.join(__dirname, 'data', 'image', 'background_sholat.jpg'))
+                      ? path.join(__dirname, 'data', 'image', 'background_sholat.jpg')
+                      : path.join(__dirname, 'background_sholat.jpg');
                     if (fs.existsSync(backgroundPath)) {
                       const canvasWidth = 1024, canvasHeight = 600;
                       const canvas = createCanvas(canvasWidth, canvasHeight);
@@ -902,7 +904,7 @@ async function NanoBotzInd(method = null, num = null) {
         if (!m.isGroup && !privateAccessEnabled) return;
       }
 
-      require('./Nano')(NanoBotz, m, chatUpdate, store)
+      require('./Nano.js')(NanoBotz, m, chatUpdate, store)
     } catch (err) {
       console.log(err)
     }

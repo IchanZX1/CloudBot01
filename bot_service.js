@@ -170,6 +170,11 @@ class BotService {
         return botStatus.socks[num] || botStatus.sock || this.getRandomBot();
     }
 
+    getBotStrict(num) {
+        num = num ? String(num).replace(/[^0-9]/g, '') : '';
+        return num ? (botStatus.socks[num] || null) : null;
+    }
+
     getLocalStatuses() {
         const statuses = {};
         const nums = new Set([

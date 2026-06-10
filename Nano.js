@@ -16,7 +16,7 @@ const { isSetWelcome, addSetWelcome, changeSetWelcome, removeSetWelcome } = requ
 const { Primbon } = require('scrape-primbon')
 const primbon = new Primbon()
 const canvafy = require('canvafy')
-const CanvasFFLobby = require('./classes/canvasFF')
+const CanvasFFLobby = require('./classes/canvasFF/index.js')
 const { isSetLeft, addSetLeft, removeSetLeft, changeSetLeft } = require('./lib/setleft.js');
 const { getTextSetWelcome } = require('./lib/setwelcome.js');
 const { getTextSetLeft } = require('./lib/setleft.js');
@@ -291,34 +291,65 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
      // Helper Functions
 
      const qtoko = {key: {participant: '0@s.whatsapp.net', ...(m.chat ? {remoteJid: `status@broadcast`} : {})}, message: {locationMessage: {name: `${botname}\nIndonesia 🇮🇩 , central java자바 섬`,jpegThumbnail: ""}}}
+     
+     // ================ ICHANDEV FUNXTION ================
+     const { generateWAMessageFromContent, proto } = require('@whiskeysockets/baileys');
+const { prepareWAMessageMedia } = require('@whiskeysockets/baileys');
+
+async function sendDocImage(conn, jid, imagePath, thumbBuffer, caption, mentions = [], ctxInfo = {}) {
+  
+  const buf = Buffer.isBuffer(imagePath) ? imagePath : fs.readFileSync(imagePath);
+  const thumb = Buffer.isBuffer(thumbBuffer) ? thumbBuffer : fs.readFileSync(thumbBuffer);
+
+  await conn.sendMessage(jid, {
+    image: buf,
+    caption: caption,
+    mentions: mentions,
+    jpegThumbnail: thumb,
+    contextInfo: {
+  mentionedJid: [m.sender],
+  isForwarded: true,
+  forwardingScore: 256,
+}
+  });
+}
 
     const imgUrl = "https://i.pinimg.com/736x/07/51/1f/07511f145dce3079aade94edd1f936d2.jpg"
 
-const reply = async (teks) => {
-  // ambil buffer thumbnail
-  const thumbBuffer = Buffer.from(
-    await (await fetch(imgUrl)).arrayBuffer()
-  )
-    
-    NanoBotz.sendMessage(m.chat, {
-        text: teks,
-        contextInfo: {
-          isForwarded: true,
-          forwardingScore: 256,
-      externalAdReply: {
-        showAdAttribution: false,
-        mediaType: 2,
-        mediaUrl: whatsappChannelUrl,
-        title: "ִ ࣪𖤐 𝑪𝒍𝒐𝒖𝒅𝑯𝒐𝒔𝒕𝒊𝒏𝒈 𝑩𝒐𝒕.ᐟ",
-        body: `‎ᴠͥɪͣᴘͫ✮⃝@${botname}࿐✮𝄟⃝
-‎`,
-        sourceUrl: "",
-        thumbnail: thumbnail
-      }
-    }
-      }, { quoted: qtoko })
+const chans = async (teks) => {
+let chandev = teks
+  // midleware
+  if (teks.split(":")[0] === 'Contoh' || teks.split(":")[0] === 'contoh' || teks.split(":")[0] === 'Cara Penggunaan' || teks.split(":")[0] === 'Cara Pakai' || teks.split(":")[0] === 'Cara Gunakan') {
+    chandev = `👋 Halo Untuk Cara Penggunaan!
+
+    ⤷ \`𝗖𝗮𝗿𝗮 𝗣𝗲𝗻𝗴𝗴𝘂𝗻𝗮𝗮𝗻\` \n🍀Contoh Penggunaan: ${teks.split(":")[1] || ""}`
 }
 
+     // Konversi thumbnail ke JPEG kecil sebelum dipakai
+        const sharp = require('sharp');
+const thumbs = await sharp(thumbnail)
+  .resize(300, 300, { fit: 'cover' })
+  .jpeg({ quality: 80 })
+  .toBuffer();
+     NanoBotz.sendMessage(m.chat, {
+  document: thumbnail,
+  mimetype: 'image/png',
+  fileName: `‎ᴠͥɪͣᴘͫ✮⃝@${botname}࿐✮𝄟⃝`,
+  caption: chandev,
+  jpegThumbnail: thumbs,
+  fileLength: 109951162777600,
+  mentions: [m.sender],
+         contextInfo: {
+  mentionedJid: [m.sender],
+  isForwarded: true,
+  forwardingScore: 256,
+}
+}, {quoted: qtoko})
+}
+
+const reply = async (teks) => {
+  await chans(teks)
+}
     const replynano = (teks) => {
       const namabot = NanoBotz.userConfig?.botname || global.botname;
       const namaowner = global.ownername || "Aris";
@@ -327,23 +358,11 @@ const reply = async (teks) => {
       const idsal = global.idsal || "120363144079354024@newsletter";
       const thumb = global.thumbUrl || "https://telegra.ph/file/0c44a30e7ed874457e937.jpg";
 
-      NanoBotz.sendMessage(m.chat, {
-        text: teks,
-        contextInfo: {
-          isForwarded: true,
-          forwardingScore: 256,
-      externalAdReply: {
-        showAdAttribution: false,
-        mediaType: 2,
-        mediaUrl: whatsappChannelUrl,
-        title: "ִ ࣪𖤐 𝑪𝒍𝒐𝒖𝒅𝑯𝒐𝒔𝒕𝒊𝒏𝒈 𝑩𝒐𝒕.ᐟ",
-        body: `‎ᴠͥɪͣᴘͫ✮⃝@${botname}࿐✮𝄟⃝
-‎`,
-        sourceUrl: "",
-        thumbnail: thumbnail
-      }
-    }
-      }, { quoted: qtoko })
+       chans(teks).then(s => {
+          // console.log("berhasil")
+       }).catch(e => {
+           console.log("gagal", e)
+       })
       // NanoBotz.sendMessage(m.chat, {
       //   text: teks,
       //   contextInfo: {

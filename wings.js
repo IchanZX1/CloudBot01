@@ -129,7 +129,7 @@ function cleanupTemporaryFiles() {
 
 function getDb(botNum) {
     const { dbPath } = getBotPaths(botNum);
-    const sock = botService.getBot(normalizeBotNum(botNum));
+    const sock = botService.getBotStrict(normalizeBotNum(botNum));
     if (sock && sock.db) return { db: sock.db, sock };
     return {
         db: readJsonFile(dbPath, { sticker: {}, database: {}, game: {}, others: {}, users: {}, chats: {}, settings: {} }),
@@ -368,13 +368,25 @@ app.post('/api/wings/bot/config/get', requireMaster, (req, res) => {
 });
 
 app.post('/api/wings/bot/config/save', requireMaster, (req, res) => {
-    const { sessionDir } = getBotPaths(req.body.botNum);
+    const botNum = normalizeBotNum(req.body.botNum);
+    const { sessionDir } = getBotPaths(botNum);
     if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
     const configPath = path.join(sessionDir, 'config.json');
     const oldConfig = readJsonFile(configPath, {});
-    writeJsonFile(configPath, { ...oldConfig, ...(req.body.config || {}) });
+    const nextConfig = { ...oldConfig, ...(req.body.config || {}) };
+    let thumbBuffer = null;
     if (req.body.thumbnailBase64) {
-        fs.writeFileSync(path.join(sessionDir, 'thumb.jpg'), Buffer.from(req.body.thumbnailBase64, 'base64'));
+        thumbBuffer = Buffer.from(req.body.thumbnailBase64, 'base64');
+        fs.writeFileSync(path.join(sessionDir, 'thumb.jpg'), thumbBuffer);
+    } else {
+        const thumbPath = path.join(sessionDir, 'thumb.jpg');
+        if (fs.existsSync(thumbPath)) thumbBuffer = fs.readFileSync(thumbPath);
+    }
+    writeJsonFile(configPath, nextConfig);
+
+    const sock = botService.getBotStrict(botNum);
+    if (sock) {
+        sock.userConfig = { ...nextConfig, thumbBuffer };
     }
     res.json({ success: true, message: 'Configuration saved on wings' });
 });
@@ -400,7 +412,7 @@ app.post('/api/wings/bot/settings/save', requireMaster, (req, res) => {
 });
 
 app.post('/api/wings/bot/groups', requireMaster, async (req, res) => {
-    const sock = botService.getBot(normalizeBotNum(req.body.botNum));
+    const sock = botService.getBotStrict(normalizeBotNum(req.body.botNum));
     if (!sock || typeof sock.groupFetchAllParticipating !== 'function') {
         return res.status(400).json({ error: 'Bot belum tersambung di wings.' });
     }
@@ -463,7 +475,7 @@ app.post('/api/wings/bot/group-settings/save', requireMaster, (req, res) => {
 app.post('/api/wings/bot/group-invite-preview', requireMaster, async (req, res) => {
     const inviteCode = extractGroupInviteCode(req.body.url);
     if (!inviteCode) return res.status(400).json({ error: 'URL invite group WhatsApp tidak valid' });
-    const sock = botService.getBot(normalizeBotNum(req.body.botNum));
+    const sock = botService.getBotStrict(normalizeBotNum(req.body.botNum));
     if (!sock || typeof sock.groupGetInviteInfo !== 'function') return res.status(400).json({ error: 'Bot belum tersambung di wings.' });
     const info = await sock.groupGetInviteInfo(inviteCode);
     const inviteGroupId = normalizeInviteGroupId(info?.id);
@@ -486,7 +498,7 @@ app.post('/api/wings/bot/group-rental/save', requireMaster, async (req, res) => 
     if (['7', '15', '30'].includes(durationType)) expiredAt = moment().tz('Asia/Jakarta').add(Number(durationType), 'days').endOf('day').toDate();
     else if (durationType === 'custom' && customDate) expiredAt = moment.tz(customDate, 'YYYY-MM-DD', 'Asia/Jakarta').endOf('day').toDate();
     if (!expiredAt || Number.isNaN(expiredAt.getTime()) || expiredAt <= new Date()) return res.status(400).json({ error: 'Durasi atau tanggal masa aktif tidak valid' });
-    const sock = botService.getBot(normalizeBotNum(req.body.botNum));
+    const sock = botService.getBotStrict(normalizeBotNum(req.body.botNum));
     if (!sock) return res.status(400).json({ error: 'Bot belum tersambung di wings.' });
     const inviteInfo = typeof sock.groupGetInviteInfo === 'function' ? await sock.groupGetInviteInfo(inviteCode) : null;
     let targetGroupId = normalizeInviteGroupId(inviteInfo?.id) || selectedGroupId;
