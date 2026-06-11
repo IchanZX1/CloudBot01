@@ -2177,6 +2177,16 @@ app.post('/api/admin/allocations/update/:uuid', isAdmin, (req, res) => {
     }
 });
 
+app.get('/api/admin/allocations/command/:uuid', isAdmin, (req, res) => {
+    try {
+        const command = allocationManager.getAllocationCommand(req.params.uuid, req);
+        if (!command) return res.status(404).json({ error: 'Allocation tidak ditemukan' });
+        res.json({ success: true, command });
+    } catch (err) {
+        res.status(500).json({ error: 'Gagal mengambil command allocation: ' + err.message });
+    }
+});
+
 app.post('/api/admin/bot/action', isAdmin, async (req, res) => {
     const { action, botNum } = req.body;
     if (!botNum) return res.status(400).json({ error: 'Nomor bot dibutuhkan' });

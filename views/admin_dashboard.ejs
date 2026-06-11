@@ -201,6 +201,9 @@
                         <div class="flex items-center justify-between gap-2 text-xs text-gray-500">
                             <span>Last seen: <%= allocation.lastSeen ? moment(allocation.lastSeen).tz('Asia/Jakarta').format('DD/MM HH:mm:ss') : '-' %></span>
                             <div class="flex items-center gap-2">
+                                <button onclick="showAllocationCommand('<%= allocation.uuid %>')" class="px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500 hover:text-white font-bold transition-all" title="Show Command">
+                                    <i class="bi bi-terminal"></i>
+                                </button>
                                 <button onclick="editAllocation('<%= allocation.uuid %>', '<%= allocation.name %>', '<%= allocation.port %>', '<%= allocation.maxBots %>', '<%= allocation.publicUrl || '' %>', '<%= allocation.restoreDelay || 12000 %>', '<%= allocation.restoreTimeout || 300000 %>', '<%= allocation.cleanupMinAge || 300000 %>')" class="px-3 py-2 rounded-lg bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500 hover:text-white font-bold transition-all" title="Edit Allocation">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
@@ -537,6 +540,35 @@
                 Swal.fire('Error', result.error, 'error');
             } catch (err) {
                 Swal.fire('Error', 'Gagal komunikasi server', 'error');
+            }
+        }
+
+        async function showAllocationCommand(uuid) {
+            try {
+                const res = await fetch('/api/admin/allocations/command/' + uuid);
+                const result = await res.json();
+                if (!result.success) return Swal.fire('Error', result.error, 'error');
+
+                await Swal.fire({
+                    title: 'Wings Command',
+                    html: `
+                        <p class="text-sm text-gray-300 mb-3">Gunakan command ini untuk restart wings agar UUID/token sinkron dengan master:</p>
+                        <textarea id="allocation-command" class="swal2-textarea !w-full !h-32 !m-0 font-mono text-xs" readonly>${result.command}</textarea>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Copy Command',
+                    cancelButtonText: 'Tutup',
+                    confirmButtonColor: '#22c55e',
+                    background: '#121212',
+                    color: '#fff',
+                    preConfirm: async () => {
+                        const textarea = document.getElementById('allocation-command');
+                        textarea.select();
+                        await navigator.clipboard.writeText(textarea.value);
+                    }
+                });
+            } catch (err) {
+                Swal.fire('Error', 'Gagal mengambil command allocation', 'error');
             }
         }
 

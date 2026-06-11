@@ -322,7 +322,11 @@ function requireMaster(req, res, next) {
     const requestToken = req.headers['x-wings-token'];
     const requestUuid = req.body.uuid || req.query.uuid;
     if (requestToken !== token || requestUuid !== uuid) {
-        return res.status(403).json({ error: 'Invalid wings token' });
+        return res.status(403).json({
+            error: 'UUID/token wings tidak cocok. Restart wings dengan command allocation terbaru dari admin dashboard.',
+            expectedUuid: uuid,
+            receivedUuid: requestUuid || null
+        });
     }
     next();
 }
