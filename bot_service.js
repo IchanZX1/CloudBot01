@@ -73,6 +73,7 @@ class BotService {
             const allocation = allocationManager.getBotAllocation(botNumber);
             if (allocationIsOnline(allocation)) {
                 const result = await allocationManager.sendBotAction(allocation, 'stop', botNumber);
+                allocationManager.updateBotCache(allocation.uuid, botNumber, { status: 'stopped', socketReady: false });
                 return result;
             }
         }
@@ -122,6 +123,7 @@ class BotService {
                     console.error(`[ALLOCATION] Failed deleting remote session ${botNumber} on ${allocation.name || allocation.uuid}:`, err.message);
                     throw err;
                 } finally {
+                    allocationManager.updateBotCache(allocation.uuid, botNumber, { status: 'deleted', socketReady: false });
                     allocationManager.unassignBot(botNumber);
                 }
                 return { success: true };

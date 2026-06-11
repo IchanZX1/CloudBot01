@@ -319,7 +319,7 @@ function scheduleStartCleanup(botNum) {
 }
 
 function requireMaster(req, res, next) {
-    const requestToken = req.headers['x-wings-token'];
+    const requestToken = req.headers['x-wings-token'] || req.body.token || req.query.token;
     const requestUuid = req.body.uuid || req.query.uuid;
     if (requestToken !== token || requestUuid !== uuid) {
         return res.status(403).json({
@@ -350,13 +350,13 @@ app.post('/api/wings/bot/action', requireMaster, async (req, res) => {
         if (action === 'stop') {
             await botService.stopLocal(botNum);
             await sendHeartbeat();
-            return res.json({ success: true, message: `Bot ${botNum} stopped on ${uuid}` });
+            return res.json({ success: true, status: 'stopped', message: `Bot ${botNum} stopped on ${uuid}` });
         }
 
         if (action === 'delete') {
             await botService.deleteSession(botNum);
             await sendHeartbeat();
-            return res.json({ success: true, message: `Bot ${botNum} session deleted on ${uuid}` });
+            return res.json({ success: true, status: 'deleted', message: `Bot ${botNum} session deleted on ${uuid}` });
         }
 
         return res.status(400).json({ error: 'Invalid action' });
