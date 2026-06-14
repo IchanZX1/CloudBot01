@@ -541,12 +541,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const sholatProvinceSelect = document.getElementById('sholat-province-select');
         const sholatCitySelect = document.getElementById('sholat-city-select');
         const sholatCityCurrent = document.getElementById('sholat-city-current');
+        const configAutosaveStatus = document.getElementById('config-autosave-status');
 
         let pollingInterval = null;
         let connectStartedAt = 0;
         let flowChart = null;
         let lastLoggedStatus = null;
         let sholatProvincesLoaded = false;
+        let configHydrating = false;
+        let configAutosaveTimer = null;
+        let configAutosaveInFlight = false;
+        let configAutosavePending = false;
+        let lastConfigPayloadHash = '';
+        let lastSettingsPayloadHash = '';
+        let thumbnailDirty = false;
         const sholatRegencyCache = new Map();
         const wilayahBaseUrl = 'https://www.emsifa.com/api-wilayah-indonesia/api';
 
@@ -701,6 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sholatCitySelect?.addEventListener('change', () => {
             const selectedOption = sholatCitySelect.options[sholatCitySelect.selectedIndex];
             setSholatCityValue(sholatCitySelect.value, selectedOption?.dataset?.display || sholatCitySelect.value);
+            scheduleConfigAutosave();
         });
 
         async function loadCountryCodes() {
@@ -888,6 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async function loadConfig() {
             try {
+                configHydrating = true;
                 const [configRes, settingsRes] = await Promise.all([
                     fetch('/api/bot/config'),
                     fetch('/api/bot/settings')
@@ -913,15 +923,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (configForm['settings_prefixes']) configForm['settings_prefixes'].value = settings.prefixes || '!,.,#,,,$';
                     if (configForm['settings_whatsapp_channel']) configForm['settings_whatsapp_channel'].value = settings.whatsapp_channel || '';
                 }
-            } catch (err) { }
+                lastConfigPayloadHash = hashPayload(buildConfigPayload(false).hashObject);
+                lastSettingsPayloadHash = hashPayload(buildSettingsPayload());
+                setConfigAutosaveStatus('saved');
+            } catch (err) {
+                setConfigAutosaveStatus('error');
+            } finally {
+                configHydrating = false;
+            }
         }
 
-        configForm?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            submitConfigBtn.disabled = true;
-            submitConfigBtn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-2"></i>Saving...';
+        function hashPayload(payload) {
+            return JSON.stringify(payload || {});
+        }
 
-            const configFormData = new FormData(configForm);
+        function buildConfigPayload(includeThumbnail = thumbnailDirty) {
+            const formData = new FormData();
+            const configFields = ['botname', 'ownernumber', 'wm', 'packname', 'author', 'creator'];
+            const hashObject = {};
+            configFields.forEach(field => {
+                const value = configForm?.[field]?.value || '';
+                formData.append(field, value);
+                hashObject[field] = value;
+            });
+
+            const thumbnailInput = configForm?.['thumbnail'];
+            const file = thumbnailInput?.files?.[0] || null;
+            if (includeThumbnail && file) {
+                formData.append('thumbnail', file);
+                hashObject.thumbnail = `${file.name}:${file.size}:${file.lastModified}`;
+            }
+
+            return { formData, hashObject };
+        }
+
+        function buildSettingsPayload() {
             const settings = {};
             const featureList = ['public', 'anticall', 'autobio', 'onlygrub', 'onlypc', 'autoread', 'autoshalat'];
 
@@ -931,31 +967,121 @@ document.addEventListener('DOMContentLoaded', () => {
             settings.sholat_city = configForm['settings_sholat_city']?.value || '';
             settings.prefixes = configForm['settings_prefixes']?.value || '!,.,#,,,$';
             settings.whatsapp_channel = configForm['settings_whatsapp_channel']?.value || '';
+            return settings;
+        }
+
+        function setConfigAutosaveStatus(status, message = '') {
+            if (!submitConfigBtn) return;
+            const statusText = configAutosaveStatus;
+            submitConfigBtn.disabled = false;
+            submitConfigBtn.classList.remove('text-green-500', 'text-yellow-400', 'text-red-400', 'opacity-50');
+
+            if (status === 'saving') {
+                submitConfigBtn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-2"></i>Saving...';
+                submitConfigBtn.classList.add('text-yellow-400');
+                if (statusText) statusText.textContent = message || 'Menyimpan perubahan otomatis...';
+            } else if (status === 'saved') {
+                submitConfigBtn.innerHTML = '<i class="bi bi-check2-circle mr-2"></i>Saved Automatically';
+                submitConfigBtn.classList.add('text-green-500');
+                if (statusText) statusText.textContent = message || 'Semua perubahan sudah tersimpan.';
+            } else if (status === 'dirty') {
+                submitConfigBtn.innerHTML = '<i class="bi bi-clock-history mr-2"></i>Waiting Autosave...';
+                submitConfigBtn.classList.add('text-yellow-400');
+                if (statusText) statusText.textContent = message || 'Perubahan terdeteksi, menunggu jeda sebelum save.';
+            } else if (status === 'error') {
+                submitConfigBtn.innerHTML = '<i class="bi bi-exclamation-triangle mr-2"></i>Save Failed';
+                submitConfigBtn.classList.add('text-red-400');
+                if (statusText) statusText.textContent = message || 'Gagal autosave. Klik tombol untuk mencoba lagi.';
+            } else {
+                submitConfigBtn.innerHTML = 'Auto Save Active';
+                if (statusText) statusText.textContent = message || 'Perubahan akan tersimpan otomatis.';
+            }
+        }
+
+        function scheduleConfigAutosave(delay = 1200) {
+            if (!configForm || configHydrating) return;
+            clearTimeout(configAutosaveTimer);
+            setConfigAutosaveStatus('dirty');
+            configAutosaveTimer = setTimeout(() => saveConfigRealtime(), delay);
+        }
+
+        async function saveConfigRealtime({ force = false } = {}) {
+            if (!configForm) return;
+            clearTimeout(configAutosaveTimer);
+
+            if (configAutosaveInFlight) {
+                configAutosavePending = true;
+                return;
+            }
+
+            const { formData: configFormData, hashObject: configHashObject } = buildConfigPayload();
+            const settings = buildSettingsPayload();
+            const configHash = hashPayload(configHashObject);
+            const settingsHash = hashPayload(settings);
+            const shouldSaveConfig = force || thumbnailDirty || configHash !== lastConfigPayloadHash;
+            const shouldSaveSettings = force || settingsHash !== lastSettingsPayloadHash;
+
+            if (!shouldSaveConfig && !shouldSaveSettings) {
+                setConfigAutosaveStatus('saved');
+                return;
+            }
 
             try {
-                const [configRes, settingsRes] = await Promise.all([
-                    fetch('/api/bot/config', { method: 'POST', body: configFormData }),
-                    fetch('/api/bot/settings', {
+                configAutosaveInFlight = true;
+                setConfigAutosaveStatus('saving');
+                const requests = [];
+
+                if (shouldSaveConfig) {
+                    requests.push(fetch('/api/bot/config', { method: 'POST', body: configFormData }).then(async response => {
+                        const data = await response.json();
+                        if (!response.ok || !data.success) throw new Error(data.error || 'Gagal menyimpan konfigurasi');
+                        lastConfigPayloadHash = configHash;
+                        thumbnailDirty = false;
+                        return data;
+                    }));
+                }
+
+                if (shouldSaveSettings) {
+                    requests.push(fetch('/api/bot/settings', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(settings)
-                    })
-                ]);
-
-                const configJson = await configRes.json();
-                const settingsJson = await settingsRes.json();
-
-                if (configJson.success && settingsJson.success) {
-                    showToast('Konfigurasi & Fitur berhasil disimpan!', 'success');
-                } else {
-                    showToast(configJson.error || settingsJson.error || 'Terjadi kesalahan saat menyimpan', 'error');
+                    }).then(async response => {
+                        const data = await response.json();
+                        if (!response.ok || !data.success) throw new Error(data.error || 'Gagal menyimpan fitur');
+                        lastSettingsPayloadHash = settingsHash;
+                        return data;
+                    }));
                 }
+
+                await Promise.all(requests);
+                setConfigAutosaveStatus('saved');
             } catch (err) {
-                showToast('Terjadi kesalahan koneksi!', 'error');
+                setConfigAutosaveStatus('error', err.message || 'Terjadi kesalahan koneksi saat autosave.');
             } finally {
-                submitConfigBtn.disabled = false;
-                submitConfigBtn.innerHTML = 'Save Configuration';
+                configAutosaveInFlight = false;
+                if (configAutosavePending) {
+                    configAutosavePending = false;
+                    scheduleConfigAutosave(600);
+                }
             }
+        }
+
+        configForm?.addEventListener('input', (event) => {
+            if (event.target?.type === 'file') return;
+            if (event.target?.id === 'sholat-province-select') return;
+            scheduleConfigAutosave();
+        });
+
+        configForm?.addEventListener('change', (event) => {
+            if (event.target?.id === 'sholat-province-select') return;
+            if (event.target?.type === 'file') thumbnailDirty = true;
+            scheduleConfigAutosave(event.target?.type === 'file' ? 300 : 900);
+        });
+
+        configForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveConfigRealtime({ force: true });
         });
 
         connectForm?.addEventListener('submit', async (e) => {

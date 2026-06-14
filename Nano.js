@@ -29491,19 +29491,19 @@ ${meg.result}`)
         let mem = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
         replynano(`Success in pushing the message to contacts`)
         for (let pler of mem) {
-          NanoBotz.sendMessage(pler, { text: q })
+          NanoBotz.sendMessage(pler, { text: text })
         }
         replynano(`Done`)
       }
         break
       case 'pushkontakv2': {
         if (!DanzTheCreator) return reply(mess.only.owner)
-        if (!q) return replynano(`Incorrect Usage Please Use Command Like This\n${prefix + command} idgc|text`)
+        if (!text) return replynano(`Incorrect Usage Please Use Command Like This\n${prefix + command} idgc|text`)
         reply(mess.wait)
-        const metadata2 = await NanoBotz.groupMetadata(q.split("|")[0])
+        const metadata2 = await NanoBotz.groupMetadata(text.split("|")[0])
         const halss = metadata2.participants
         for (let mem of halss) {
-          NanoBotz.sendMessage(`${mem.id.split('@')[0]}` + "@s.whatsapp.net", { text: q.split("|")[1] })
+          NanoBotz.sendMessage(`${mem.id.split('@')[0]}` + "@s.whatsapp.net", { text: text.split("|")[1] })
           await sleep(5000)
         }
         replynano(`Success`)
@@ -29514,16 +29514,16 @@ ${meg.result}`)
         if (!DanzTheCreator) return reply(`Khusus Owner Aja`)
         if (!text) return reply(`Penggunaan Salah Silahkan Gunakan Command Seperti Ini\n${prefix + command} idgroup|jeda|teks\nUntuk Liat Id Group Silahkan Ketik .idgroup`)
         if (m.isGroup) return reply(mess.only.private)
-        if (!q.includes('|')) return reply(`Format salah.\nContoh: ${prefix + command} idgroup|5000|teks`)
+        if (!text.includes('|')) return reply(`Format salah.\nContoh: ${prefix + command} idgroup|5000|teks`)
         await reply("Otw Boskuuu")
-        const jedaPushv3 = Number(q.split("|")[1])
+        const jedaPushv3 = Number(text.split("|")[1])
         if (!Number.isFinite(jedaPushv3) || jedaPushv3 < 0) return reply(`Jeda harus angka dalam milidetik.\nContoh: ${prefix + command} idgroup|5000|teks`)
-        const groupMetadataa = await NanoBotz.groupMetadata(`${q.split("|")[0]}`).catch(e => null)
+        const groupMetadataa = await NanoBotz.groupMetadata(`${text.split("|")[0]}`).catch(e => null)
         if (!groupMetadataa || !Array.isArray(groupMetadataa.participants)) return reply(`ID group tidak valid atau bot belum masuk group tersebut.`)
-        if (!q.split("|")[2]) return reply(`Teks pesan tidak boleh kosong.`)
+        if (!text.split("|")[2]) return reply(`Teks pesan tidak boleh kosong.`)
         const participantss = groupMetadataa.participants
         const halls = await participantss.filter(v => v.id.endsWith('.net')).map(v => v.id)
-        global.tekspushkonv3 = q.split("|")[2]
+        global.tekspushkonv3 = text.split("|")[2]
         for (let mem of halls) {
           if (/image/.test(mime)) {
             let media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
