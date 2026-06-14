@@ -16,12 +16,11 @@ const moment = require('moment-timezone');
 const axios = require('axios');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const { GopayClient } = require('./lib/gopay/gopay.client');
 const { checkForUpdate } = require('./classes/_autoUpdate');
 const QRCode = require('qrcode');
 const QRISPayment = require('./config/qris-payment/src');
 const allocationManager = require('./lib/allocationManager');
-const gopayClient = new GopayClient();
+const { Orkut } = require('./lib/Orkut');
 
 // Email Transporter (Gunakan Gmail App Password atau SMTP lain)
 const { HttpsProxyAgent } = require("https-proxy-agent");
@@ -668,18 +667,8 @@ app.get('/api/deposit/status/:reffId', async (req, res) => {
             return res.json({ status: deposit.status });
         }
 
-        // Check GoPay Journal Status
-        const journals = await gopayClient.SearchJournalsRelative({
-            amount_eq: deposit.nominal,
-            start: { amount: 2, unit: 'hours' }, // Cek transaksi 2 jam terakhir
-            sort: 'desc'
-        });
-
-        if (journals && journals.hits && journals.hits.length > 0) {
-            // Kita anggap jika ada transaksi dengan nominal persis sama, itu adalah pembayaran user ini.
-            // QRIS bisnis pribadi biasanya tidak memberikan reff_id unik per orang di journal, 
-            // jadi kita mengandalkan nominal unik.
-
+        const paymentStatus = await Orkut(deposit.nominal);
+        if (paymentStatus && paymentStatus.success && paymentStatus.data?.status === 'PAID') {
             deposit.status = 'success';
             await deposit.save();
 
@@ -699,7 +688,11 @@ app.get('/api/deposit/status/:reffId', async (req, res) => {
             user._expired = newExpiry;
             await user.save();
 
-            return res.json({ status: 'success', message: 'Pembayaran berhasil dikonfirmasi via GoPay Merchant' });
+            return res.json({ status: 'success', message: 'Pembayaran berhasil dikonfirmasi via QRIS Orkut' });
+        }
+
+        if (paymentStatus && !paymentStatus.success) {
+            console.warn('[ORKUT] Payment status check failed:', paymentStatus.error || 'Unknown error');
         }
 
         res.json({ status: 'pending', remainingTime: 30 - diffMinutes });
