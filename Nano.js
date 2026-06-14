@@ -3256,15 +3256,38 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
     }
 
     // Respon Cmd with media
-    if (isMedia && m.msg.fileSha256 && (m.msg.fileSha256.toString('base64') in db.sticker)) {
+    if (isMedia && m.msg.fileSha256 && !m.__fromStickerCommand && (m.msg.fileSha256.toString('base64') in db.sticker)) {
       let hash = db.sticker[m.msg.fileSha256.toString('base64')]
       let { text, mentionedJid } = hash
+      const mappedText = String(text || '').trim()
+      const mappedCommand = mappedText.startsWith(prefix)
+        ? mappedText.slice(prefix.length).trim().split(/ +/).shift().toLowerCase()
+        : mappedText.trim().split(/ +/).shift().toLowerCase()
+      const blockedStickerCommands = new Set([
+        'allmenu', 'menu', 'gamemenu', 'islamimenu', 'pushmenu', 'downloadmenu',
+        'funmenu', 'aimenu', 'groupmenu', 'ownermenu', 'ephoto360menu',
+        'animemenu', 'randomphotomenu', 'randomvideomenu', 'databasemenu',
+        'stalkermenu', 'othermenu', 'rpgmenu', 'storemenu', 'anonymousmenu',
+        'stickermenu', 'quotesmenu', 'primbonmenu', 'beritamenu', 'amv',
+        'animevideo', 'tiktokgirl', 'tiktoknukthy', 'tiktokkayes',
+        'tiktokpanrika', 'tiktoknotnot', 'tiktokghea', 'tiktoksantuy',
+        'tiktokbocil', 'play', 'ytmp4', 'ytmp3', 'instagram', 'facebook',
+        'twittervid', 'tiktok', 'tiktokslide', 'tiktokaudio'
+      ])
+      if (blockedStickerCommands.has(mappedCommand)) {
+        return replynano(`Command *${prefix}${mappedCommand}* tidak boleh dijalankan lewat sticker command untuk mencegah spam media.`)
+      }
+      const cooldownKey = `${m.sender}:${m.msg.fileSha256.toString('base64')}`
+      global.stickerCommandCooldown = global.stickerCommandCooldown || {}
+      const nowStickerCmd = Date.now()
+      if (global.stickerCommandCooldown[cooldownKey] && nowStickerCmd - global.stickerCommandCooldown[cooldownKey] < 8000) return
+      global.stickerCommandCooldown[cooldownKey] = nowStickerCmd
       let messages = await generateWAMessage(m.chat, { text: text, mentions: mentionedJid }, {
         userJid: NanoBotz.user.id,
         quoted: m.quoted && m.quoted.fakeObj
       })
       messages.key.fromMe = areJidsSameUser(m.sender, NanoBotz.user.id)
-      messages.key.id = m.key.id
+      messages.key.id = `${m.key.id}_sticker_cmd`
       messages.pushName = m.pushName
       if (m.isGroup) messages.participant = m.sender
       let msg = {
@@ -3272,7 +3295,9 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
         messages: [proto.WebMessageInfo.fromObject(messages)],
         type: 'append'
       }
+      msg.messages[0].__fromStickerCommand = true
       NanoBotz.ev.emit('messages.upsert', msg)
+      return
     }
 
     // === IKLAN TRIAL ===
