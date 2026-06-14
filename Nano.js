@@ -3189,6 +3189,28 @@ Type *surrender* to surrender and admit defeat`
         }
       }
         break
+        case 'fakewa': {
+          if (!quoted) return replynano(`Kirim/Balas Gambar Dengan Caption ${prefix + command} ZXcoderID#Sedang Galau#62xxxxx`)
+        const media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+        let anuu = await TelegraPh(media)
+        if (!text) return replynano(`Usage: ${prefix + command} ZXcoderID#Sedang Galau#62xxxxx`)
+        const [text1, text2, text3] = text.split('#').map(v => v.trim())
+        if (!text1 || !text2 || !text3) return replynano(`Usage: ${prefix + command} text1|text2|text3\n\nExample: ${prefix + command} ZXcoderID#Sedang Galau#62xxxxx`)
+        const fakeWAUrl = `https://docs-alip.clutch.web.id/imagecreator/fakewa?apikey=alipaiapikeybaru&nama=${text1}&bio=${text2}&nomor=${text3}&url=${anuu}`
+      const buffer = await getBuffer(fakeWAUrl)
+        await NanoBotz.sendMessage(m.chat, { image: buffer, caption: `Done by ${botname}` }, { quoted: m })  
+      }
+        break
+        case 'fakeml': {
+          if (!quoted) return replynano(`Kirim/Balas Gambar Dengan Caption ${prefix + command} ChanZDev`)
+        const media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+        let anuu = await TelegraPh(media)
+        if (!text) return replynano(`Usage: ${prefix + command} ChanZDev`)
+        const fakeMLUrl = `https://docs-alip.clutch.web.id/imagecreator/fakeml?apikey=alipaiapikeybaru&nama=${text}&url=${anuu}`
+      const buffer = await getBuffer(fakeMLUrl)
+        await NanoBotz.sendMessage(m.chat, { image: buffer, caption: `Done by ${botname}` }, { quoted: m })  
+      }
+        break
       case 'fakeff': case 'fakelobbyff': case 'fflobby': {
         const ffLobby = new CanvasFFLobby()
         const templates = ffLobby.listTemplates()
@@ -12481,43 +12503,25 @@ Bio : ${aj.bio}`
         reply(mess.wait)
         if (!q) return replynano(`Example ${prefix + command} 946716486`)
         reply(mess.wait)
-        const data = await fetchJson(`https://skizo.tech/api/stalk/game/FREEFIRE?apikey=nanogembul&id=${encodeURIComponent(text)}&zone=false`)
-        const data1 = data.data.roles
+        const res = await Api.neoxr('/gnameFf', {
+            "id": encodeURIComponent(q)
+          });
+          if (!res.status) return reply('Error!');
         replynano(`*/ Free Fire Stalker \\*
 
-Id : ${data1.player_id}
-Nickname : ${data1.role}`)
+Id : ${q}
+Nickname : ${res.data.username}`)
       }
         break
       case 'mlstalk': {
         if (!text) return reply(`Contoh penggunaan:\n${prefix + command} id|zona id\n\nEx.\n${prefix + command} 157228049|2241`)
         async function mlstalk(id, zoneId) {
           return new Promise(async (resolve, reject) => {
-            axios
-              .post(
-                'https://api.duniagames.co.id/api/transaction/v1/top-up/inquiry/store',
-                new URLSearchParams(
-                  Object.entries({
-                    productId: '1',
-                    itemId: '2',
-                    catalogId: '57',
-                    paymentId: '352',
-                    gameId: id,
-                    zoneId: zoneId,
-                    product_ref: 'REG',
-                    product_ref_denom: 'AE',
-                  })
-                ),
-                {
-                  headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    Referer: 'https://www.duniagames.co.id/',
-                    Accept: 'application/json',
-                  },
-                }
-              )
-              .then((response) => {
-                resolve(response.data.data.gameDetail)
+            Api.neoxr('/gnameMl', {
+  "id": id,
+  "zone": zoneId
+}).then((response) => {
+                resolve(response.data.username)
               })
               .catch((err) => {
                 reject(err)
@@ -26558,8 +26562,7 @@ CPU: ${server.limits.cpu}%
       //==================================================================
       case 'hdvid':
       case 'vidhd': {
-        reply('_Proses.... mungkin membutuhkan waktu yang lumayan lama mohon tunggu aja sekitar 4-8 menit')
-        NanoHDvideo()
+        reply(`‼️*[MAINTENANCE FEATURES]*\nCreated by: *ChanDev*\n\n` + "Ups Fitur Ini Sedang Dalam Perbaikan")
       }
         break
       //==================================================================
@@ -28630,7 +28633,8 @@ https://chat.whatsapp.com/${response}
         if (!text) return replynano('Enter Text');
      //     console.log("[DEBUG BRAT] ", text)
         replynano(mess.wait)
-        NanoBotz.sendImageAsSticker(m.chat, `https://api-faa.my.id/faa/brathd?text=${encodeURIComponent(text)}`, m, {
+        const buffer = getBuffer(`https://api-faa.my.id/faa/brathd?text=${encodeURIComponent(text)}`)
+        NanoBotz.sendImageAsSticker(m.chat, buffer, m, {
           packname: `${packname}`,
           author: `${author}`
         });
