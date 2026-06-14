@@ -28911,13 +28911,18 @@ https://chat.whatsapp.com/${response}
         break;
       case 'brat': {
         if (!text) return replynano('Enter Text');
-     //     console.log("[DEBUG BRAT] ", text)
         replynano(mess.wait)
-        const buffer = getBuffer(`https://api-faa.my.id/faa/brathd?text=${encodeURIComponent(text)}`)
-        NanoBotz.sendImageAsSticker(m.chat, buffer, m, {
-          packname: `${packname}`,
-          author: `${author}`
-        });
+        try {
+          const buffer = await getBuffer(`https://api-faa.my.id/faa/brathd?text=${encodeURIComponent(text)}`, { timeout: 30000 })
+          if (!Buffer.isBuffer(buffer)) throw buffer
+          await NanoBotz.sendImageAsSticker(m.chat, buffer, m, {
+            packname: `${packname}`,
+            author: `${author}`
+          });
+        } catch (err) {
+          console.error('[BRAT]', err)
+          replynano(`Gagal membuat stiker brat: ${err.message || err}`)
+        }
       }
         break;
         case 's':
