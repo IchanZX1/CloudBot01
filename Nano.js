@@ -4537,7 +4537,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -4765,7 +4765,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -4993,7 +4993,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -5223,7 +5223,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -5453,7 +5453,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -5683,7 +5683,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -5913,7 +5913,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -6141,7 +6141,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -6369,7 +6369,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -6597,7 +6597,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -6825,7 +6825,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -7117,7 +7117,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -7346,7 +7346,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -7574,7 +7574,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -7802,7 +7802,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -8029,7 +8029,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -8256,7 +8256,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -8484,7 +8484,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -8712,7 +8712,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -8940,7 +8940,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -9168,7 +9168,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -9396,7 +9396,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -9624,7 +9624,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -9852,7 +9852,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -10080,7 +10080,7 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }
@@ -14480,7 +14480,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -14586,7 +14586,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -14676,7 +14676,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -14766,7 +14766,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -14856,7 +14856,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -14946,7 +14946,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -15036,7 +15036,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -15126,7 +15126,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -15216,7 +15216,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -15306,7 +15306,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -15396,7 +15396,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -15486,7 +15486,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -15576,7 +15576,7 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -23096,7 +23096,7 @@ ${ikan1 ? `
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -23145,7 +23145,7 @@ ${ikan1 ? `
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -23301,7 +23301,7 @@ ${ikan1 ? `
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -23597,7 +23597,7 @@ ${ikan1 ? `
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
+                      newsletterJid: '120363344962076305@newsletter',
                       newsletterName: ownername,
                       serverMessageId: 143
                     }
@@ -29513,7 +29513,7 @@ ${meg.result}`)
         if (!DanzTheCreator) return reply(mess.only.owner)
         if (!m.isGroup) return replynano(`The feature works only in grup`)
         if (!text) return replynano(`text?`)
-        let mem = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
+        let mem = await participants.filter(v => v.jid.endsWith('.net')).map(v => v.jid)
         replynano(`Success in pushing the message to contacts`)
         for (let pler of mem) {
           NanoBotz.sendMessage(pler, { text: text })
@@ -29528,7 +29528,7 @@ ${meg.result}`)
         const metadata2 = await NanoBotz.groupMetadata(text.split("|")[0])
         const halss = metadata2.participants
         for (let mem of halss) {
-          NanoBotz.sendMessage(`${mem.id.split('@')[0]}` + "@s.whatsapp.net", { text: text.split("|")[1] })
+          NanoBotz.sendMessage(`${mem.jid.split('@')[0]}` + "@s.whatsapp.net", { text: text.split("|")[1] })
           await sleep(5000)
         }
         replynano(`Success`)
@@ -29547,7 +29547,7 @@ ${meg.result}`)
         if (!groupMetadataa || !Array.isArray(groupMetadataa.participants)) return reply(`ID group tidak valid atau bot belum masuk group tersebut.`)
         if (!text.split("|")[2]) return reply(`Teks pesan tidak boleh kosong.`)
         const participantss = groupMetadataa.participants
-        const halls = await participantss.filter(v => v.id.endsWith('.net')).map(v => v.id)
+        const halls = await participantss.filter(v => v.jid.endsWith('.net')).map(v => v.jid)
         global.tekspushkonv3 = text.split("|")[2]
         for (let mem of halls) {
           if (/image/.test(mime)) {
@@ -29568,7 +29568,7 @@ ${meg.result}`)
         if (!m.isGroup) return reply(mess.only.private)
         if (!text) return reply(`Penggunaan Salah Silahkan Gunakan Command Seperti Ini\n${prefix + command} jeda|teks`)
         await reply("Otw Boskuuu")
-        const halsss = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
+        const halsss = await participants.filter(v => v.jid.endsWith('.net')).map(v => v.jid)
         global.tekspushkonv4 = text.split("|")[1]
         for (let men of halsss) {
           if (/image/.test(mime)) {
@@ -31285,7 +31285,7 @@ Cieeee, What's Going On❤️💖👀`,
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363302865191524@newsletter',
+                    newsletterJid: '120363344962076305@newsletter',
                     newsletterName: ownername,
                     serverMessageId: 143
                   }

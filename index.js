@@ -70,8 +70,71 @@ let botStatus = {
   states: {},
   qrs: {},
   pairingCodes: {},
-  heartbeats: {}
+  heartbeats: {},
+  reconnectTimers: {},
+  reconnectAttempts: {}
 };
+
+const networkGuard = {
+  disconnects: [],
+  stormWindowMs: Number(process.env.NETWORK_STORM_WINDOW_MS || 60000),
+  stormThreshold: Number(process.env.NETWORK_STORM_THRESHOLD || 5),
+  baseReconnectMs: Number(process.env.RECONNECT_BASE_MS || 15000),
+  maxReconnectMs: Number(process.env.RECONNECT_MAX_MS || 5 * 60 * 1000)
+};
+
+function recordDisconnect(targetNum, reason) {
+  const now = Date.now();
+  networkGuard.disconnects = networkGuard.disconnects
+    .filter(item => now - item.at <= networkGuard.stormWindowMs);
+  networkGuard.disconnects.push({ bot: targetNum, reason, at: now });
+  return networkGuard.disconnects.length >= networkGuard.stormThreshold;
+}
+
+function isNetworkStorm() {
+  const now = Date.now();
+  networkGuard.disconnects = networkGuard.disconnects
+    .filter(item => now - item.at <= networkGuard.stormWindowMs);
+  return networkGuard.disconnects.length >= networkGuard.stormThreshold;
+}
+
+function resetReconnectState(targetNum) {
+  botStatus.reconnectAttempts[targetNum] = 0;
+  if (botStatus.reconnectTimers[targetNum]) {
+    clearTimeout(botStatus.reconnectTimers[targetNum]);
+    delete botStatus.reconnectTimers[targetNum];
+  }
+}
+
+function scheduleReconnect(targetNum, method, num, reasonLabel = 'network', options = {}) {
+  if (botStatus.states[targetNum] === 'deleted') return;
+  if (botStatus.states[targetNum] === 'stopped' && !options.force) return;
+  if (botStatus.reconnectTimers[targetNum]) return;
+
+  const storm = options.storm !== undefined ? options.storm : isNetworkStorm();
+  const attempt = (botStatus.reconnectAttempts[targetNum] || 0) + 1;
+  botStatus.reconnectAttempts[targetNum] = attempt;
+
+  const exponentialDelay = Math.min(
+    networkGuard.baseReconnectMs * Math.pow(2, Math.min(attempt - 1, 5)),
+    networkGuard.maxReconnectMs
+  );
+  const stormDelay = storm ? Math.min(exponentialDelay + (attempt * 10000), networkGuard.maxReconnectMs) : exponentialDelay;
+  const jitter = Math.floor(Math.random() * (storm ? 30000 : 8000));
+  const delayMs = options.delayMs || (stormDelay + jitter);
+
+  botStatus.states[targetNum] = 'reconnecting';
+  console.log(color('[NETWORK-GUARD]', 'yellow'), `Schedule reconnect bot ${targetNum} reason=${reasonLabel} attempt=${attempt} storm=${storm ? 'yes' : 'no'} delay=${Math.ceil(delayMs / 1000)}s`);
+
+  botStatus.reconnectTimers[targetNum] = setTimeout(() => {
+    delete botStatus.reconnectTimers[targetNum];
+    if (botStatus.states[targetNum] === 'deleted' || botStatus.states[targetNum] === 'stopped') return;
+    NanoBotzInd(method, num).catch(err => {
+      console.log(color('[NETWORK-GUARD]', 'red'), `Reconnect bot ${targetNum} gagal: ${err.message}`);
+      scheduleReconnect(targetNum, method, num, 'reconnect-error', { storm: true, force: true });
+    });
+  }, delayMs);
+}
 
 function createDefaultBotSettings() {
   return {
@@ -522,29 +585,19 @@ async function NanoBotzInd(method = null, num = null) {
         console.log(chalk.red('Connection lost for bot ' + targetNum + '..'));
 
         let reason = new Boom(lastDisconnect?.error)?.output.statusCode
+        const storm = recordDisconnect(targetNum, reason || 'unknown');
         if (reason === DisconnectReason.badSession) {
-          console.log(color('[SYSTEM]', 'red'), `Bad Session File for ${targetNum}, stopping and waiting 15 mins before auto-restart...`);
-          botStatus.states[targetNum] = 'stopped';
-          delete botStatus.socks[targetNum];
-
-          setTimeout(() => {
-            console.log(color('[SYSTEM]', 'green'), `Auto-restarting bot ${targetNum} after 15 min cooldown...`);
-            NanoBotzInd(method, num);
-          }, 15 * 60 * 1000);
+          if (storm) {
+            console.log(color('[NETWORK-GUARD]', 'yellow'), `BadSession ${targetNum} terjadi saat network storm. Session tidak dibersihkan; reconnect bertahap.`);
+            scheduleReconnect(targetNum, method, num, 'badSession-storm', { storm: true, force: true });
+          } else {
+            console.log(color('[SYSTEM]', 'red'), `Bad Session File for ${targetNum}, stopping and waiting 15 mins before auto-restart...`);
+            scheduleReconnect(targetNum, method, num, 'badSession', { delayMs: 15 * 60 * 1000, force: true });
+          }
         } else if (reason === DisconnectReason.connectionClosed) {
-          setTimeout(() => {
-            console.log("Connection closed, reconnecting....");
-            NanoBotzInd(method, num);
-          }, 3000);
+          scheduleReconnect(targetNum, method, num, 'connectionClosed', { storm, force: true });
         } else if (reason === DisconnectReason.connectionLost) {
-          console.log(color('[SYSTEM]', 'yellow'), `Connection Lost for ${targetNum}. Applying 5-minute cooldown...`);
-          botStatus.states[targetNum] = 'stopped';
-          setTimeout(() => {
-            if (botStatus.states[targetNum] === 'stopped') {
-              console.log(color('[SYSTEM]', 'green'), `Reconnecting bot ${targetNum} after 5 min cooldown...`);
-              NanoBotzInd(method, num);
-            }
-          }, 5 * 60 * 1000);
+          scheduleReconnect(targetNum, method, num, 'connectionLost', { storm, force: true });
         } else if (reason === DisconnectReason.connectionReplaced) {
           console.log("Connection Replaced, Another New Session Opened, Please Close Current Session First");
           // NOTE: DO NOT reconnect automatically on replaced. Replaced means meta closed us because another connection is active.
@@ -554,27 +607,14 @@ async function NanoBotzInd(method = null, num = null) {
           console.log(`Device Logged Out, Please Scan Again And Run.`);
           cleanupBotArtifacts(targetNum, 'loggedOut');
         } else if (reason === DisconnectReason.restartRequired) {
-          setTimeout(() => {
-            console.log("Restart Required, Restarting...");
-            NanoBotzInd(method, num);
-          }, 2000);
+          scheduleReconnect(targetNum, method, num, 'restartRequired', { storm, force: true });
         } else if (reason === DisconnectReason.timedOut) {
-          console.log(color('[SYSTEM]', 'yellow'), `Connection Timed Out for ${targetNum}. Applying 5-minute cooldown...`);
-          botStatus.states[targetNum] = 'stopped';
-          setTimeout(() => {
-            if (botStatus.states[targetNum] === 'stopped') {
-              console.log(color('[SYSTEM]', 'green'), `Reconnecting bot ${targetNum} after 5 min cooldown...`);
-              NanoBotzInd(method, num);
-            }
-          }, 5 * 60 * 1000);
+          scheduleReconnect(targetNum, method, num, 'timedOut', { storm, force: true });
         } else if (reason === 403) {
           console.log(color('[SYSTEM]', 'red'), `Disconnected for reason 403 on bot ${targetNum}. Cleaning session/database and not reconnecting.`);
           cleanupBotArtifacts(targetNum, 'disconnect 403');
         } else {
-          setTimeout(() => {
-            console.log(`Disconnected for reason ${reason}, reconnecting...`);
-            NanoBotzInd(method, num);
-          }, 5000);
+          scheduleReconnect(targetNum, method, num, `reason-${reason || 'unknown'}`, { storm, force: true });
         }
       }
 
@@ -589,6 +629,7 @@ async function NanoBotzInd(method = null, num = null) {
       }
 
       if (update.connection === "open" || update.receivedPendingNotifications === true) {
+        resetReconnectState(targetNum);
         botStatus.status = "open";
         botStatus.sock = NanoBotz;
         botStatus.socks[targetNum] = NanoBotz;
@@ -785,23 +826,18 @@ async function NanoBotzInd(method = null, num = null) {
           // console.log(color('[SHOLAT]', 'yellow'), `Auto Sholat is disabled or city not set for ${botJid}`);
         }
       } catch (e) {
-        console.log(chalk.red(`[HEARTBEAT] Bot ${targetNum} failed: ${e.message}. Applying 30-second cooldown before restarting...`));
+        const storm = recordDisconnect(targetNum, 'heartbeat');
+        console.log(chalk.red(`[HEARTBEAT] Bot ${targetNum} failed: ${e.message}. Reconnect will be queued by network guard...`));
 
         // Stop logic
-        botStatus.states[targetNum] = 'stopped';
+        botStatus.states[targetNum] = 'reconnecting';
         if (botStatus.socks[targetNum]) {
           try { NanoBotz.end(undefined); } catch (err) { }
           delete botStatus.socks[targetNum];
         }
         clearInterval(botStatus.heartbeats[targetNum]);
         delete botStatus.heartbeats[targetNum];
-
-        setTimeout(() => {
-          if (botStatus.states[targetNum] === 'stopped') {
-            console.log(color('[SYSTEM]', 'green'), `Auto-restarting bot ${targetNum} after 30 second heartbeat failure cooldown...`);
-            NanoBotzInd(method, num);
-          }
-        }, 30000); // 30 Detik
+        scheduleReconnect(targetNum, method, num, 'heartbeat-failed', { storm, force: true });
       }
     } else if (botStatus.states[targetNum] === 'stopped' || botStatus.states[targetNum] === 'deleted') {
       clearInterval(botStatus.heartbeats[targetNum]);
