@@ -202,6 +202,25 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
     }, space)
   }
 
+  async function fetchImageCreatorBuffer(endpoint, params) {
+    const apiUrl = new URL(`https://docs-alip.clutch.web.id/imagecreator/${endpoint}`)
+    apiUrl.searchParams.set('apikey', 'alipaiapikeybaru')
+    for (const [key, value] of Object.entries(params)) {
+      apiUrl.searchParams.set(key, value)
+    }
+
+    const response = await fetch(apiUrl.href)
+    const contentType = response.headers.get('content-type') || ''
+    const buffer = Buffer.from(await response.arrayBuffer())
+
+    if (!response.ok || !contentType.includes('image')) {
+      const body = buffer.toString('utf8').slice(0, 200)
+      throw new Error(`API ${endpoint} gagal (${response.status}): ${body || contentType || 'response bukan gambar'}`)
+    }
+
+    return buffer
+  }
+
   if (!NanoBotz.__contextInfoSanitized) {
     const nativeSendMessage = NanoBotz.sendMessage.bind(NanoBotz)
     const nativeRelayMessage = NanoBotz.relayMessage.bind(NanoBotz)
@@ -3189,26 +3208,44 @@ Type *surrender* to surrender and admit defeat`
         }
       }
         break
-        case 'fakewa': {
-          if (!quoted) return replynano(`Kirim/Balas Gambar Dengan Caption ${prefix + command} ZXcoderID#Sedang Galau#62xxxxx`)
-        const media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
-        let anuu = await TelegraPh(media)
+      case 'fakewa': {
+        if (!/image/.test(mime)) return replynano(`Kirim/Balas Gambar Dengan Caption ${prefix + command} ZXcoderID#Sedang Galau#62xxxxx`)
         if (!text) return replynano(`Usage: ${prefix + command} ZXcoderID#Sedang Galau#62xxxxx`)
-        const [text1, text2, text3] = text.split('#').map(v => v.trim())
-        if (!text1 || !text2 || !text3) return replynano(`Usage: ${prefix + command} text1|text2|text3\n\nExample: ${prefix + command} ZXcoderID#Sedang Galau#62xxxxx`)
-        const fakeWAUrl = `https://docs-alip.clutch.web.id/imagecreator/fakewa?apikey=alipaiapikeybaru&nama=${text1}&bio=${text2}&nomor=${text3}&url=${anuu}`
-      const buffer = await getBuffer(fakeWAUrl)
-        await NanoBotz.sendMessage(m.chat, { image: buffer, caption: `Done by ${botname}` }, { quoted: m })  
+        const [nama, bio, nomor] = text.split('#').map(v => v.trim())
+        if (!nama || !bio || !nomor) return replynano(`Usage: ${prefix + command} nama#bio#nomor\n\nExample: ${prefix + command} ZXcoderID#Sedang Galau#62xxxxx`)
+
+        let media
+        try {
+          media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+          const imageUrl = await TelegraPh(media)
+          media = null
+          const buffer = await fetchImageCreatorBuffer('fakewa', { nama, bio, nomor, url: imageUrl })
+          await NanoBotz.sendMessage(m.chat, { image: buffer, caption: `Done by ${botname}` }, { quoted: m })
+        } catch (err) {
+          console.error('[FAKEWA]', err)
+          replynano(`Gagal membuat fakewa: ${err.message}`)
+        } finally {
+          if (media && fs.existsSync(media)) fs.unlinkSync(media)
+        }
       }
         break
-        case 'fakeml': {
-          if (!quoted) return replynano(`Kirim/Balas Gambar Dengan Caption ${prefix + command} ChanZDev`)
-        const media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
-        let anuu = await TelegraPh(media)
+      case 'fakeml': {
+        if (!/image/.test(mime)) return replynano(`Kirim/Balas Gambar Dengan Caption ${prefix + command} ChanZDev`)
         if (!text) return replynano(`Usage: ${prefix + command} ChanZDev`)
-        const fakeMLUrl = `https://docs-alip.clutch.web.id/imagecreator/fakeml?apikey=alipaiapikeybaru&nama=${text}&url=${anuu}`
-      const buffer = await getBuffer(fakeMLUrl)
-        await NanoBotz.sendMessage(m.chat, { image: buffer, caption: `Done by ${botname}` }, { quoted: m })  
+
+        let media
+        try {
+          media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+          const imageUrl = await TelegraPh(media)
+          media = null
+          const buffer = await fetchImageCreatorBuffer('fakeml', { nama: text.trim(), url: imageUrl })
+          await NanoBotz.sendMessage(m.chat, { image: buffer, caption: `Done by ${botname}` }, { quoted: m })
+        } catch (err) {
+          console.error('[FAKEML]', err)
+          replynano(`Gagal membuat fakeml: ${err.message}`)
+        } finally {
+          if (media && fs.existsSync(media)) fs.unlinkSync(media)
+        }
       }
         break
       case 'fakeff': case 'fakelobbyff': case 'fflobby': {

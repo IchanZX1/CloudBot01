@@ -2028,7 +2028,26 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
         const search = String(req.query.search || '').trim();
         const status = ['all', 'active', 'inactive'].includes(req.query.status) ? req.query.status : 'all';
         const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const activeBotNums = Object.entries(botStatus.states || {})
+        const allocations = allocationManager.listAllocations();
+        const remoteBotStates = {};
+        allocations.forEach(allocation => {
+            if (!allocation.online) return;
+            Object.entries(allocation.bots || {}).forEach(([botNum, bot]) => {
+                const cleanNum = String(botNum || '').replace(/[^0-9]/g, '');
+                if (!cleanNum || !bot) return;
+                remoteBotStates[cleanNum] = bot.status || 'idle';
+            });
+        });
+
+        const mergedBotStatus = {
+            ...botStatus,
+            states: {
+                ...remoteBotStates,
+                ...(botStatus.states || {})
+            }
+        };
+
+        const activeBotNums = Object.entries(mergedBotStatus.states || {})
             .filter(([, state]) => state === 'open')
             .map(([num]) => num);
 
@@ -2105,8 +2124,8 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
                 search,
                 status
             },
-            allocations: allocationManager.listAllocations(),
-            botStatus: botStatus,
+            allocations,
+            botStatus: mergedBotStatus,
             uptime: uptimeStr,
             uptimeSeconds: Math.floor(uptime),
             logContent: logContent,
@@ -2184,6 +2203,40 @@ app.get('/api/admin/allocations/command/:uuid', isAdmin, (req, res) => {
         res.json({ success: true, command });
     } catch (err) {
         res.status(500).json({ error: 'Gagal mengambil command allocation: ' + err.message });
+    }
+});
+
+app.get('/api/admin/allocations/detail/:uuid', isAdmin, (req, res) => {
+    try {
+        const allocation = allocationManager.getAllocationDetails(req.params.uuid);
+        if (!allocation) return res.status(404).json({ error: 'Allocation tidak ditemukan' });
+
+        const bots = allocation.bots || {};
+        const openBots = Object.entries(bots)
+            .filter(([, bot]) => bot && bot.status === 'open')
+            .map(([botNum]) => botNum);
+        const activeSessionBots = Array.isArray(allocation.activeSessionBots)
+            ? allocation.activeSessionBots
+            : [];
+        const assignedBots = Array.isArray(allocation.assignedBots)
+            ? allocation.assignedBots
+            : [];
+
+        res.json({
+            success: true,
+            allocation,
+            summary: {
+                openBots,
+                activeSessionBots,
+                assignedBots,
+                openCount: openBots.length,
+                activeSessionCount: activeSessionBots.length,
+                assignedCount: assignedBots.length,
+                maxBots: allocation.maxBots
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Gagal mengambil detail allocation: ' + err.message });
     }
 });
 
