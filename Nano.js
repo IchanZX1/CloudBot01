@@ -28913,8 +28913,28 @@ https://chat.whatsapp.com/${response}
         if (!text) return replynano('Enter Text');
         replynano(mess.wait)
         try {
-          const buffer = await getBuffer(`https://api-faa.my.id/faa/brathd?text=${encodeURIComponent(text)}`, { timeout: 30000 })
-          if (!Buffer.isBuffer(buffer)) throw buffer
+          const bratUrl = `https://api-faa.my.id/faa/brathd?text=${encodeURIComponent(text)}`
+          const { HttpsProxyAgent } = require('https-proxy-agent')
+          const bratProxyAgent = new HttpsProxyAgent('http://ip.atlantic-server.com:64433')
+          const { data, headers, status } = await axios.get(bratUrl, {
+            responseType: 'arraybuffer',
+            timeout: 30000,
+            httpsAgent: bratProxyAgent,
+            proxy: false,
+            headers: {
+              'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+              'Referer': 'https://api-faa.my.id/',
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          })
+          const contentType = headers['content-type'] || ''
+          if (!contentType.includes('image')) {
+            const body = Buffer.from(data).toString('utf8').slice(0, 180)
+            throw new Error(`API brat membalas status ${status} dengan ${contentType || 'unknown content-type'}: ${body}`)
+          }
+          const buffer = Buffer.from(data)
           await NanoBotz.sendImageAsSticker(m.chat, buffer, m, {
             packname: `${packname}`,
             author: `${author}`
