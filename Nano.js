@@ -108,6 +108,15 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
   let ntilinkig = JSON.parse(fs.readFileSync(botDir + 'antilinkinstagram.json'))
   let ntilinkytch = JSON.parse(fs.readFileSync(botDir + 'antilinkytchannel.json'))
   let ntilinkytvid = JSON.parse(fs.readFileSync(botDir + 'antilinkytvideo.json'))
+  const antilinkActionPath = botDir + 'antilink_action.json'
+  let antilinkAction = {}
+  if (fs.existsSync(antilinkActionPath)) {
+    try {
+      antilinkAction = JSON.parse(fs.readFileSync(antilinkActionPath, 'utf8'))
+    } catch (e) {
+      antilinkAction = {}
+    }
+  }
   let openaigc = JSON.parse(fs.readFileSync(botDir + 'openaigc.json'))
   let set_welcome_db = JSON.parse(fs.readFileSync(botDir + 'set_welcome.json'));
   let set_left_db = JSON.parse(fs.readFileSync(botDir + 'set_left.json'));
@@ -477,6 +486,232 @@ const reply = async (teks) => {
     const AntiLinkTwitter = m.isGroup ? ntilinktwt.includes(from) : false
     const AntiLinkAll = m.isGroup ? ntilinkall.includes(from) : false
     const antiWame = m.isGroup ? ntwame.includes(from) : false
+    const antiLinkActionMode = m.isGroup && antilinkAction[from] === 'kick' ? 'kick' : 'delete'
+    const antiLinkFeatureMap = {
+      gc: { label: 'Group Link', command: 'antilinkgc', list: ntlinkgc, file: 'antilinkgc.json', enabled: () => Antilinkgc },
+      wame: { label: 'Wa.me Link', command: 'antiwame', list: ntwame, file: 'antiwame.json', enabled: () => antiWame },
+      all: { label: 'Semua Link', command: 'antilinkall', list: ntilinkall, file: 'antilinkall.json', enabled: () => AntiLinkAll },
+      tiktok: { label: 'TikTok Link', command: 'antilinktiktok', list: ntilinktt, file: 'antilinktiktok.json', enabled: () => AntiLinkTiktok },
+      fb: { label: 'Facebook Link', command: 'antilinkfb', list: ntilinkfb, file: 'antilinkfacebook.json', enabled: () => AntiLinkFacebook },
+      twitter: { label: 'Twitter/X Link', command: 'antilinktwitter', list: ntilinktwt, file: 'antilinktwitter.json', enabled: () => AntiLinkTwitter },
+      ig: { label: 'Instagram Link', command: 'antilinkig', list: ntilinkig, file: 'antilinkinstagram.json', enabled: () => AntiLinkInstagram },
+      tg: { label: 'Telegram Link', command: 'antilinktg', list: ntilinktg, file: 'antilinktelegram.json', enabled: () => AntiLinkTelegram },
+      ytvid: { label: 'YouTube Video Link', command: 'antilinkytvid', list: ntilinkytvid, file: 'antilinkytvideo.json', enabled: () => AntiLinkYoutubeVid },
+      ytch: { label: 'YouTube Channel Link', command: 'antilinkytch', list: ntilinkytch, file: 'antilinkytchannel.json', enabled: () => AntiLinkYoutubeChannel }
+    }
+    const antiLinkAliases = {
+      antilinkgc: 'gc',
+      antiwame: 'wame',
+      antilinkall: 'all',
+      antilinktiktok: 'tiktok',
+      antilinktt: 'tiktok',
+      antilinkfb: 'fb',
+      antilinkfacebook: 'fb',
+      antilinktwitter: 'twitter',
+      antilinktwt: 'twitter',
+      antilinkig: 'ig',
+      antilinkinstagram: 'ig',
+      antilinkinsta: 'ig',
+      antilinktg: 'tg',
+      antilinktelegram: 'tg',
+      antilinkytvid: 'ytvid',
+      antilinkyoutubevid: 'ytvid',
+      antilinkyoutubevideo: 'ytvid',
+      antilinkytch: 'ytch',
+      antilinkyoutubech: 'ytch',
+      antilinkyoutubechannel: 'ytch'
+    }
+    const saveAntiLinkFeature = (feature) => {
+      fs.writeFileSync(botDir + feature.file, JSON.stringify(feature.list))
+    }
+    const setAntiLinkFeature = (key, enabled) => {
+      const feature = antiLinkFeatureMap[key]
+      if (!feature) return null
+      const index = feature.list.indexOf(from)
+      if (enabled && index === -1) feature.list.push(from)
+      if (!enabled && index !== -1) feature.list.splice(index, 1)
+      saveAntiLinkFeature(feature)
+      return feature
+    }
+    const saveAntiLinkAction = (mode) => {
+      antilinkAction[from] = mode === 'kick' ? 'kick' : 'delete'
+      fs.writeFileSync(antilinkActionPath, JSON.stringify(antilinkAction, null, 2))
+      return antilinkAction[from]
+    }
+    const sendAntiLinkFeatureMenu = async () => {
+      const rows = Object.entries(antiLinkFeatureMap).map(([key, feature]) => ({
+        header: feature.enabled() ? 'AKTIF' : 'NONAKTIF',
+        title: feature.label,
+        description: `${prefix}${feature.command} | pilih untuk enable/disable`,
+        id: `${prefix}antilink feature ${key}`
+      }))
+      rows.push({
+        header: antiLinkActionMode === 'kick' ? 'KICK MEMBER' : 'HAPUS PESAN',
+        title: 'Mode Action Pelanggaran',
+        description: 'Atur tindakan saat member mengirim link',
+        id: `${prefix}antilink action-menu`
+      })
+      let msg = generateWAMessageFromContent(from, {
+        viewOnceMessage: {
+          message: {
+            messageContextInfo: {
+              deviceListMetadata: {},
+              deviceListMetadataVersion: 2
+            },
+            interactiveMessage: proto.Message.InteractiveMessage.create({
+              body: proto.Message.InteractiveMessage.Body.create({
+                text: `*AntiLink Group Center*\n\nPilih fitur antilink yang ingin diatur.\nMode action saat ini: *${antiLinkActionMode.toUpperCase()}*`
+              }),
+              footer: proto.Message.InteractiveMessage.Footer.create({
+                text: botname
+              }),
+              header: proto.Message.InteractiveMessage.Header.create({
+                title: '',
+                hasMediaAttachment: false
+              }),
+              nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                buttons: [{
+                  name: 'single_select',
+                  buttonParamsJson: JSON.stringify({
+                    title: 'PILIH ANTILINK',
+                    sections: [{
+                      title: 'Fitur AntiLink',
+                      rows
+                    }]
+                  })
+                }]
+              })
+            })
+          }
+        }
+      }, { quoted: m })
+      await NanoBotz.relayMessage(msg.key.remoteJid, msg.message, { messageId: msg.key.id })
+    }
+    const sendAntiLinkToggleMenu = async (key) => {
+      const feature = antiLinkFeatureMap[key]
+      if (!feature) return replynano('Fitur antilink tidak ditemukan.')
+      let msg = generateWAMessageFromContent(from, {
+        viewOnceMessage: {
+          message: {
+            messageContextInfo: {
+              deviceListMetadata: {},
+              deviceListMetadataVersion: 2
+            },
+            interactiveMessage: proto.Message.InteractiveMessage.create({
+              body: proto.Message.InteractiveMessage.Body.create({
+                text: `*${feature.label}*\n\nStatus saat ini: *${feature.enabled() ? 'AKTIF' : 'NONAKTIF'}*\nPilih apakah fitur ini akan di-enable atau di-disable.`
+              }),
+              footer: proto.Message.InteractiveMessage.Footer.create({
+                text: botname
+              }),
+              header: proto.Message.InteractiveMessage.Header.create({
+                title: '',
+                hasMediaAttachment: false
+              }),
+              nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                buttons: [{
+                  name: 'single_select',
+                  buttonParamsJson: JSON.stringify({
+                    title: 'ENABLE / DISABLE',
+                    sections: [{
+                      title: feature.label,
+                      rows: [{
+                        header: 'ENABLE',
+                        title: 'Hidupkan fitur',
+                        description: `${feature.label} akan aktif di grup ini`,
+                        id: `${prefix}antilink set ${key} on`
+                      }, {
+                        header: 'DISABLE',
+                        title: 'Matikan fitur',
+                        description: `${feature.label} akan nonaktif di grup ini`,
+                        id: `${prefix}antilink set ${key} off`
+                      }]
+                    }]
+                  })
+                }]
+              })
+            })
+          }
+        }
+      }, { quoted: m })
+      await NanoBotz.relayMessage(msg.key.remoteJid, msg.message, { messageId: msg.key.id })
+    }
+    const sendAntiLinkActionMenu = async () => {
+      let msg = generateWAMessageFromContent(from, {
+        viewOnceMessage: {
+          message: {
+            messageContextInfo: {
+              deviceListMetadata: {},
+              deviceListMetadataVersion: 2
+            },
+            interactiveMessage: proto.Message.InteractiveMessage.create({
+              body: proto.Message.InteractiveMessage.Body.create({
+                text: `*Mode Action AntiLink*\n\nMode saat ini: *${antiLinkActionMode.toUpperCase()}*\n\nDelete = pesan link dihapus.\nKick = pesan link dihapus lalu member dikeluarkan.`
+              }),
+              footer: proto.Message.InteractiveMessage.Footer.create({
+                text: botname
+              }),
+              header: proto.Message.InteractiveMessage.Header.create({
+                title: '',
+                hasMediaAttachment: false
+              }),
+              nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                buttons: [{
+                  name: 'single_select',
+                  buttonParamsJson: JSON.stringify({
+                    title: 'PILIH ACTION',
+                    sections: [{
+                      title: 'Action Pelanggaran',
+                      rows: [{
+                        header: 'DELETE',
+                        title: 'Hapus pesan saja',
+                        description: 'Member tidak dikeluarkan dari grup',
+                        id: `${prefix}antilink action delete`
+                      }, {
+                        header: 'KICK',
+                        title: 'Hapus dan keluarkan member',
+                        description: 'Bot harus menjadi admin grup',
+                        id: `${prefix}antilink action kick`
+                      }]
+                    }]
+                  })
+                }]
+              })
+            })
+          }
+        }
+      }, { quoted: m })
+      await NanoBotz.relayMessage(msg.key.remoteJid, msg.message, { messageId: msg.key.id })
+    }
+    const handleAntiLinkViolation = async (label, sameGroupLink = false) => {
+      if (!isBotAdmins) {
+        await reply('_Bot Harus Menjadi Admin Terlebih Dahulu_')
+        return true
+      }
+      if (sameGroupLink) {
+        await NanoBotz.sendMessage(m.chat, { text: `\`\`\`「 ${label} Detected 」\`\`\`\n\nTautan ini adalah link grup sendiri, jadi tidak ditindak.` }, { quoted: m })
+        return true
+      }
+      if (isAdmins || m.key.fromMe || DanzTheCreator) {
+        await NanoBotz.sendMessage(m.chat, { text: `\`\`\`「 ${label} Detected 」\`\`\`\n\nAdmin/owner mengirim link, jadi tidak ditindak.` }, { quoted: m })
+        return true
+      }
+      await NanoBotz.sendMessage(m.chat, {
+        delete: {
+          remoteJid: m.chat,
+          fromMe: false,
+          id: m.key.id,
+          participant: m.key.participant
+        }
+      })
+      if (antiLinkActionMode === 'kick') {
+        await NanoBotz.groupParticipantsUpdate(m.chat, [m.sender], 'remove').catch(() => null)
+        await NanoBotz.sendMessage(from, { text: `\`\`\`「 ${label} Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} mengirim link, pesan dihapus dan member dikeluarkan dari grup.`, contextInfo: { mentionedJid: [m.sender] } }, { quoted: m })
+      } else {
+        await NanoBotz.sendMessage(from, { text: `\`\`\`「 ${label} Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} mengirim link dan pesannya berhasil dihapus.`, contextInfo: { mentionedJid: [m.sender] } }, { quoted: m })
+      }
+      return true
+    }
     const antiToxic = m.isGroup ? nttoxic.includes(from) : true
     const isWelcome = _welcome.includes(m.chat) ? true : false
     const isLeft = _left.includes(m.chat) ? true : false
@@ -2421,6 +2656,35 @@ ${themeemoji} Title: ${result.title}`;
         }, {
           quoted: m
         })
+      }
+    }
+    if (m.isGroup && !isCmd) {
+      const lowerBudy = String(budy || '').toLowerCase()
+      const antiLinkChecks = [
+        {
+          enabled: Antilinkgc,
+          label: 'Group Link',
+          match: /chat\.whatsapp\.com/i.test(lowerBudy),
+          sameGroup: async () => {
+            const gclink = `https://chat.whatsapp.com/${await NanoBotz.groupInviteCode(m.chat)}`
+            return new RegExp(gclink.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(m.text || '')
+          }
+        },
+        { enabled: antiWame, label: 'Wa.me Link', match: /(?:wa\.me|api\.whatsapp\.com\/send|whatsapp\.com\/channel)/i.test(lowerBudy) },
+        { enabled: AntiLinkYoutubeVid, label: 'YouTube Video Link', match: /(?:youtu\.be\/|youtube\.com\/watch|youtube\.com\/shorts)/i.test(lowerBudy) },
+        { enabled: AntiLinkYoutubeChannel, label: 'YouTube Channel Link', match: /youtube\.com\/(?:channel|c\/|@|user)/i.test(lowerBudy) },
+        { enabled: AntiLinkInstagram, label: 'Instagram Link', match: /instagram\.com/i.test(lowerBudy) },
+        { enabled: AntiLinkFacebook, label: 'Facebook Link', match: /(?:facebook\.com|fb\.watch|fb\.com)/i.test(lowerBudy) },
+        { enabled: AntiLinkTelegram, label: 'Telegram Link', match: /(?:t\.me|telegram\.me)/i.test(lowerBudy) },
+        { enabled: AntiLinkTiktok, label: 'TikTok Link', match: /(?:tiktok\.com|vt\.tiktok\.com|vm\.tiktok\.com)/i.test(lowerBudy) },
+        { enabled: AntiLinkTwitter, label: 'Twitter/X Link', match: /(?:twitter\.com|x\.com)/i.test(lowerBudy) },
+        { enabled: AntiLinkAll, label: 'Link', match: /https?:\/\//i.test(lowerBudy) }
+      ]
+      for (const rule of antiLinkChecks) {
+        if (!rule.enabled || !rule.match) continue
+        const sameGroupLink = rule.sameGroup ? await rule.sameGroup().catch(() => false) : false
+        await handleAntiLinkViolation(rule.label, sameGroupLink)
+        return
       }
     }
     if (Antilinkgc) {
@@ -15308,90 +15572,44 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
         if (!m.isGroup) return reply(mess.only.group)
         if (!isBotAdmins) return reply('_Bot Harus Menjadi Admin Terlebih Dahulu_')
         if (!isAdmins && !DanzTheCreator) return reply('Khusus Admin!!')
-        if (args[0] === "on") {
-          if (Antilinkgc) return replynano('Already activated')
-          ntlinkgc.push(from)
-          fs.writeFileSync(botDir + 'antilinkgc.json', JSON.stringify(ntlinkgc))
-          replynano('Success in turning on antiwame in this group')
-          var groupe = await NanoBotz.groupMetadata(from)
-          var members = groupe['participants']
-          var mems = []
-          members.map(async adm => {
-            mems.push(adm.id.replace('c.us', 's.whatsapp.net'))
-          })
-          NanoBotz.sendMessage(from, { text: `\`\`\`「 ⚠️Warning⚠️ 」\`\`\`\n\nNobody is allowed to send group link in this group, one who sends will be kicked immediately!`, contextInfo: { mentionedJid: mems } }, { quoted: m })
-        } else if (args[0] === "off") {
-          if (!Antilinkgc) return replynano('Already deactivated')
-          let off = ntlinkgc.indexOf(from)
-          ntlinkgc.splice(off, 1)
-          fs.writeFileSync(botDir + 'antilinkgc.json', JSON.stringify(ntlinkgc))
-          replynano('Success in turning off antiwame in this group')
-        } else {
-          let msg = generateWAMessageFromContent(from, {
-            viewOnceMessage: {
-              message: {
-                messageContextInfo: {
-                  deviceListMetadata: {},
-                  deviceListMetadataVersion: 2
-                },
-                interactiveMessage: proto.Message.InteractiveMessage.create({
-                  body: proto.Message.InteractiveMessage.Body.create({
-                    text: `Hai ${pushname}\nSilakan klik tombol di bawah untuk menggunakan _*${command}*_ command`
-                  }),
-                  footer: proto.Message.InteractiveMessage.Footer.create({
-                    text: botname
-                  }),
-                  header: proto.Message.InteractiveMessage.Header.create({
-                    ...(await prepareWAMessageMedia({ image: thumbnail }, { upload: NanoBotz.waUploadToServer })),
-                    title: ``,
-                    gifPlayback: true,
-                    subtitle: ownername,
-                    hasMediaAttachment: false
-                  }),
-                  nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
-                    buttons: [
-                      {
-                        name: "single_select",
-                        buttonParamsJson: `{
-                "title":"PILIH ON/OFF ♨️",
-                "sections":[{
-                  "title":"PILIH ON/OFF ",
-                  "rows":[{
-                    "header":"HIDUPKAN ✅",
-                    "title":"MEMILIH ",
-                    "description":"MENGHIDUPKAN ✅",
-                    "id":"${prefix + command} on"
-                  },
-                  {
-                    "header":"MEMATIKAN ❌",
-                    "title":"MEMILIH ",
-                    "description":"MEMATIKAN ❌",
-                    "id":"${prefix + command} off"
-                  }]
-                }]
-              }`
-                      }
-                    ]
-                  }),
-                  contextInfo: {
-                    mentionedJid: [m.sender],
-                    forwardingScore: 999,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                      newsletterJid: '120363302865191524@newsletter',
-                      newsletterName: ownername,
-                      serverMessageId: 143
-                    }
-                  }
-                })
-              }
-            }
-          }, { quoted: m });
-
-          await NanoBotz.relayMessage(msg.key.remoteJid, msg.message, {
-            messageId: msg.key.id
-          });
+        const subAction = (args[0] || '').toLowerCase()
+        if (command === 'antilinkgc' && ['on', 'off'].includes(subAction)) {
+          const feature = setAntiLinkFeature('gc', subAction === 'on')
+          return replynano(`${feature.label} berhasil di-${subAction === 'on' ? 'aktifkan' : 'nonaktifkan'} di grup ini.`)
         }
+        if (!subAction) return sendAntiLinkFeatureMenu()
+
+        if (subAction === 'feature') {
+          const key = (args[1] || '').toLowerCase()
+          return sendAntiLinkToggleMenu(key)
+        }
+
+        if (subAction === 'set') {
+          const key = (args[1] || '').toLowerCase()
+          const mode = (args[2] || '').toLowerCase()
+          if (!antiLinkFeatureMap[key]) return replynano('Fitur antilink tidak ditemukan.')
+          if (!['on', 'off'].includes(mode)) return sendAntiLinkToggleMenu(key)
+          const feature = setAntiLinkFeature(key, mode === 'on')
+          return replynano(`${feature.label} berhasil di-${mode === 'on' ? 'aktifkan' : 'nonaktifkan'} di grup ini.`)
+        }
+
+        if (subAction === 'action-menu') return sendAntiLinkActionMenu()
+
+        if (subAction === 'action') {
+          const mode = (args[1] || '').toLowerCase()
+          if (!['delete', 'kick'].includes(mode)) return sendAntiLinkActionMenu()
+          const savedMode = saveAntiLinkAction(mode)
+          return replynano(`Mode action AntiLink berhasil diubah menjadi *${savedMode.toUpperCase()}*.`)
+        }
+
+        if (['on', 'off'].includes(subAction)) {
+          const feature = setAntiLinkFeature('gc', subAction === 'on')
+          return replynano(`${feature.label} berhasil di-${subAction === 'on' ? 'aktifkan' : 'nonaktifkan'} di grup ini.`)
+        }
+
+        const directKey = antiLinkAliases[subAction] || subAction
+        if (antiLinkFeatureMap[directKey]) return sendAntiLinkToggleMenu(directKey)
+        return sendAntiLinkFeatureMenu()
       }
         break
       case 'domain20': {
