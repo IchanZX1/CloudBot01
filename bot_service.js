@@ -81,6 +81,7 @@ class BotService {
         return this.stopLocal(botNumber);
     }
 
+    // new version with better session management and auto-reconnect logic
     async stopLocal(botNumber) {
         botNumber = botNumber ? botNumber.replace(/[^0-9]/g, '') : '';
         if (typeof clearReconnectTimer === 'function') clearReconnectTimer(botNumber);
