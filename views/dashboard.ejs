@@ -75,7 +75,7 @@
             <div id="dashboard-ad-overlay" class="dashboard-ad-overlay fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4 transition-opacity duration-200">
                 <div class="dashboard-ad-card relative w-full max-w-md rounded-2xl border border-white/15 bg-[#0b0b0c]/90 shadow-2xl shadow-black/60 p-5 md:p-6">
                     <button type="button" id="dashboard-ad-close"
-                        class="absolute -top-4 -right-4 w-9 h-9 rounded-full bg-white/10 border border-white/20 text-gray-300 hover:text-white hover:bg-white/15 transition-all flex items-center justify-center"
+                        class="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-9 h-9 rounded-full bg-white/10 border border-white/20 text-gray-300 hover:text-white hover:bg-white/15 transition-all flex items-center justify-center"
                         aria-label="Tutup iklan">
                         <i class="bi bi-x-lg text-sm"></i>
                     </button>
@@ -112,7 +112,7 @@
                     <div
                         class="glass relative overflow-hidden p-5 md:p-6 rounded-2xl md:rounded-3xl border flex items-center space-x-4 popup-float transition-all <%= isStarterPackage ? 'border-yellow-400/60 bg-yellow-500/10 shadow-[0_0_28px_rgba(234,179,8,0.16)] hover:border-yellow-300/80' : 'border-white/5 hover:border-green-500/20' %>">
                         <% if (isStarterPackage) { %>
-                            <div class="absolute right-3 top-3 px-2.5 py-1 rounded-full border border-yellow-300/50 bg-yellow-400/15 text-[9px] font-black tracking-widest text-yellow-300 flex items-center gap-1">
+                            <div class="absolute right-2 top-2 sm:right-3 sm:top-3 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-yellow-300/50 bg-yellow-400/15 text-[8px] sm:text-[9px] font-black tracking-widest text-yellow-300 flex items-center gap-1">
                                 <i class="bi bi-gem"></i>
                                 VIP TOP
                             </div>
@@ -121,7 +121,7 @@
                             class="w-10 h-10 md:w-12 md:h-12 <%= isStarterPackage ? 'bg-yellow-400/20 text-yellow-300' : 'bg-green-500/20 text-green-500' %> rounded-xl md:rounded-2xl flex items-center justify-center text-lg md:text-xl shrink-0">
                             <i class="bi <%= isStarterPackage ? 'bi-gem' : 'bi-box-seam-fill' %>"></i>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Type Paket</p>
                             <h4 class="text-lg font-extrabold <%= isStarterPackage ? 'text-yellow-300' : 'text-white' %> capitalize">
                                 <%= user.paket %>
@@ -140,7 +140,7 @@
                             class="w-10 h-10 md:w-12 md:h-12 bg-blue-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-blue-500 text-lg md:text-xl shrink-0">
                             <i class="bi bi-calendar-event-fill"></i>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Masa Aktif</p>
                             <h4 class="text-lg font-extrabold text-white">
                                 <%= user._expired ? new Date(user._expired).toLocaleDateString('id-ID', { day: '2-digit' ,
@@ -154,7 +154,7 @@
                             class="w-10 h-10 md:w-12 md:h-12 bg-purple-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-purple-500 text-lg md:text-xl shrink-0">
                             <i class="bi bi-whatsapp"></i>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">WhatsApp</p>
                             <h4 class="text-lg font-extrabold text-white">
                                 <%= user.no_Wa %>
@@ -192,7 +192,7 @@
                         <div>
                             <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Bot Number</label>
                             <div class="flex gap-2">
-                                <div class="relative w-1/3 min-w-[120px]">
+                                <div class="relative w-2/5 min-w-[100px] sm:w-1/3 sm:min-w-[120px]">
                                     <select id="country-code" name="country-code" class="auth-input w-full py-3 px-3 rounded-xl text-sm appearance-none cursor-pointer bg-black/40 border border-white/10 focus:border-green-500/50">
                                         <option value="+62" selected>Indonesia (+62)</option>
                                     </select>
@@ -201,7 +201,7 @@
                                     </div>
                                 </div>
                                 <input type="tel" id="bot-number" name="bot-number"
-                                    class="auth-input flex-1 py-3 px-4 rounded-xl text-sm" placeholder="e.g. 812xxxx"
+                                    class="auth-input flex-1 min-w-0 py-3 px-4 rounded-xl text-sm" placeholder="e.g. 812xxxx"
                                     value="<%= user.no_Bot && user.no_Bot.startsWith('62') ? user.no_Bot.slice(2) : user.no_Bot %>" required>
                             </div>
                         </div>
@@ -320,7 +320,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Bot Name</label>
                                 <input type="text" name="botname" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
@@ -337,7 +337,7 @@
                             <input type="text" name="wm" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
                                 placeholder="ZXcoderID">
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Pack Name</label>
                                 <input type="text" name="packname"
@@ -538,17 +538,17 @@
                     <div
                         class="dashboard-console bg-[#0c0e14] border border-white/10 rounded-2xl overflow-hidden flex flex-col">
                         <div
-                            class="bg-white/5 border-b border-white/10 px-4 py-3 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <div class="flex gap-1.5">
+                            class="bg-white/5 border-b border-white/10 px-3 sm:px-4 py-3 flex items-center justify-between gap-2 flex-wrap">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="flex gap-1.5 shrink-0">
                                     <div class="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
                                     <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
                                     <div class="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
                                 </div>
                                 <span
-                                    class="text-xs font-bold font-mono text-gray-500 ml-2">system_logs_whatsapp.sh</span>
+                                    class="text-xs font-bold font-mono text-gray-500 ml-2 truncate">system_logs_whatsapp.sh</span>
                             </div>
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-3 shrink-0">
                                 <div id="status-badge"
                                     class="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-gray-500">IDLE</div>
                                 <button onclick="document.getElementById('wa-logs-container').innerHTML = ''"

