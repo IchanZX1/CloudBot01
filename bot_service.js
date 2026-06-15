@@ -1,4 +1,4 @@
-const { NanoBotzInd, botStatus } = require('./index');
+const { NanoBotzInd, botStatus, clearReconnectTimer } = require('./index');
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
@@ -83,6 +83,7 @@ class BotService {
 
     async stopLocal(botNumber) {
         botNumber = botNumber ? botNumber.replace(/[^0-9]/g, '') : '';
+        if (typeof clearReconnectTimer === 'function') clearReconnectTimer(botNumber);
         botStatus.states[botNumber] = 'stopped';
         const sock = botStatus.socks[botNumber];
         if (sock) {
@@ -131,6 +132,7 @@ class BotService {
             allocationManager.unassignBot(botNumber);
         }
         botStatus.states[botNumber] = 'deleted';
+        if (typeof clearReconnectTimer === 'function') clearReconnectTimer(botNumber);
         const sock = botStatus.socks[botNumber];
         if (sock) {
             try { await sock.logout(); } catch (e) { }
