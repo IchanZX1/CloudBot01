@@ -61,7 +61,7 @@ const owner = JSON.parse(fs.readFileSync('./database/owner.json'))
 
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-// new version with better session management and auto-reconnect logics
+// new version with better session management and auto-reconnect logic
 let botStatus = {
   status: "idle",
   qr: null,
