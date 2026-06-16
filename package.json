@@ -18,7 +18,7 @@
     "@napi-rs/canvas": "^0.1.97",
     "@neoxr/api": "^1.5.3",
     "@saipulanuar/jadianime-ts": "^2.0.0",
-    "@whiskeysockets/baileys": "file:classes/baileys/",
+    "@whiskeysockets/baileys": "github:sairidev/baileys",
     "anime-wallpaper": "^1.0.2",
     "api-dylux": "^1.4.4",
     "awesome-phonenumber": "^5.9.0",
