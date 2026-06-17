@@ -359,6 +359,7 @@ const thumbs = await sharp(thumbnail)
   .resize(300, 300, { fit: 'cover' })
   .jpeg({ quality: 80 })
   .toBuffer();
+// const thumbs = thumbnail
      NanoBotz.sendMessage(m.chat, {
   document: thumbnail,
   mimetype: 'image/png',
@@ -448,15 +449,36 @@ const reply = async (teks) => {
     const groupMetadata = m.isGroup ? await NanoBotz.groupMetadata(m.chat).catch(e => ({})) : {}
     const groupName = m.isGroup ? (groupMetadata?.subject || '') : false
     const participants = m.isGroup ? (groupMetadata?.participants || []) : []
-    const groupAdmins = m.isGroup ? (participants.filter(v => v.admin !== null).map(v => v.jid)) : []
+    const groupAdmins = m.isGroup ? (participants.filter(v => v.admin !== null).map(v => v.id)) : []
     const groupOwner = m.isGroup ? (groupMetadata?.owner || '') : ''
     const groupMembers = m.isGroup ? (groupMetadata?.participants || []) : []
-    const isBotAdmins = m.isGroup ? groupAdmins.includes(botNumber) : false
+    const cleanJid = (jid) => String(jid || '').trim().replace(/:\d+@/g, '@')
+    const toPhoneJid = (jid) => {
+      const value = cleanJid(jid)
+      if (!value || value.endsWith('@lid')) return ''
+      if (value.includes('@')) return value
+      const number = value.replace(/[^0-9]/g, '')
+      return number ? `${number}@s.whatsapp.net` : ''
+    }
+    const botAdminJids = [
+      botNumber,
+      NanoBotz.user?.lid,
+      NanoBotz.authState?.creds?.me?.lid,
+      NanoBotz.authState?.creds?.me?.id,
+      NanoBotz.user?.id
+    ].filter(Boolean).map(cleanJid)
+    const isBotAdmins = m.isGroup ? participants.some(v => {
+      if (v?.admin == null) return false
+      const participantIds = [v.id, v.jid, v.lid].filter(Boolean).map(cleanJid)
+      const participantPhoneJids = [v.phoneNumber, v.pn].map(toPhoneJid).filter(Boolean)
+      return participantIds.some(jid => botAdminJids.includes(jid)) || participantPhoneJids.includes(botNumber)
+    }) : false
     const isGroupAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false
     const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false
+   // console.log("Debugging Admin Group: ", groupAdmins, " | Is Bot Admin: ", isBotAdmins, " | Is Sender Admin: ", isGroupAdmins);
     const jangan = m.isGroup ? pler.includes(m.chat) : false
     const isPrem = prem.includes(m.sender)
-    const isUser = dansyaverifikasiuser.includes(sender)
+    const isUser = dansyaverifikasiuser.includes(m.sender)
     const mentionUser = [...new Set([...(m.mentionedJid || []), ...(m.quoted ? [m.quoted.sender] : [])])]
     const mentionByTag = type == 'extendedTextMessage' && m.message.extendedTextMessage.contextInfo != null ? m.message.extendedTextMessage.contextInfo.mentionedJid : []
     const mentionByReply = type == 'extendedTextMessage' && m.message.extendedTextMessage.contextInfo != null ? m.message.extendedTextMessage.contextInfo.participant || '' : ''
