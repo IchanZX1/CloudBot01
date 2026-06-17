@@ -18,9 +18,8 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const { checkForUpdate } = require('./classes/_autoUpdate');
 const QRCode = require('qrcode');
-const QRISPayment = require('./config/qris-payment/src');
 const allocationManager = require('./lib/allocationManager');
-const { Orkut } = require('./lib/Orkut');
+const CashifyPayment = require('./lib/cashify/CashifyPayment');
 
 // Email Transporter (Gunakan Gmail App Password atau SMTP lain)
 const { HttpsProxyAgent } = require("https-proxy-agent");
@@ -178,19 +177,20 @@ function clearSessionCookies(req, res) {
     res.clearCookie('connect.sid', { path: '/', httpOnly: true, sameSite: 'Lax', secure: false });
 }
 
-function getBaseQrisString() {
-    const qrisPath = path.join(__dirname, 'config', 'qris-payment', 'QrisString.txt');
-    return fs.readFileSync(qrisPath, 'utf8').trim();
-}
-
 async function generateDynamicQrisData(amount) {
-    const baseQrString = getBaseQrisString();
-    const qris = new QRISPayment({
-        merchantId: process.env.QRIS_MERCHANT_ID || 'ZXcoderID',
-        baseQrString
+    const cashify = new CashifyPayment({
+        licenseKey: process.env.CASHIFY_LICENSE,
+        qrisId: process.env.CASHIFY_QRIS_ID || '9dc36342-84d9-4b0d-b9d0-e9489a6b3910'
     });
-    const { qrString } = await qris.generateQR(amount);
-    const qrImage = await QRCode.toDataURL(qrString, {
+
+    const qris = await cashify.createQris({
+        amount,
+        useUniqueCode: true,
+        packageIds: ['id.dana'],
+        expiredInMinutes: 30
+    });
+
+    const qrImage = await QRCode.toDataURL(qris.qrString, {
         errorCorrectionLevel: 'H',
         margin: 2,
         width: 700,
@@ -201,10 +201,18 @@ async function generateDynamicQrisData(amount) {
     });
 
     return {
-        qr_string: qrString,
+        provider: 'cashify',
+        transactionId: qris.transactionId,
+        qr_string: qris.qrString,
         qr_image: qrImage,
+        originalAmount: qris.originalAmount,
+        totalAmount: qris.totalAmount,
+        uniqueNominal: qris.uniqueNominal,
+        useUniqueCode: qris.useUniqueCode,
+        packageIds: qris.packageIds,
         dynamic: true,
-        generatedAt: new Date()
+        generatedAt: new Date(),
+        raw: qris.raw
     };
 }
 
@@ -576,10 +584,8 @@ app.get('/checkout/:packageId', async (req, res) => {
 
         if (!deposit) {
             const reffId = 'ZX' + crypto.randomBytes(4).toString('hex').toUpperCase();
-            // Generate Unique Code (10-250)
-            const uniqueCode = Math.floor(10 + Math.random() * 241);
-            const totalNominal = plan.price + uniqueCode;
-            const dynamicQris = await generateDynamicQrisData(totalNominal);
+            const dynamicQris = await generateDynamicQrisData(plan.price);
+            const totalNominal = Number(dynamicQris.totalAmount || plan.price);
 
             deposit = new Deposit({
                 userId: req.user._id,
@@ -590,15 +596,19 @@ app.get('/checkout/:packageId', async (req, res) => {
                 paymentMethod: 'qris',
                 paymentData: {
                     originalPrice: plan.price,
-                    uniqueCode: uniqueCode,
+                    uniqueCode: dynamicQris.uniqueNominal || 0,
                     ...dynamicQris
                 }
             });
             await deposit.save();
-        } else if (!deposit.paymentData?.dynamic || !deposit.paymentData?.qr_image) {
-            const dynamicQris = await generateDynamicQrisData(deposit.nominal);
+        } else if (deposit.status === 'pending' && (!deposit.paymentData?.dynamic || !deposit.paymentData?.qr_image || !deposit.paymentData?.transactionId || deposit.paymentData?.provider !== 'cashify')) {
+            const baseAmount = Number(deposit.paymentData?.originalPrice || plan.price || deposit.nominal);
+            const dynamicQris = await generateDynamicQrisData(baseAmount);
+            deposit.nominal = Number(dynamicQris.totalAmount || deposit.nominal);
             deposit.paymentData = {
                 ...(deposit.paymentData || {}),
+                originalPrice: baseAmount,
+                uniqueCode: dynamicQris.uniqueNominal || 0,
                 ...dynamicQris
             };
             await deposit.save();
@@ -677,9 +687,26 @@ app.get('/api/deposit/status/:reffId', async (req, res) => {
             return res.json({ status: deposit.status });
         }
 
-        const paymentStatus = await Orkut(deposit.nominal);
-        if (paymentStatus && paymentStatus.success && paymentStatus.data?.status === 'PAID') {
+        const cashifyTransactionId = deposit.paymentData?.transactionId;
+        if (!cashifyTransactionId) {
+            console.warn('[CASHIFY] Deposit missing transactionId:', deposit.reffId);
+            return res.json({ status: 'pending', remainingTime: 30 - diffMinutes });
+        }
+
+        const cashify = new CashifyPayment({
+            licenseKey: process.env.CASHIFY_LICENSE,
+            qrisId: process.env.CASHIFY_QRIS_ID || '9dc36342-84d9-4b0d-b9d0-e9489a6b3910'
+        });
+        const paymentStatus = await cashify.checkStatus(cashifyTransactionId);
+        const normalizedPaymentStatus = String(paymentStatus.paymentStatus || paymentStatus.status || '').toLowerCase();
+
+        if (['paid', 'success', 'settlement', 'completed'].includes(normalizedPaymentStatus)) {
             deposit.status = 'success';
+            deposit.paymentData = {
+                ...(deposit.paymentData || {}),
+                lastStatusCheck: new Date(),
+                lastCashifyStatus: paymentStatus
+            };
             await deposit.save();
 
             // Update User Package & Expiry
@@ -698,11 +725,18 @@ app.get('/api/deposit/status/:reffId', async (req, res) => {
             user._expired = newExpiry;
             await user.save();
 
-            return res.json({ status: 'success', message: 'Pembayaran berhasil dikonfirmasi via QRIS Orkut' });
+            return res.json({ status: 'success', message: 'Pembayaran berhasil dikonfirmasi via Cashify QRIS' });
         }
 
-        if (paymentStatus && !paymentStatus.success) {
-            console.warn('[ORKUT] Payment status check failed:', paymentStatus.error || 'Unknown error');
+        if (['expired', 'cancelled', 'canceled', 'failed'].includes(normalizedPaymentStatus)) {
+            deposit.status = normalizedPaymentStatus === 'failed' ? 'failed' : 'expired';
+            deposit.paymentData = {
+                ...(deposit.paymentData || {}),
+                lastStatusCheck: new Date(),
+                lastCashifyStatus: paymentStatus
+            };
+            await deposit.save();
+            return res.json({ status: deposit.status });
         }
 
         res.json({ status: 'pending', remainingTime: 30 - diffMinutes });

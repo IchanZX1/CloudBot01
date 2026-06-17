@@ -15,3 +15,10 @@ TypeError: ano.split is not a function
 Error: Timed Out
     at /home/container/node_modules/@whiskeysockets/baileys/lib/Utils/generics.js:149:32
 ========================================
+
+[17/06/2026 09:26:04] Command: .tesre | Error: newsletterMetadata is not defined
+ReferenceError: newsletterMetadata is not defined
+    at newsletterLinkToId (file:///D:/Website%20TopUp/ZXcoderID%20CloudBot/baileys/lib/Socket/newsletter.js:83:26)
+    at Object.autoReactNewsletterLink (file:///D:/Website%20TopUp/ZXcoderID%20CloudBot/baileys/lib/Socket/newsletter.js:91:41)
+    at NanoBotz (D:\Website TopUp\ZXcoderID CloudBot\Nano.js:14271:26)
+========================================

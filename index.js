@@ -74,6 +74,15 @@ let botStatus = {
   reconnectTimers: {}
 };
 
+function hasSupportedCountryCode(phone) {
+  if (!PHONENUMBER_MCC || typeof PHONENUMBER_MCC !== 'object') {
+    return true;
+  }
+
+  const countryCodes = Object.keys(PHONENUMBER_MCC);
+  return countryCodes.length === 0 || countryCodes.some(code => phone.startsWith(code));
+}
+
 function createNewsletterAutoReactController(sock, authState) {
   const parseReactionCodes = (reactionCode) => {
     if (Array.isArray(reactionCode)) {
@@ -678,7 +687,7 @@ async function NanoBotzInd(method = null, num = null) {
     if (!!targetPhoneNumber) {
       targetPhoneNumber = targetPhoneNumber.replace(/[^0-9]/g, '')
 
-      if (!Object.keys(PHONENUMBER_MCC).some(v => targetPhoneNumber.startsWith(v))) {
+      if (!hasSupportedCountryCode(targetPhoneNumber)) {
         console.log(chalk.bgBlack(chalk.redBright("Start with country code of your WhatsApp Number, Example : +916909137213")))
         //  process.exit(0)
       }
@@ -687,7 +696,7 @@ async function NanoBotzInd(method = null, num = null) {
       targetPhoneNumber = targetPhoneNumber.replace(/[^0-9]/g, '')
 
       // Ask again when entering the wrong number
-      if (!Object.keys(PHONENUMBER_MCC).some(v => targetPhoneNumber.startsWith(v))) {
+      if (!hasSupportedCountryCode(targetPhoneNumber)) {
         console.log(chalk.bgBlack(chalk.redBright("Start with country code of your WhatsApp Number, Example : +916909137213")))
 
         targetPhoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Please type your WhatsApp number 😍\nFor example: +916909137213 : `)))
@@ -697,13 +706,21 @@ async function NanoBotzInd(method = null, num = null) {
     }
 
     setTimeout(async () => {
-      let code = await NanoBotz.requestPairingCode(targetPhoneNumber, "ICHANDEV")
-      code = code?.match(/.{1,4}/g)?.join("-") || code
-      console.log(chalk.black(chalk.bgGreen(`Kode Pairing Anda : `)), chalk.black(chalk.white(code)))
-      botStatus.status = "pairing";
-      botStatus.pairingCode = code;
-      botStatus.pairingCodes[targetNum] = code;
-      botStatus.states[targetNum] = "pairing";
+      try {
+        let code = await NanoBotz.requestPairingCode(targetPhoneNumber, "ICHANDEV")
+        code = code?.match(/.{1,4}/g)?.join("-") || code
+        console.log(chalk.black(chalk.bgGreen(`Kode Pairing Anda : `)), chalk.black(chalk.white(code)))
+        botStatus.status = "pairing";
+        botStatus.pairingCode = code;
+        botStatus.pairingCodes[targetNum] = code;
+        botStatus.states[targetNum] = "pairing";
+      } catch (error) {
+        console.error(color('[PAIRING]', 'red'), `Gagal membuat pairing code untuk ${targetNum}: ${error.message}`);
+        botStatus.status = "idle";
+        botStatus.states[targetNum] = "idle";
+        botStatus.pairingCode = null;
+        delete botStatus.pairingCodes[targetNum];
+      }
     }, 3000)
   }
 

@@ -14267,6 +14267,10 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
         NanoBotz.sendMessage(m.chat, reactionMessage)
       }
         break
+        case 'tesre':{
+          await NanoBotz.autoReactNewsletterLink("https://whatsapp.com/channel/0029Var18czJpe8edCUDZF3e/575", "👍");
+        }
+        break
       case 'reactch': case 'reactchannel': case 'rch': {
         const exampleUrl = 'https://whatsapp.com/channel/0029VbBVupfKbYMFuKLsIg2M/436'
         if (!text) return replynano(`Format salah.\n\nContoh:\n${prefix + command} ${exampleUrl} 😍🔥`)
