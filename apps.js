@@ -274,6 +274,16 @@ function isDuplicateEmailError(err) {
     );
 }
 
+const dns = require('dns');
+
+// Paksa Node.js menggunakan DNS publik
+dns.setServers([
+    '1.1.1.1',
+    '1.0.0.1',
+    '8.8.8.8',
+    '8.8.4.4'
+]);
+
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI)
     .then(async () => {
@@ -790,6 +800,18 @@ app.get('/profile', (req, res) => {
     if (!req.user) return res.redirect('/login');
     res.render('profile', { title: 'Akun Saya', user: req.user });
 });
+app.get('/add-on', (req, res) => {
+    if (!req.user) return res.redirect('/login');
+    res.render('add-on', { title: 'Add-On', user: req.user });
+});
+
+// ----------------- ICHAN SHOP STORE WEBSITE -----------------------
+app.get('/shop', (req, res) => {
+    if (!req.user) return res.redirect('/login');
+    res.render('product', { title: 'WebStore', user: req.user });
+});
+
+// ----------------- END ICHAN SHOP STORE WEBSITE -----------------------
 
 app.post('/api/profile/request-otp', otpLimiter, async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
@@ -2329,7 +2351,7 @@ triggerContentErrorDemo();
 
 app.listen(PORT, async () => {
     console.log(`Server running at http://localhost:${PORT}`);
-    await checkForUpdate();
+   // await checkForUpdate();
 });
 
 /**

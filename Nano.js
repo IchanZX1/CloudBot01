@@ -30448,6 +30448,7 @@ ${meg.result}`)
       case 'spotify': case 'spotifysearch': case 'spotifys': {
         if (!text) return reply('Masukan judul lagu!')
         let result = await searchSpotify(text)
+      console.log("[SPOTIFY DEBUG]: ", result)
         let caption = result.map((v, i) => {
           return {
             header: "",
