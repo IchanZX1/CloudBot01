@@ -28848,15 +28848,7 @@ https://chat.whatsapp.com/${response}
         if (!text) return replynano('Enter Text');
         replynano(mess.wait)
         try {
-          const bratUrl = `https://brat-stiker-whatsapp.vercel.app/brat/?text=${encodeURIComponent(text)}`
-          const braths = await axios.get(bratUrl)
-          const contentType = braths['content-type'] || ''
-          if (!contentType.includes('image')) {
-            const body = Buffer.from(braths.data).toString('utf8').slice(0, 180)
-            throw new Error(`API brat membalas status ${braths.status} dengan ${contentType || 'unknown content-type'}: ${body}`)
-          }
-          const buffer = Buffer.from(braths.data)
-          await NanoBotz.sendImageAsSticker(m.chat, buffer, m, {
+          await NanoBotz.sendImageAsSticker(m.chat, `https://brat-stiker-whatsapp.vercel.app/brat/?text=${encodeURIComponent(text)}`, m, {
             packname: `${packname}`,
             author: `${author}`
           });
@@ -28871,15 +28863,7 @@ https://chat.whatsapp.com/${response}
         if (!text) return replynano('Enter Text');
         replynano(mess.wait)
         try {
-          const bratUrl = `https://brat-stiker-whatsapp.vercel.app/brathd/?text=${encodeURIComponent(text)}`
-          const braths = await axios.get(bratUrl)
-          const contentType = braths['content-type'] || ''
-          if (!contentType.includes('image')) {
-            const body = Buffer.from(braths.data).toString('utf8').slice(0, 180)
-            throw new Error(`API brat membalas status ${braths.status} dengan ${contentType || 'unknown content-type'}: ${body}`)
-          }
-          const buffer = Buffer.from(braths.data)
-          await NanoBotz.sendImageAsSticker(m.chat, buffer, m, {
+          await NanoBotz.sendImageAsSticker(m.chat, `https://brat-stiker-whatsapp.vercel.app/brathd/?text=${encodeURIComponent(text)}`, m, {
             packname: `${packname}`,
             author: `${author}`
           });
