@@ -50,6 +50,19 @@ export const makeNewsletterSocket = (config) => {
         };
         return executeWMexQuery(variables, QueryIds.UPDATE_METADATA, 'xwa2_newsletter_update');
     };
+    const newsletterMetadata = async (type, key) => {
+        const variables = {
+            fetch_creation_time: true,
+            fetch_full_image: true,
+            fetch_viewer_metadata: true,
+            input: {
+                key,
+                type: type.toUpperCase()
+            }
+        };
+        const result = await executeWMexQuery(variables, QueryIds.METADATA, XWAPaths.xwa2_newsletter_metadata);
+        return parseNewsletterMetadata(result);
+    };
     const newsletterReactMessage = async (jid, serverId, reaction) => {
         await query({
             tag: 'message',
@@ -134,19 +147,7 @@ export const makeNewsletterSocket = (config) => {
         },
         newsletterLinkToId,
         autoReactNewsletterLink,
-        newsletterMetadata: async (type, key) => {
-            const variables = {
-                fetch_creation_time: true,
-                fetch_full_image: true,
-                fetch_viewer_metadata: true,
-                input: {
-                    key,
-                    type: type.toUpperCase()
-                }
-            };
-            const result = await executeWMexQuery(variables, QueryIds.METADATA, XWAPaths.xwa2_newsletter_metadata);
-            return parseNewsletterMetadata(result);
-        },
+        newsletterMetadata,
         newsletterFollow: (jid) => {
             return executeWMexQuery({ newsletter_id: jid }, QueryIds.FOLLOW, XWAPaths.xwa2_newsletter_join_v2);
         },
