@@ -50,6 +50,60 @@ export const makeNewsletterSocket = (config) => {
         };
         return executeWMexQuery(variables, QueryIds.UPDATE_METADATA, 'xwa2_newsletter_update');
     };
+    const newsletterReactMessage = async (jid, serverId, reaction) => {
+        await query({
+            tag: 'message',
+            attrs: {
+                to: jid,
+                ...(reaction ? {} : { edit: '7' }),
+                type: 'reaction',
+                server_id: serverId,
+                id: generateMessageTag()
+            },
+            content: [
+                {
+                    tag: 'reaction',
+                    attrs: reaction ? { code: reaction } : {}
+                }
+            ]
+        });
+    };
+    const newsletterLinkToId = async (link) => {
+        const url = new URL(link);
+        const parts = url.pathname.split('/').filter(Boolean);
+        const channelIndex = parts.indexOf('channel');
+        const invite = channelIndex >= 0 ? parts[channelIndex + 1] : parts[0];
+        const serverId = channelIndex >= 0 ? parts[channelIndex + 2] : parts[1];
+        if (!invite) {
+            throw Object.assign(new Error('Invalid newsletter link: missing invite code.'), {
+                statusCode: 400,
+                data: { link }
+            });
+        }
+        const metadata = await newsletterMetadata('invite', invite);
+        return {
+            jid: metadata?.id,
+            invite,
+            serverId
+        };
+    };
+    const autoReactNewsletterLink = async (link, code = '👍') => {
+        const { jid, serverId } = await newsletterLinkToId(link);
+        if (!jid) {
+            throw Object.assign(new Error('Invalid newsletter link: newsletter id not found.'), {
+                statusCode: 400,
+                data: { link }
+            });
+        }
+        if (!serverId) {
+            throw Object.assign(new Error('Invalid newsletter link: missing message server id.'), {
+                statusCode: 400,
+                data: { link, jid }
+            });
+        }
+        await newsletterReactMessage(jid, serverId, code);
+        return jid;
+    };
     sock.ev.on('connection.update', async ({ connection }) => {
         if (connection === 'open') {
             try {
@@ -78,6 +132,8 @@ export const makeNewsletterSocket = (config) => {
         newsletterSubscribed: async () => {
             return executeWMexQuery({}, QueryIds.SUBSCRIBED, XWAPaths.xwa2_newsletter_subscribed);
         },
+        newsletterLinkToId,
+        autoReactNewsletterLink,
         newsletterMetadata: async (type, key) => {
             const variables = {
                 fetch_creation_time: true,
@@ -116,24 +172,7 @@ export const makeNewsletterSocket = (config) => {
         newsletterRemovePicture: async (jid) => {
             return await newsletterUpdate(jid, { picture: '' });
         },
-        newsletterReactMessage: async (jid, serverId, reaction) => {
-            await query({
-                tag: 'message',
-                attrs: {
-                    to: jid,
-                    ...(reaction ? {} : { edit: '7' }),
-                    type: 'reaction',
-                    server_id: serverId,
-                    id: generateMessageTag()
-                },
-                content: [
-                    {
-                        tag: 'reaction',
-                        attrs: reaction ? { code: reaction } : {}
-                    }
-                ]
-            });
-        },
+        newsletterReactMessage,
         newsletterFetchMessages: async (type, key, count, after, before) => {
             // WA Web: GetNewsletterMessages endpoint
             // Request: iq(to=s.whatsapp.net) -> messages(count, type, jid|key, [after|before])
