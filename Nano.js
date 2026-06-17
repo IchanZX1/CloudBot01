@@ -28848,28 +28848,37 @@ https://chat.whatsapp.com/${response}
         if (!text) return replynano('Enter Text');
         replynano(mess.wait)
         try {
-          const bratUrl = `https://api-faa.my.id/faa/brathd?text=${encodeURIComponent(text)}`
-          const { HttpsProxyAgent } = require('https-proxy-agent')
-          const bratProxyAgent = new HttpsProxyAgent('http://ip.atlantic-server.com:64433')
-          const { data, headers, status } = await axios.get(bratUrl, {
-            responseType: 'arraybuffer',
-            timeout: 30000,
-            httpsAgent: bratProxyAgent,
-            proxy: false,
-            headers: {
-              'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-              'Referer': 'https://api-faa.my.id/',
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
-            }
-          })
-          const contentType = headers['content-type'] || ''
+          const bratUrl = `https://brat-stiker-whatsapp.vercel.app/brat/?text=${encodeURIComponent(text)}`
+          const braths = await axios.get(bratUrl)
+          const contentType = braths['content-type'] || ''
           if (!contentType.includes('image')) {
-            const body = Buffer.from(data).toString('utf8').slice(0, 180)
-            throw new Error(`API brat membalas status ${status} dengan ${contentType || 'unknown content-type'}: ${body}`)
+            const body = Buffer.from(braths.data).toString('utf8').slice(0, 180)
+            throw new Error(`API brat membalas status ${braths.status} dengan ${contentType || 'unknown content-type'}: ${body}`)
           }
-          const buffer = Buffer.from(data)
+          const buffer = Buffer.from(braths.data)
+          await NanoBotz.sendImageAsSticker(m.chat, buffer, m, {
+            packname: `${packname}`,
+            author: `${author}`
+          });
+          replynano(mess.success + "\n*note*: Gunakan .brathd untuk kualitas lebih baik")
+        } catch (err) {
+          console.error('[BRAT]', err)
+          replynano(`Gagal membuat stiker brat: ${err.message || err}`)
+        }
+      }
+        break;
+      case 'brathd': {
+        if (!text) return replynano('Enter Text');
+        replynano(mess.wait)
+        try {
+          const bratUrl = `https://brat-stiker-whatsapp.vercel.app/brathd/?text=${encodeURIComponent(text)}`
+          const braths = await axios.get(bratUrl)
+          const contentType = braths['content-type'] || ''
+          if (!contentType.includes('image')) {
+            const body = Buffer.from(braths.data).toString('utf8').slice(0, 180)
+            throw new Error(`API brat membalas status ${braths.status} dengan ${contentType || 'unknown content-type'}: ${body}`)
+          }
+          const buffer = Buffer.from(braths.data)
           await NanoBotz.sendImageAsSticker(m.chat, buffer, m, {
             packname: `${packname}`,
             author: `${author}`
