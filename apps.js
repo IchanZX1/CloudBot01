@@ -2385,7 +2385,7 @@ triggerContentErrorDemo();
 
 app.listen(PORT, async () => {
     console.log(`Server running at http://localhost:${PORT}`);
-   // await checkForUpdate();
+   await checkForUpdate();
 });
 
 /**
