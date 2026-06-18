@@ -542,6 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sholatCitySelect = document.getElementById('sholat-city-select');
         const sholatCityCurrent = document.getElementById('sholat-city-current');
         const configAutosaveStatus = document.getElementById('config-autosave-status');
+        const editMsgAutosaveStatus = document.getElementById('editmsg-autosave-status');
 
         let pollingInterval = null;
         let connectStartedAt = 0;
@@ -554,6 +555,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let configAutosavePending = false;
         let lastConfigPayloadHash = '';
         let lastSettingsPayloadHash = '';
+        let editMsgHydrating = false;
+        let editMsgAutosaveTimer = null;
+        let editMsgAutosaveInFlight = false;
+        let editMsgAutosavePending = false;
+        let lastEditMsgPayloadHash = '';
         let thumbnailDirty = false;
         const sholatRegencyCache = new Map();
         const wilayahBaseUrl = 'https://www.emsifa.com/api-wilayah-indonesia/api';
@@ -832,31 +838,29 @@ document.addEventListener('DOMContentLoaded', () => {
             applyEditMsgPackageLocks();
 
             try {
+                editMsgHydrating = true;
                 const response = await fetch('/api/bot/mess');
                 const mess = await response.json();
-                ['wait', 'success', 'on', 'off'].forEach(f => { if (mess[f]) editMsgActualForm[f].value = mess[f]; });
-                if (mess.query) {
-                    if (mess.query.text) editMsgActualForm['query.text'].value = mess.query.text;
-                    if (mess.query.link) editMsgActualForm['query.link'].value = mess.query.link;
-                }
-                if (mess.error?.fitur) editMsgActualForm['error.fitur'].value = mess.error.fitur;
-                if (mess.only) {
-                    ['group', 'private', 'owner', 'admin', 'badmin', 'premium'].forEach(f => {
-                        if (mess.only[f]) editMsgActualForm[`only.${f}`].value = mess.only[f];
-                    });
-                }
-                if (mess.sewa) {
-                    ['caption', 'list_title', 'payment_text', 'owner_text'].forEach(f => {
-                        if (mess.sewa[f]) editMsgActualForm[`sewa.${f}`].value = mess.sewa[f];
-                    });
-                }
-            } catch (err) { }
+                ['wait', 'success', 'on', 'off'].forEach(f => { if (editMsgActualForm[f]) editMsgActualForm[f].value = mess[f] || ''; });
+                if (editMsgActualForm['query.text']) editMsgActualForm['query.text'].value = mess.query?.text || '';
+                if (editMsgActualForm['query.link']) editMsgActualForm['query.link'].value = mess.query?.link || '';
+                if (editMsgActualForm['error.fitur']) editMsgActualForm['error.fitur'].value = mess.error?.fitur || '';
+                ['group', 'private', 'owner', 'admin', 'badmin', 'premium'].forEach(f => {
+                    if (editMsgActualForm[`only.${f}`]) editMsgActualForm[`only.${f}`].value = mess.only?.[f] || '';
+                });
+                ['caption', 'list_title', 'payment_text', 'owner_text'].forEach(f => {
+                    if (editMsgActualForm[`sewa.${f}`]) editMsgActualForm[`sewa.${f}`].value = mess.sewa?.[f] || '';
+                });
+                lastEditMsgPayloadHash = hashPayload(buildEditMsgPayload());
+                setEditMsgAutosaveStatus('saved');
+            } catch (err) {
+                setEditMsgAutosaveStatus('error', 'Gagal memuat custom message.');
+            } finally {
+                editMsgHydrating = false;
+            }
         }
 
-        editMsgActualForm?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            submitEditMsgBtn.disabled = true;
-            submitEditMsgBtn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-2"></i>Saving...';
+        function buildEditMsgPayload() {
             const formData = new FormData(editMsgActualForm);
             const data = {};
             for (let [key, value] of formData.entries()) {
@@ -864,15 +868,96 @@ document.addEventListener('DOMContentLoaded', () => {
                     const [parent, child] = key.split('.');
                     if (!data[parent]) data[parent] = {};
                     data[parent][child] = value;
-                } else data[key] = value;
+                } else {
+                    data[key] = value;
+                }
             }
+            return data;
+        }
+
+        function setEditMsgAutosaveStatus(status, message = '') {
+            if (!submitEditMsgBtn) return;
+            const statusText = editMsgAutosaveStatus;
+            submitEditMsgBtn.disabled = false;
+            submitEditMsgBtn.classList.remove('text-green-500', 'text-yellow-400', 'text-red-400', 'opacity-50');
+
+            if (status === 'saving') {
+                submitEditMsgBtn.innerHTML = '<i class="bi bi-arrow-repeat animate-spin mr-2"></i>Saving...';
+                submitEditMsgBtn.classList.add('text-yellow-400');
+                if (statusText) statusText.textContent = message || 'Menyimpan perubahan pesan otomatis...';
+            } else if (status === 'saved') {
+                submitEditMsgBtn.innerHTML = '<i class="bi bi-check2-circle mr-2"></i>Saved Automatically';
+                submitEditMsgBtn.classList.add('text-green-500');
+                if (statusText) statusText.textContent = message || 'Semua pesan sudah tersimpan.';
+            } else if (status === 'dirty') {
+                submitEditMsgBtn.innerHTML = '<i class="bi bi-clock-history mr-2"></i>Waiting Autosave...';
+                submitEditMsgBtn.classList.add('text-yellow-400');
+                if (statusText) statusText.textContent = message || 'Perubahan pesan terdeteksi, menunggu jeda sebelum save.';
+            } else if (status === 'error') {
+                submitEditMsgBtn.innerHTML = '<i class="bi bi-exclamation-triangle mr-2"></i>Save Failed';
+                submitEditMsgBtn.classList.add('text-red-400');
+                if (statusText) statusText.textContent = message || 'Gagal autosave pesan. Klik tombol untuk mencoba lagi.';
+            } else {
+                submitEditMsgBtn.innerHTML = 'Auto Save Active';
+                if (statusText) statusText.textContent = message || 'Perubahan pesan akan tersimpan otomatis.';
+            }
+        }
+
+        function scheduleEditMsgAutosave(delay = 1200) {
+            if (!editMsgActualForm || editMsgHydrating) return;
+            clearTimeout(editMsgAutosaveTimer);
+            setEditMsgAutosaveStatus('dirty');
+            editMsgAutosaveTimer = setTimeout(() => saveEditMsgRealtime(), delay);
+        }
+
+        async function saveEditMsgRealtime({ force = false, toast = false } = {}) {
+            if (!editMsgActualForm) return;
+            clearTimeout(editMsgAutosaveTimer);
+
+            if (editMsgAutosaveInFlight) {
+                editMsgAutosavePending = true;
+                return;
+            }
+
+            const data = buildEditMsgPayload();
+            const payloadHash = hashPayload(data);
+
+            if (!force && payloadHash === lastEditMsgPayloadHash) {
+                setEditMsgAutosaveStatus('saved');
+                return;
+            }
+
             try {
-                const messRes = await fetch('/api/bot/mess', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                editMsgAutosaveInFlight = true;
+                setEditMsgAutosaveStatus('saving');
+                const messRes = await fetch('/api/bot/mess', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
                 const messResult = await messRes.json();
-                if (messResult.success) showToast('Pesan berhasil disimpan!', 'success');
-                else showToast(messResult.error || 'Gagal menyimpan pesan', 'error');
-            } catch (err) { showToast('Terjadi kesalahan koneksi!', 'error'); }
-            finally { submitEditMsgBtn.disabled = false; submitEditMsgBtn.innerHTML = 'Save Custom Messages'; }
+                if (!messRes.ok || !messResult.success) throw new Error(messResult.error || 'Gagal menyimpan pesan');
+                lastEditMsgPayloadHash = payloadHash;
+                setEditMsgAutosaveStatus('saved');
+                if (toast) showToast('Pesan berhasil disimpan!', 'success');
+            } catch (err) {
+                setEditMsgAutosaveStatus('error', err.message || 'Terjadi kesalahan koneksi saat autosave pesan.');
+                if (toast) showToast(err.message || 'Terjadi kesalahan koneksi!', 'error');
+            } finally {
+                editMsgAutosaveInFlight = false;
+                if (editMsgAutosavePending) {
+                    editMsgAutosavePending = false;
+                    scheduleEditMsgAutosave(600);
+                }
+            }
+        }
+
+        editMsgActualForm?.addEventListener('input', () => scheduleEditMsgAutosave());
+        editMsgActualForm?.addEventListener('change', () => scheduleEditMsgAutosave(900));
+
+        editMsgActualForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveEditMsgRealtime({ force: true, toast: true });
         });
 
         qrBtn?.addEventListener('click', () => {

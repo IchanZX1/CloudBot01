@@ -1452,13 +1452,21 @@ app.get('/api/bot/config', async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
     const botNum = (req.user.no_Bot || req.user.no_Wa || '').replace(/[^0-9]/g, '');
+    const dirPath = path.join(__dirname, 'session', `device${botNum}`);
+    const configPath = path.join(dirPath, 'config.json');
+
     try {
         const remoteResult = await forwardToWings(botNum, '/api/wings/bot/config/get');
-        if (remoteResult) return res.json(remoteResult);
+        if (remoteResult) {
+            if (remoteResult.success && remoteResult.config && typeof remoteResult.config === 'object') {
+                if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+                fs.writeFileSync(configPath, JSON.stringify(remoteResult.config, null, 2));
+            }
+            return res.json(remoteResult);
+        }
     } catch (err) {
         console.error('[WINGS CONFIG] Failed to load remote config:', err.message);
     }
-    const configPath = path.join(__dirname, 'session', `device${botNum}`, 'config.json');
 
     if (fs.existsSync(configPath)) {
         try {
@@ -1482,26 +1490,47 @@ app.post('/api/bot/config', configUpload.single('thumbnail'), async (req, res) =
     const configPath = path.join(dirPath, 'config.json');
 
     try {
-        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/config/save', {
-            config,
-            thumbnailBase64: req.file ? req.file.buffer.toString('base64') : null
-        });
-        if (remoteResult) return res.json(remoteResult);
-
-        if (!fs.existsSync(dirPath)) {
-            return res.status(400).json({ error: 'Bot belum connect. Silahkan connect terlebih dahulu.' });
+        if (!botNum) {
+            return res.status(400).json({ error: 'Nomor bot belum tersedia.' });
         }
+
+        if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 
         let oldConfig = {};
         if (fs.existsSync(configPath)) {
-            oldConfig = JSON.parse(fs.readFileSync(configPath));
+            try {
+                oldConfig = JSON.parse(fs.readFileSync(configPath));
+            } catch (readErr) {
+                console.error('[CONFIG] Failed to read existing config, resetting:', readErr.message);
+                oldConfig = {};
+            }
         }
 
         const newConfig = { ...oldConfig, ...config };
 
         if (req.file) fs.writeFileSync(path.join(dirPath, 'thumb.jpg'), req.file.buffer);
         fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2));
-        res.json({ success: true, message: 'Configuration saved' });
+
+        let remoteResult = null;
+        try {
+            remoteResult = await forwardToWings(botNum, '/api/wings/bot/config/save', {
+                config: newConfig,
+                thumbnailBase64: req.file ? req.file.buffer.toString('base64') : null
+            });
+        } catch (remoteErr) {
+            console.error('[WINGS CONFIG] Failed to mirror config to remote worker:', remoteErr.message);
+        }
+
+        if (remoteResult && remoteResult.success === false) {
+            return res.status(502).json({ error: remoteResult.error || 'Config tersimpan lokal, tapi gagal disinkronkan ke worker.' });
+        }
+
+        res.json({
+            success: true,
+            message: remoteResult ? 'Configuration saved and synced' : 'Configuration saved locally',
+            config: newConfig,
+            localPath: configPath
+        });
     } catch (err) {
         console.error('Save Config Error:', err);
         res.status(500).json({ error: err.message || 'Failed to save configuration' });

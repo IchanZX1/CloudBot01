@@ -28873,6 +28873,20 @@ https://chat.whatsapp.com/${response}
         }
       }
         break;
+      case 'bratvid': {
+        if (!text) return replynano('Enter Text');
+        replynano(mess.wait)
+        try {
+          await NanoBotz.sendImageAsSticker(m.chat, `https://brat-stiker-whatsapp.vercel.app/bratvid/?text=${encodeURIComponent(text)}`, m, {
+            packname: `${packname}`,
+            author: `${author}`
+          });
+        } catch (err) {
+          console.error('[BRAT]', err)
+          replynano(`Gagal membuat stiker brat: ${err.message || err}`)
+        }
+      }
+        break;
         case 's':
       case 'stiker':
       case 'sticker': {
