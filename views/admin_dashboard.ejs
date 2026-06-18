@@ -149,6 +149,47 @@
 
             <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent my-10"></div>
 
+            <!-- OTP WhatsApp Sender Whitelist -->
+            <div class="glass-panel rounded-3xl p-6 relative overflow-hidden border-t-[3px] border-t-cyan-500/50">
+                <div class="absolute -right-16 -top-16 w-56 h-56 bg-cyan-500/10 blur-3xl rounded-full"></div>
+                <div class="relative flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                    <div class="max-w-2xl">
+                        <h2 class="text-2xl font-black"><i class="bi bi-whatsapp mr-2 text-cyan-400"></i> Whitelist Number OTP</h2>
+                        <p class="text-sm text-gray-400 mt-1">Nomor di daftar ini tetap bisa menjadi bot aktif, tetapi tidak akan dipilih oleh sistem sebagai pengirim kode OTP WhatsApp.</p>
+                    </div>
+                    <div class="w-full lg:w-[420px]">
+                        <form onsubmit="addOtpWhitelistNumber(event)" class="flex flex-col sm:flex-row gap-3">
+                            <input id="otpWhitelistInput" type="text" inputmode="numeric" placeholder="628xxxxxxxxxx" class="flex-1 bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
+                            <button type="submit" class="px-5 py-3 rounded-xl bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500 hover:text-white font-bold transition-all border border-cyan-500/30 flex items-center justify-center gap-2">
+                                <i class="bi bi-plus-circle"></i> Tambah
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <% const whitelistNumberList = typeof otpWhitelistNumbers !== 'undefined' ? otpWhitelistNumbers : []; %>
+                <div id="otpWhitelistList" class="relative mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                    <% if (!whitelistNumberList.length) { %>
+                        <div class="xl:col-span-4 md:col-span-2 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-6 text-center text-sm text-gray-400">
+                            Belum ada nomor whitelist. Semua bot WhatsApp yang open masih bisa dipilih untuk mengirim OTP.
+                        </div>
+                    <% } %>
+                    <% whitelistNumberList.forEach(number => { %>
+                        <div class="rounded-2xl bg-black/30 border border-white/10 p-4 flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Blocked OTP Sender</p>
+                                <p class="text-sm font-mono text-gray-100 break-all"><%= number %></p>
+                            </div>
+                            <button onclick="removeOtpWhitelistNumber('<%= number %>')" class="flex-none w-[36px] h-[36px] rounded-xl bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white transition-all border border-red-500/20 flex items-center justify-center" title="Hapus dari whitelist OTP">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent my-10"></div>
+
             <!-- Wings Allocation Management -->
             <div class="glass-panel rounded-3xl p-6 relative overflow-hidden border-t-[3px] border-t-emerald-500/50">
                 <div class="absolute -right-16 -bottom-16 w-56 h-56 bg-emerald-500/10 blur-3xl rounded-full"></div>
@@ -408,6 +449,88 @@
                 '"': '&quot;',
                 "'": '&#039;'
             }[char]));
+        }
+
+        function normalizeWhitelistInput(value) {
+            let normalized = String(value || '').replace(/[^0-9]/g, '');
+            if (normalized.startsWith('0')) normalized = '62' + normalized.slice(1);
+            return normalized;
+        }
+
+        function renderOtpWhitelist(numbers) {
+            const list = document.getElementById('otpWhitelistList');
+            if (!list) return;
+            if (!numbers.length) {
+                list.innerHTML = `
+                    <div class="xl:col-span-4 md:col-span-2 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-6 text-center text-sm text-gray-400">
+                        Belum ada nomor whitelist. Semua bot WhatsApp yang open masih bisa dipilih untuk mengirim OTP.
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = numbers.map(number => `
+                <div class="rounded-2xl bg-black/30 border border-white/10 p-4 flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Blocked OTP Sender</p>
+                        <p class="text-sm font-mono text-gray-100 break-all">${escapeHtml(number)}</p>
+                    </div>
+                    <button onclick="removeOtpWhitelistNumber('${escapeHtml(number)}')" class="flex-none w-[36px] h-[36px] rounded-xl bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white transition-all border border-red-500/20 flex items-center justify-center" title="Hapus dari whitelist OTP">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function addOtpWhitelistNumber(event) {
+            event.preventDefault();
+            const input = document.getElementById('otpWhitelistInput');
+            const number = normalizeWhitelistInput(input.value);
+            if (!number) return Swal.fire('Nomor kosong', 'Masukkan nomor WhatsApp yang akan dikecualikan dari pengirim OTP.', 'info');
+
+            try {
+                const res = await fetch('/api/admin/otp-whitelist/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ number })
+                });
+                const result = await res.json();
+                if (!result.success) return Swal.fire('Error', result.error || 'Gagal menambah whitelist', 'error');
+                input.value = '';
+                renderOtpWhitelist(result.numbers || []);
+                Swal.fire({ icon: 'success', title: 'Whitelist Updated', text: result.message, timer: 1400, showConfirmButton: false, background: '#121212', color: '#fff' });
+            } catch (err) {
+                Swal.fire('Error', 'Gagal komunikasi server', 'error');
+            }
+        }
+
+        async function removeOtpWhitelistNumber(number) {
+            const confirmed = await Swal.fire({
+                title: 'Hapus Whitelist?',
+                text: `Nomor ${number} bisa dipilih lagi sebagai pengirim OTP WhatsApp.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#333',
+                confirmButtonText: 'Hapus',
+                background: '#121212',
+                color: '#fff'
+            });
+
+            if (!confirmed.isConfirmed) return;
+
+            try {
+                const res = await fetch('/api/admin/otp-whitelist/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ number })
+                });
+                const result = await res.json();
+                if (!result.success) return Swal.fire('Error', result.error || 'Gagal menghapus whitelist', 'error');
+                renderOtpWhitelist(result.numbers || []);
+            } catch (err) {
+                Swal.fire('Error', 'Gagal komunikasi server', 'error');
+            }
         }
 
         // Server Restart

@@ -4,6 +4,34 @@ const path = require('path');
 const rimraf = require('rimraf');
 const allocationManager = require('./lib/allocationManager');
 
+const OTP_WHITELIST_PATH = path.join(__dirname, 'data', 'otp_whitelist.json');
+
+function normalizeWhatsAppNumber(number) {
+    let normalized = number ? String(number).replace(/[^0-9]/g, '') : '';
+    if (normalized.startsWith('0')) normalized = '62' + normalized.slice(1);
+    return normalized;
+}
+
+function readOtpWhitelist() {
+    try {
+        if (!fs.existsSync(OTP_WHITELIST_PATH)) return [];
+        const parsed = JSON.parse(fs.readFileSync(OTP_WHITELIST_PATH, 'utf8'));
+        const numbers = Array.isArray(parsed) ? parsed : (parsed.numbers || []);
+        return [...new Set(numbers.map(normalizeWhatsAppNumber).filter(Boolean))];
+    } catch (err) {
+        console.error('[OTP WHITELIST] Failed reading whitelist:', err.message);
+        return [];
+    }
+}
+
+function writeOtpWhitelist(numbers) {
+    const normalizedNumbers = [...new Set((numbers || []).map(normalizeWhatsAppNumber).filter(Boolean))];
+    const dir = path.dirname(OTP_WHITELIST_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(OTP_WHITELIST_PATH, JSON.stringify({ numbers: normalizedNumbers }, null, 2));
+    return normalizedNumbers;
+}
+
 function allocationIsOnline(allocation) {
     const lastSeen = allocation && allocation.lastSeen ? new Date(allocation.lastSeen).getTime() : 0;
     return Boolean(allocation && allocation.url && lastSeen && Date.now() - lastSeen <= allocationManager.HEARTBEAT_TIMEOUT_MS);
@@ -163,12 +191,36 @@ class BotService {
         return { success: true };
     }
 
-    getRandomBot() {
-        const connectedBots = Object.entries(botStatus.socks).filter(([num, sock]) => botStatus.states[num] === 'open');
-        console.log(`[DEBUG] getRandomBot: found ${connectedBots.length} open bots. Total socks: ${Object.keys(botStatus.socks).length}. States:`, botStatus.states);
+    getRandomBot(excludedNumbers = []) {
+        const excludedSet = new Set((excludedNumbers || []).map(normalizeWhatsAppNumber).filter(Boolean));
+        const connectedBots = Object.entries(botStatus.socks).filter(([num, sock]) => {
+            const normalizedNum = normalizeWhatsAppNumber(num);
+            return botStatus.states[num] === 'open' && !excludedSet.has(normalizedNum);
+        });
+        console.log(`[DEBUG] getRandomBot: found ${connectedBots.length} allowed open bots. Excluded: ${excludedSet.size}. Total socks: ${Object.keys(botStatus.socks).length}. States:`, botStatus.states);
         if (connectedBots.length === 0) return null;
         const randomIndex = Math.floor(Math.random() * connectedBots.length);
         return connectedBots[randomIndex][1];
+    }
+
+    getOtpWhitelistNumbers() {
+        return readOtpWhitelist();
+    }
+
+    setOtpWhitelistNumbers(numbers) {
+        return writeOtpWhitelist(numbers);
+    }
+
+    addOtpWhitelistNumber(number) {
+        const whitelist = readOtpWhitelist();
+        const normalized = normalizeWhatsAppNumber(number);
+        if (!normalized) return whitelist;
+        return writeOtpWhitelist([...whitelist, normalized]);
+    }
+
+    removeOtpWhitelistNumber(number) {
+        const normalized = normalizeWhatsAppNumber(number);
+        return writeOtpWhitelist(readOtpWhitelist().filter(item => item !== normalized));
     }
 
     getBot(num) {

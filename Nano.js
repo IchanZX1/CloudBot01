@@ -28151,15 +28151,15 @@ Copy the link above and type the .ytmp3 link for audio and the .ytmp4 link for v
       }
         break
       case 'addsticker': {
-        if (!DanzTheCreator) return reply(mess.only.owner)
-        if (args.length < 1) return replynano('Whats the sticker name?')
-        if (NanoSticker.includes(q)) return replynano("The name is already in use")
-        let delb = await NanoBotz.downloadAndSaveMediaMessage(quoted)
-        NanoSticker.push(q)
-        await fsx.copy(delb, `./data/NanoMedia/sticker/${q}.webp`)
-        fs.writeFileSync('./data/NanoMedia/database/xeonsticker.json', JSON.stringify(NanoSticker))
-        fs.unlinkSync(delb)
-        replynano(`Success Adding Sticker\nCheck by typing ${prefix}liststicker`)
+        // if (!DanzTheCreator) return reply(mess.only.owner)
+        // if (args.length < 1) return replynano('Whats the sticker name?')
+        // if (NanoSticker.includes(q)) return replynano("The name is already in use")
+        // let delb = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+        // NanoSticker.push(q)
+        // await fsx.copy(delb, `./data/NanoMedia/sticker/${q}.webp`)
+        // fs.writeFileSync('./data/NanoMedia/database/xeonsticker.json', JSON.stringify(NanoSticker))
+        // fs.unlinkSync(delb)
+        replynano(`Fitur Ini menyebabkan spam`)
       }
         break
       case 'delsticker': {

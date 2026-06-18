@@ -86,12 +86,13 @@ const sendOTPVerification = async (user, method, whatsapp) => {
     let redirectMessage = null;
 
     if (actualMethod === 'whatsapp') {
-        let bot = botService.getRandomBot();
+        const otpWhitelistNumbers = botService.getOtpWhitelistNumbers();
+        let bot = botService.getRandomBot(otpWhitelistNumbers);
 
         if (!bot) {
-            console.log('[DEBUG] No WhatsApp bot open, waiting 5 seconds...');
+            console.log('[DEBUG] No allowed WhatsApp OTP sender bot open, waiting 5 seconds...');
             await new Promise(resolve => setTimeout(resolve, 5000));
-            bot = botService.getRandomBot();
+            bot = botService.getRandomBot(otpWhitelistNumbers);
         }
 
         let normalizedWa = whatsapp ? whatsapp.replace(/[^0-9]/g, '') : '';
@@ -99,7 +100,7 @@ const sendOTPVerification = async (user, method, whatsapp) => {
             normalizedWa = '62' + normalizedWa.slice(1);
         }
 
-        console.log(`[DEBUG] OTP Request: method=${actualMethod}, botFound=${!!bot}, whatsapp=${normalizedWa}`);
+        console.log(`[DEBUG] OTP Request: method=${actualMethod}, botFound=${!!bot}, whatsapp=${normalizedWa}, otpWhitelist=${otpWhitelistNumbers.length}`);
         if (bot && normalizedWa) {
             const jid = normalizedWa + '@s.whatsapp.net';
             const messageText = `*VERIFIKASI OTP*\n\nHalo ${user.username}!\nKode OTP Anda adalah: *${otp}*\n\nKode ini berlaku selama 5 menit. Masukkan kode ini di website untuk mengaktifkan akun Anda.`;
@@ -117,7 +118,7 @@ const sendOTPVerification = async (user, method, whatsapp) => {
         } else {
             actualMethod = 'email'; // Fallback
             redirectMessage = 'Fitur OTP WhatsApp sedang dialihkan ke OTP Email.';
-            console.warn('[WARN] Falling back to email for OTP. Bot:', !!bot, 'Number:', !!whatsapp);
+            console.warn('[WARN] Falling back to email for OTP. Allowed bot:', !!bot, 'Number:', !!whatsapp, 'OTP whitelist:', otpWhitelistNumbers);
         }
     }
 
@@ -1452,21 +1453,13 @@ app.get('/api/bot/config', async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
     const botNum = (req.user.no_Bot || req.user.no_Wa || '').replace(/[^0-9]/g, '');
-    const dirPath = path.join(__dirname, 'session', `device${botNum}`);
-    const configPath = path.join(dirPath, 'config.json');
-
     try {
         const remoteResult = await forwardToWings(botNum, '/api/wings/bot/config/get');
-        if (remoteResult) {
-            if (remoteResult.success && remoteResult.config && typeof remoteResult.config === 'object') {
-                if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
-                fs.writeFileSync(configPath, JSON.stringify(remoteResult.config, null, 2));
-            }
-            return res.json(remoteResult);
-        }
+        if (remoteResult) return res.json(remoteResult);
     } catch (err) {
         console.error('[WINGS CONFIG] Failed to load remote config:', err.message);
     }
+    const configPath = path.join(__dirname, 'session', `device${botNum}`, 'config.json');
 
     if (fs.existsSync(configPath)) {
         try {
@@ -1490,47 +1483,26 @@ app.post('/api/bot/config', configUpload.single('thumbnail'), async (req, res) =
     const configPath = path.join(dirPath, 'config.json');
 
     try {
-        if (!botNum) {
-            return res.status(400).json({ error: 'Nomor bot belum tersedia.' });
-        }
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/config/save', {
+            config,
+            thumbnailBase64: req.file ? req.file.buffer.toString('base64') : null
+        });
+        if (remoteResult) return res.json(remoteResult);
 
-        if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+        if (!fs.existsSync(dirPath)) {
+            return res.status(400).json({ error: 'Bot belum connect. Silahkan connect terlebih dahulu.' });
+        }
 
         let oldConfig = {};
         if (fs.existsSync(configPath)) {
-            try {
-                oldConfig = JSON.parse(fs.readFileSync(configPath));
-            } catch (readErr) {
-                console.error('[CONFIG] Failed to read existing config, resetting:', readErr.message);
-                oldConfig = {};
-            }
+            oldConfig = JSON.parse(fs.readFileSync(configPath));
         }
 
         const newConfig = { ...oldConfig, ...config };
 
         if (req.file) fs.writeFileSync(path.join(dirPath, 'thumb.jpg'), req.file.buffer);
         fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2));
-
-        let remoteResult = null;
-        try {
-            remoteResult = await forwardToWings(botNum, '/api/wings/bot/config/save', {
-                config: newConfig,
-                thumbnailBase64: req.file ? req.file.buffer.toString('base64') : null
-            });
-        } catch (remoteErr) {
-            console.error('[WINGS CONFIG] Failed to mirror config to remote worker:', remoteErr.message);
-        }
-
-        if (remoteResult && remoteResult.success === false) {
-            return res.status(502).json({ error: remoteResult.error || 'Config tersimpan lokal, tapi gagal disinkronkan ke worker.' });
-        }
-
-        res.json({
-            success: true,
-            message: remoteResult ? 'Configuration saved and synced' : 'Configuration saved locally',
-            config: newConfig,
-            localPath: configPath
-        });
+        res.json({ success: true, message: 'Configuration saved' });
     } catch (err) {
         console.error('Save Config Error:', err);
         res.status(500).json({ error: err.message || 'Failed to save configuration' });
@@ -2188,6 +2160,7 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
 
         const uptime = process.uptime();
         const uptimeStr = `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${Math.floor(uptime % 60)}s`;
+        const otpWhitelistNumbers = botService.getOtpWhitelistNumbers();
 
         res.render('admin_dashboard', {
             title: 'Admin Panel',
@@ -2203,6 +2176,7 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
                 status
             },
             allocations,
+            otpWhitelistNumbers,
             botStatus: mergedBotStatus,
             uptime: uptimeStr,
             uptimeSeconds: Math.floor(uptime),
@@ -2243,6 +2217,40 @@ app.post('/api/admin/server/restart', isAdmin, (req, res) => {
     setTimeout(() => {
         process.exit(1);
     }, 1000);
+});
+
+app.get('/api/admin/otp-whitelist', isAdmin, (req, res) => {
+    res.json({ success: true, numbers: botService.getOtpWhitelistNumbers() });
+});
+
+app.post('/api/admin/otp-whitelist', isAdmin, (req, res) => {
+    try {
+        const inputNumbers = Array.isArray(req.body?.numbers)
+            ? req.body.numbers
+            : String(req.body?.numbers || '').split(/[\s,;]+/);
+        const numbers = botService.setOtpWhitelistNumbers(inputNumbers);
+        res.json({ success: true, numbers, message: 'Whitelist OTP sender berhasil diperbarui' });
+    } catch (err) {
+        res.status(500).json({ error: 'Gagal menyimpan whitelist OTP: ' + err.message });
+    }
+});
+
+app.post('/api/admin/otp-whitelist/add', isAdmin, (req, res) => {
+    try {
+        const numbers = botService.addOtpWhitelistNumber(req.body?.number);
+        res.json({ success: true, numbers, message: 'Nomor berhasil ditambahkan ke whitelist OTP' });
+    } catch (err) {
+        res.status(500).json({ error: 'Gagal menambahkan whitelist OTP: ' + err.message });
+    }
+});
+
+app.post('/api/admin/otp-whitelist/remove', isAdmin, (req, res) => {
+    try {
+        const numbers = botService.removeOtpWhitelistNumber(req.body?.number);
+        res.json({ success: true, numbers, message: 'Nomor berhasil dihapus dari whitelist OTP' });
+    } catch (err) {
+        res.status(500).json({ error: 'Gagal menghapus whitelist OTP: ' + err.message });
+    }
 });
 
 app.post('/api/admin/allocations/create', isAdmin, (req, res) => {
