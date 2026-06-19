@@ -63,6 +63,105 @@
                 backdrop-filter: blur(10px);
                 -webkit-backdrop-filter: blur(10px);
             }
+
+            /* Edit Msg - Single Open Accordion */
+            .msg-accordion {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .accordion-item {
+                margin-bottom: 12px;
+            }
+
+            .accordion-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .accordion-header {
+                width: 100%;
+                height: 52px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 0 16px;
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                color: #e5e7eb;
+                font-size: 0.8rem;
+                font-weight: 700;
+                text-align: left;
+                cursor: pointer;
+                transition: background 220ms ease, border-color 220ms ease, color 220ms ease;
+            }
+
+            .accordion-header:hover {
+                background: rgba(255, 255, 255, 0.06);
+                border-color: rgba(34, 197, 94, 0.30);
+                color: #ffffff;
+            }
+
+            .accordion-item.is-open .accordion-header {
+                background: rgba(34, 197, 94, 0.08);
+                border-color: rgba(34, 197, 94, 0.40);
+                color: #22c55e;
+            }
+
+            .accordion-arrow {
+                display: inline-flex;
+                flex-shrink: 0;
+                font-size: 0.65rem;
+                line-height: 1;
+                transition: transform 280ms ease;
+            }
+
+            .accordion-item.is-open .accordion-arrow {
+                transform: rotate(90deg);
+            }
+
+            .accordion-title {
+                flex: 1;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .accordion-content {
+                display: grid;
+                grid-template-rows: 0fr;
+                overflow: hidden;
+                transition: grid-template-rows 280ms ease;
+            }
+
+            .accordion-item.is-open .accordion-content {
+                grid-template-rows: 1fr;
+            }
+
+            .accordion-content-inner {
+                overflow: hidden;
+                min-height: 0;
+                padding: 18px 4px 4px;
+            }
+
+            @media (max-width: 768px) {
+                .accordion-content-inner {
+                    padding: 16px 2px 2px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .accordion-header {
+                    height: 48px;
+                    padding: 0 12px;
+                    font-size: 0.75rem;
+                }
+
+                .accordion-content-inner {
+                    padding: 14px 0 0;
+                }
+            }
         </style>
 
         <div id="connect-page" class="min-h-screen pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 hero-gradient relative">
@@ -250,11 +349,11 @@
                                 <% const features=[ 
                                     { id: 'public' , label: 'Public Mode', icon: 'bi-broadcast' },
                                     { id: 'anticall' , label: 'Anti Call', icon: 'bi-telephone-x' },
-                                    { id: 'autobio' , label: 'Auto Bio', icon: 'bi-person-lines-fill' },
-                                    { id: 'onlygrub' , label: 'Only Group', icon: 'bi-people' },
-                                    { id: 'onlypc' , label: 'Only Private Chat', icon: 'bi-chat-left' },
-                                    { id: 'autoread' , label: 'Auto Read', icon: 'bi-check2-all' },
-                                    { id: 'autoshalat' , label: 'Auto Sholat', icon: 'bi-moon-stars' }
+                                    { id: 'autobio' , label: 'Membuat bio', icon: 'bi-person-lines-fill' },
+                                    { id: 'onlygrub' , label: 'Untuk Chat grup', icon: 'bi-people' },
+                                    { id: 'onlypc' , label: 'Untuk Chat Pribadi', icon: 'bi-chat-left' },
+                                    { id: 'autoread' , label: 'Membaca Pesan', icon: 'bi-check2-all' },
+                                    { id: 'autoshalat' , label: 'Notifikasi Adzan', icon: 'bi-moon-stars' }
                                 ] %>
                                     <% features.forEach(feat=> { %>
                                         <label class="feature-toggle relative flex items-center group cursor-pointer">
@@ -373,152 +472,198 @@
                     <!-- Edit Msg Form -->
                     <div id="editmsg-form" class="space-y-4 hidden">
                         <form id="editmsg-actual-form" class="space-y-6">
-                            <div id="msg-group-1" class="space-y-4" data-package="<%= user.paket %>">
-                                <p
-                                    class="text-[10px] font-bold text-green-500 uppercase tracking-widest bg-green-500/10 w-fit px-2 py-1 rounded">
-                                    Package: <span class="capitalize">
-                                        <%= user.paket %>
-                                    </span></p>
-                                <h5 class="text-white text-sm font-bold border-b border-white/5 pb-2">Basic Messages
-                                </h5>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Wait
-                                            Message</label>
-                                        <input type="text" name="wait"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                            placeholder="Tunggu sebentar...">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Success
-                                            Message</label>
-                                        <input type="text" name="success"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                            placeholder="Sukses Kak">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">On
-                                            Message</label>
-                                        <input type="text" name="on"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                            placeholder="Sudah Aktif">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Off
-                                            Message</label>
-                                        <input type="text" name="off"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                            placeholder="Sudah Off">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="msg-group-2" class="space-y-4 hidden">
-                                <h5 class="text-white text-sm font-bold border-b border-white/5 pb-2">Query & Error
-                                    Messages</h5>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Query
-                                            Text</label>
-                                        <input type="text" name="query.text"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                            placeholder="Teks Mana?">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Query
-                                            Link</label>
-                                        <input type="text" name="query.link"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                            placeholder="Link Mana?">
-                                    </div>
-                                    <div class="md:col-span-2">
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Error
-                                            Feature</label>
-                                        <input type="text" name="error.fitur"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                            placeholder="Fitur Error...">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="msg-group-3" class="space-y-4 hidden">
-                                <h5 class="text-white text-sm font-bold border-b border-white/5 pb-2">Only / Restriction
-                                    Messages</h5>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
-                                            Group</label>
-                                        <input type="text" name="only.group"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
-                                            Private</label>
-                                        <input type="text" name="only.private"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
-                                            Owner</label>
-                                        <input type="text" name="only.owner"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
-                                            Admin</label>
-                                        <input type="text" name="only.admin"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only Bot
-                                            Admin</label>
-                                        <input type="text" name="only.badmin"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
-                                            Premium</label>
-                                        <input type="text" name="only.premium"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div id="msg-group-4" class="space-y-4 hidden">
-                                <h5 class="text-white text-sm font-bold border-b border-white/5 pb-2">Special Feature
-                                    Messages (Sewa)</h5>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Sewa
-                                            Caption</label>
-                                        <textarea name="sewa.caption"
-                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-32"
-                                            placeholder="Haloo Kak {name}..."></textarea>
-                                        <p class="text-[9px] text-gray-500 mt-1">* Use {name} for User Name and {time}
-                                            for Greeting</p>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">List Sewa
-                                                Title</label>
-                                            <input type="text" name="sewa.list_title"
-                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                placeholder="LIST SEWA">
+                            <div class="msg-accordion">
+                                <div class="accordion-item" data-accordion-item="1">
+                                    <button type="button" class="accordion-header" aria-expanded="false" aria-controls="msg-group-1">
+                                        <span class="accordion-arrow">&#9656;</span>
+                                        <span class="accordion-title">Basic Messages</span>
+                                    </button>
+                                    <div class="accordion-content">
+                                        <div class="accordion-content-inner">
+                                            <div id="msg-group-1" class="space-y-4" data-package="<%= user.paket %>">
+                                                <p
+                                                    class="text-[10px] font-bold text-green-500 uppercase tracking-widest bg-green-500/10 w-fit px-2 py-1 rounded">
+                                                    Package: <span class="capitalize">
+                                                        <%= user.paket %>
+                                                    </span></p>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Wait
+                                                            Message</label>
+                                                        <input type="text" name="wait"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                            placeholder="Tunggu sebentar...">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Success
+                                                            Message</label>
+                                                        <input type="text" name="success"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                            placeholder="Sukses Kak">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">On
+                                                            Message</label>
+                                                        <input type="text" name="on"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                            placeholder="Sudah Aktif">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Off
+                                                            Message</label>
+                                                        <input type="text" name="off"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                            placeholder="Sudah Off">
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Payment
-                                                Button</label>
-                                            <input type="text" name="sewa.payment_text"
-                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                placeholder="PAYMENT💰">
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item" data-accordion-item="2">
+                                    <button type="button" class="accordion-header" aria-expanded="false" aria-controls="msg-group-2">
+                                        <span class="accordion-arrow">&#9656;</span>
+                                        <span class="accordion-title">Query &amp; Error Messages</span>
+                                    </button>
+                                    <div class="accordion-content">
+                                        <div class="accordion-content-inner">
+                                            <div id="msg-group-2" class="space-y-4">
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Query
+                                                            Text</label>
+                                                        <input type="text" name="query.text"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                            placeholder="Teks Mana?">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Query
+                                                            Link</label>
+                                                        <input type="text" name="query.link"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                            placeholder="Link Mana?">
+                                                    </div>
+                                                    <div class="md:col-span-2">
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Error
+                                                            Feature</label>
+                                                        <input type="text" name="error.fitur"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                            placeholder="Fitur Error...">
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Owner
-                                                Button</label>
-                                            <input type="text" name="sewa.owner_text"
-                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                placeholder="OWNER👥">
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item" data-accordion-item="3">
+                                    <button type="button" class="accordion-header" aria-expanded="false" aria-controls="msg-group-3">
+                                        <span class="accordion-arrow">&#9656;</span>
+                                        <span class="accordion-title">Only / Restriction Messages</span>
+                                    </button>
+                                    <div class="accordion-content">
+                                        <div class="accordion-content-inner">
+                                            <div id="msg-group-3" class="space-y-4">
+                                                <div class="space-y-4">
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                                            Group</label>
+                                                        <input type="text" name="only.group"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                                            Private</label>
+                                                        <input type="text" name="only.private"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                                            Owner</label>
+                                                        <input type="text" name="only.owner"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                                            Admin</label>
+                                                        <input type="text" name="only.admin"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only Bot
+                                                            Admin</label>
+                                                        <input type="text" name="only.badmin"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item" data-accordion-item="4">
+                                    <button type="button" class="accordion-header" aria-expanded="false" aria-controls="msg-group-4">
+                                        <span class="accordion-arrow">&#9656;</span>
+                                        <span class="accordion-title">Special Feature Messages (Sewa)</span>
+                                    </button>
+                                    <div class="accordion-content">
+                                        <div class="accordion-content-inner">
+                                            <div id="msg-group-4" class="space-y-4">
+                                                <div class="space-y-4">
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Sewa
+                                                            Caption</label>
+                                                        <textarea name="sewa.caption"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-32"
+                                                            placeholder="Haloo Kak {name}..."></textarea>
+                                                        <p class="text-[9px] text-gray-500 mt-1">* Use {name} for User Name and {time}
+                                                            for Greeting</p>
+                                                    </div>
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">List Sewa
+                                                                Title</label>
+                                                            <input type="text" name="sewa.list_title"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="LIST SEWA">
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Payment
+                                                                Button</label>
+                                                            <input type="text" name="sewa.payment_text"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="PAYMENT💰">
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Owner
+                                                                Button</label>
+                                                            <input type="text" name="sewa.owner_text"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="OWNER👥">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item" data-accordion-item="5">
+                                    <button type="button" class="accordion-header" aria-expanded="false" aria-controls="msg-group-5">
+                                        <span class="accordion-arrow">&#9656;</span>
+                                        <span class="accordion-title">Premium / VIP Messages</span>
+                                    </button>
+                                    <div class="accordion-content">
+                                        <div class="accordion-content-inner">
+                                            <div id="msg-group-5" class="space-y-4">
+                                                <div>
+                                                    <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                                        Premium</label>
+                                                    <input type="text" name="only.premium"
+                                                        class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -592,6 +737,28 @@
                 closeAd?.addEventListener('click', hideDashboardAd);
                 document.addEventListener('keydown', (event) => {
                     if (event.key === 'Escape') hideDashboardAd();
+                });
+
+                // Edit Msg - Single Open Accordion (visual only, tidak mengubah data/binding/logic submit)
+                const msgAccordionItems = document.querySelectorAll('#editmsg-actual-form .accordion-item');
+                msgAccordionItems.forEach((item) => {
+                    const header = item.querySelector('.accordion-header');
+                    if (!header) return;
+
+                    header.addEventListener('click', () => {
+                        const wasOpen = item.classList.contains('is-open');
+
+                        msgAccordionItems.forEach((otherItem) => {
+                            otherItem.classList.remove('is-open');
+                            const otherHeader = otherItem.querySelector('.accordion-header');
+                            if (otherHeader) otherHeader.setAttribute('aria-expanded', 'false');
+                        });
+
+                        if (!wasOpen) {
+                            item.classList.add('is-open');
+                            header.setAttribute('aria-expanded', 'true');
+                        }
+                    });
                 });
             });
         </script>

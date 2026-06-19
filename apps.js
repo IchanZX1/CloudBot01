@@ -1057,6 +1057,7 @@ app.get('/api/bot/commands', async (req, res) => {
 
 const defaultGroupSettings = {
     chatbot_grup: true,
+    adminsChatbot_grup: false,
     auto_ai_grup: false,
     goodbye: false,
     welcome: false,
@@ -1267,7 +1268,7 @@ app.post('/api/bot/group-settings/:groupId', async (req, res) => {
         });
         if (!db.settings) db.settings = {};
 
-        const boolKeys = ['chatbot_grup', 'auto_ai_grup', 'goodbye', 'welcome'];
+        const boolKeys = ['chatbot_grup', 'adminsChatbot_grup', 'auto_ai_grup', 'goodbye', 'welcome'];
         const previousSettings = db.settings[groupId] && typeof db.settings[groupId] === 'object' ? db.settings[groupId] : {};
         const nextSettings = { ...defaultGroupSettings, sewa_group: normalizeGroupRental(previousSettings.sewa_group) };
         boolKeys.forEach(key => {

@@ -117,6 +117,15 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
       antilinkAction = {}
     }
   }
+  const antiTagSwPath = botDir + 'antitagsw.json'
+  let antiTagSw = {}
+  if (fs.existsSync(antiTagSwPath)) {
+    try {
+      antiTagSw = JSON.parse(fs.readFileSync(antiTagSwPath, 'utf8'))
+    } catch (e) {
+      antiTagSw = {}
+    }
+  }
   let openaigc = JSON.parse(fs.readFileSync(botDir + 'openaigc.json'))
   let set_welcome_db = JSON.parse(fs.readFileSync(botDir + 'set_welcome.json'));
   let set_left_db = JSON.parse(fs.readFileSync(botDir + 'set_left.json'));
@@ -734,6 +743,124 @@ const reply = async (teks) => {
       }
       return true
     }
+    let antiTagSwConfig = m.isGroup && antiTagSw[from] && typeof antiTagSw[from] === 'object'
+      ? antiTagSw[from]
+      : { enabled: false, action: 'delete' }
+    if (!['delete', 'kick'].includes(antiTagSwConfig.action)) antiTagSwConfig.action = 'delete'
+
+    const saveAntiTagSwConfig = (updates = {}) => {
+      const current = antiTagSw[from] && typeof antiTagSw[from] === 'object'
+        ? antiTagSw[from]
+        : { enabled: false, action: 'delete' }
+      antiTagSw[from] = {
+        enabled: typeof updates.enabled === 'boolean' ? updates.enabled : !!current.enabled,
+        action: ['delete', 'kick'].includes(updates.action) ? updates.action : (['delete', 'kick'].includes(current.action) ? current.action : 'delete')
+      }
+      fs.writeFileSync(antiTagSwPath, JSON.stringify(antiTagSw, null, 2))
+      antiTagSwConfig = antiTagSw[from]
+      return antiTagSwConfig
+    }
+
+    const getAntiTagSwTarget = () => {
+      const alt = m.key?.participantAlt || m.key?.participantPn || m.key?.participantLid
+      return alt || m.sender
+    }
+
+    const sendAntiTagSwMenu = async () => {
+      let msg = generateWAMessageFromContent(from, {
+        viewOnceMessage: {
+          message: {
+            messageContextInfo: {
+              deviceListMetadata: {},
+              deviceListMetadataVersion: 2
+            },
+            interactiveMessage: proto.Message.InteractiveMessage.create({
+              body: proto.Message.InteractiveMessage.Body.create({
+                text: `*Anti Tag Status WhatsApp*\n\nStatus: *${antiTagSwConfig.enabled ? 'ON' : 'OFF'}*\nAction: *${antiTagSwConfig.action.toUpperCase()}*\n\nFitur ini mendeteksi pesan grup bertipe *groupStatusMentionMessage*.`
+              }),
+              footer: proto.Message.InteractiveMessage.Footer.create({
+                text: botname
+              }),
+              header: proto.Message.InteractiveMessage.Header.create({
+                title: '',
+                hasMediaAttachment: false
+              }),
+              nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                buttons: [{
+                  name: 'single_select',
+                  buttonParamsJson: JSON.stringify({
+                    title: 'PILIH ANTITAGSW',
+                    sections: [{
+                      title: 'Status Fitur',
+                      rows: [{
+                        header: 'ENABLE',
+                        title: 'Hidupkan AntiTagSW',
+                        description: 'Deteksi groupStatusMentionMessage akan aktif',
+                        id: `${prefix}antitagsw on`
+                      }, {
+                        header: 'DISABLE',
+                        title: 'Matikan AntiTagSW',
+                        description: 'Deteksi groupStatusMentionMessage akan nonaktif',
+                        id: `${prefix}antitagsw off`
+                      }]
+                    }, {
+                      title: 'Action Pelanggaran',
+                      rows: [{
+                        header: antiTagSwConfig.action === 'delete' ? 'AKTIF' : 'DELETE',
+                        title: 'Hapus pesan saja',
+                        description: 'Pesan tag status akan dihapus',
+                        id: `${prefix}antitagsw action delete`
+                      }, {
+                        header: antiTagSwConfig.action === 'kick' ? 'AKTIF' : 'KICK',
+                        title: 'Hapus dan keluarkan member',
+                        description: 'Bot harus menjadi admin grup',
+                        id: `${prefix}antitagsw action kick`
+                      }]
+                    }]
+                  })
+                }]
+              })
+            })
+          }
+        }
+      }, { quoted: m })
+      await NanoBotz.relayMessage(msg.key.remoteJid, msg.message, { messageId: msg.key.id })
+    }
+
+    const handleAntiTagSwViolation = async () => {
+      if (!m.isGroup || !antiTagSwConfig.enabled) return false
+      const isGroupStatusMention = m.mtype === 'groupStatusMentionMessage' || !!m.message?.groupStatusMentionMessage
+      if (!isGroupStatusMention) return false
+      if (!isBotAdmins) {
+        await reply('_Bot Harus Menjadi Admin Terlebih Dahulu_')
+        return true
+      }
+      if (isAdmins || m.key.fromMe || DanzTheCreator) {
+        await NanoBotz.sendMessage(m.chat, { text: '```「 AntiTagSW Detected 」```\n\nAdmin/owner mengirim tag status, jadi tidak ditindak.' }, { quoted: m })
+        return true
+      }
+
+      const targetJid = getAntiTagSwTarget()
+      await NanoBotz.sendMessage(m.chat, {
+        delete: {
+          remoteJid: m.chat,
+          fromMe: false,
+          id: m.key.id,
+          participant: m.key.participant || m.sender
+        }
+      }).catch(() => null)
+
+      if (antiTagSwConfig.action === 'kick') {
+        await NanoBotz.groupParticipantsUpdate(m.chat, [targetJid], 'remove')
+          .catch(() => targetJid !== m.sender ? NanoBotz.groupParticipantsUpdate(m.chat, [m.sender], 'remove').catch(() => null) : null)
+        await NanoBotz.sendMessage(from, { text: `\`\`\`「 AntiTagSW Detected 」\`\`\`\n\n@${String(targetJid).split('@')[0]} mengirim tag status ke grup. Pesan dihapus dan member dikeluarkan.`, contextInfo: { mentionedJid: [targetJid] } }, { quoted: m })
+      } else {
+        await NanoBotz.sendMessage(from, { text: `\`\`\`「 AntiTagSW Detected 」\`\`\`\n\n@${String(targetJid).split('@')[0]} mengirim tag status ke grup dan pesannya berhasil dihapus.`, contextInfo: { mentionedJid: [targetJid] } }, { quoted: m })
+      }
+      return true
+    }
+
+    if (await handleAntiTagSwViolation()) return
     const antiToxic = m.isGroup ? nttoxic.includes(from) : true
     const isWelcome = _welcome.includes(m.chat) ? true : false
     const isLeft = _left.includes(m.chat) ? true : false
@@ -1110,6 +1237,8 @@ const reply = async (teks) => {
 
     // Final Public check: self mode only accepts messages from the bot account.
     if (!NanoBotz.public && !m.key.fromMe) return;
+
+    if (isCmd && m.isGroup && groupSetting.adminsChatbot_grup === true && !isAdmins) return
 
     // auto message
 
@@ -15525,6 +15654,38 @@ ketik *.list* untuk melihat list˚☽˚｡⋆
             messageId: msg.key.id
           });
         }
+      }
+        break
+      case 'antitagsw': case 'antitagstatus': case 'antistatusmention': {
+        if (!m.isGroup) return reply(mess.only.group)
+        if (!isBotAdmins) return reply('_Bot Harus Menjadi Admin Terlebih Dahulu_')
+        if (!isAdmins && !DanzTheCreator) return reply('Khusus Admin!!')
+        const subAction = (args[0] || '').toLowerCase()
+        const mode = (args[1] || '').toLowerCase()
+
+        if (!subAction || subAction === 'menu') return sendAntiTagSwMenu()
+
+        if (['on', 'enable'].includes(subAction)) {
+          const saved = saveAntiTagSwConfig({ enabled: true })
+          return replynano(`AntiTagSW berhasil diaktifkan. Action saat ini: *${saved.action.toUpperCase()}*.`)
+        }
+
+        if (['off', 'disable'].includes(subAction)) {
+          saveAntiTagSwConfig({ enabled: false })
+          return replynano('AntiTagSW berhasil dinonaktifkan di grup ini.')
+        }
+
+        if (subAction === 'action') {
+          if (!['delete', 'kick'].includes(mode)) return sendAntiTagSwMenu()
+          const saved = saveAntiTagSwConfig({ action: mode })
+          return replynano(`Action AntiTagSW berhasil diubah menjadi *${saved.action.toUpperCase()}*.`)
+        }
+
+        if (subAction === 'status') {
+          return replynano(`*Status AntiTagSW*\n\nStatus: *${antiTagSwConfig.enabled ? 'ON' : 'OFF'}*\nAction: *${antiTagSwConfig.action.toUpperCase()}*`)
+        }
+
+        return sendAntiTagSwMenu()
       }
         break
       case 'antilink':

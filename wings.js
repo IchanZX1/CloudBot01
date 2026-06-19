@@ -37,6 +37,7 @@ app.use(express.json({ limit: '15mb' }));
 
 const defaultGroupSettings = {
     chatbot_grup: true,
+    adminsChatbot_grup: false,
     auto_ai_grup: false,
     goodbye: false,
     welcome: false,
@@ -459,7 +460,7 @@ app.post('/api/wings/bot/group-settings/save', requireMaster, (req, res) => {
     const { db, sock } = getDb(req.body.botNum);
     if (!db.settings) db.settings = {};
     const body = req.body.settings || {};
-    const boolKeys = ['chatbot_grup', 'auto_ai_grup', 'goodbye', 'welcome'];
+    const boolKeys = ['chatbot_grup', 'adminsChatbot_grup', 'auto_ai_grup', 'goodbye', 'welcome'];
     const previousSettings = db.settings[groupId] && typeof db.settings[groupId] === 'object' ? db.settings[groupId] : {};
     const nextSettings = { ...defaultGroupSettings, sewa_group: normalizeGroupRental(previousSettings.sewa_group) };
     boolKeys.forEach(key => { nextSettings[key] = !!body[key]; });

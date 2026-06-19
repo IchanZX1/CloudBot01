@@ -12,8 +12,8 @@ global.ig = 'gaada'
 global.yt = 'Gak ada'
 global.ttowner = 'gaada'
 global.ownername = 'Aris'
-global.owner = ['6288989013781'] // SETTING JUGA DI FOLDER DATABASE 
-global.ownernomer = '6288989013781'
+global.owner = ['628888888888'] // SETTING JUGA DI FOLDER DATABASE 
+global.ownernomer = '628888888888'
 global.socialm = 'GitHub: -'
 global.location = 'Indonesia'
 //========================setting Payment=====================\\
@@ -26,10 +26,10 @@ global.angopay = '' // KOSONG KAN JIKA TIDAK ADA
 global.anovo = '' // KOSONG KAN JIKA TIDAK ADA
 //==================setting bot===========================\\
 global.botname = "ZXcoderID"
-global.ownernumber = '6288989013781'
-global.botnumber = '6288989013781'
+global.ownernumber = '628888888888'
+global.botnumber = '628888888888'
 global.ownername = 'Aris'
-global.ownerNumber = ["6288989013781@s.whatsapp.net"]
+global.ownerNumber = ["628888888888@s.whatsapp.net"]
 global.ownerweb = ""
 global.websitex = ""
 global.wagc = ""
@@ -41,7 +41,7 @@ global.wm = "ZXcoderID"
 global.botscript = 'Dah gede nyari sc' //script link
 global.packname = "Sticker By"
 global.author = "\n\n\n\n\nCreate by ZXcoderID\nAris"
-global.creator = "6288989013781@s.whatsapp.net"
+global.creator = "628888888888@s.whatsapp.net"
 //======================== CPANEL FITUR ===========================\\
 global.domain = '-' // Isi Domain Lu jangan kasih tanda / di akhir link
 global.apikey = '-' // Isi Apikey Plta Lu
