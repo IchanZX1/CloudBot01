@@ -178,18 +178,37 @@ function clearSessionCookies(req, res) {
     res.clearCookie('connect.sid', { path: '/', httpOnly: true, sameSite: 'Lax', secure: false });
 }
 
-async function generateDynamicQrisData(amount) {
-    const cashify = new CashifyPayment({
+const CASHIFY_QRIS_ID = process.env.CASHIFY_QRIS_ID || '';
+const CASHIFY_PAYMENT_EXPIRED_MINUTES = Number(process.env.CASHIFY_PAYMENT_EXPIRED_MINUTES || 30);
+const CASHIFY_PACKAGE_IDS = String(process.env.CASHIFY_PACKAGE_IDS || 'com.orderkuota.app')
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+
+function createCashifyClient() {
+    return new CashifyPayment({
         licenseKey: process.env.CASHIFY_LICENSE,
-        qrisId: process.env.CASHIFY_QRIS_ID || '9dc36342-84d9-4b0d-b9d0-e9489a6b3910'
+        qrisId: CASHIFY_QRIS_ID
+    });
+}
+
+async function generateDynamicQrisData(amount) {
+    const paymentAmount = Number(amount);
+    if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
+        throw new Error('Nominal QRIS tidak valid');
+    }
+
+    const cashify = createCashifyClient();
+    const qris = await cashify.createQris({
+        amount: paymentAmount,
+        useUniqueCode: true,
+        packageIds: CASHIFY_PACKAGE_IDS.length ? CASHIFY_PACKAGE_IDS : ['id.dana'],
+        expiredInMinutes: CASHIFY_PAYMENT_EXPIRED_MINUTES
     });
 
-    const qris = await cashify.createQris({
-        amount,
-        useUniqueCode: true,
-        packageIds: ['id.dana'],
-        expiredInMinutes: 30
-    });
+    if (!qris?.transactionId || !qris?.qrString) {
+        throw new Error('Cashify tidak mengembalikan transactionId atau qrString QRIS');
+    }
 
     const qrImage = await QRCode.toDataURL(qris.qrString, {
         errorCorrectionLevel: 'H',
@@ -203,14 +222,17 @@ async function generateDynamicQrisData(amount) {
 
     return {
         provider: 'cashify',
+        paymentGateway: 'cashify',
+        qrisId: CASHIFY_QRIS_ID,
         transactionId: qris.transactionId,
         qr_string: qris.qrString,
         qr_image: qrImage,
-        originalAmount: qris.originalAmount,
-        totalAmount: qris.totalAmount,
-        uniqueNominal: qris.uniqueNominal,
-        useUniqueCode: qris.useUniqueCode,
-        packageIds: qris.packageIds,
+        originalAmount: Number(qris.originalAmount || paymentAmount),
+        totalAmount: Number(qris.totalAmount || paymentAmount),
+        uniqueNominal: Number(qris.uniqueNominal || 0),
+        useUniqueCode: qris.useUniqueCode !== false,
+        packageIds: qris.packageIds || CASHIFY_PACKAGE_IDS,
+        expiredInMinutes: CASHIFY_PAYMENT_EXPIRED_MINUTES,
         dynamic: true,
         generatedAt: new Date(),
         raw: qris.raw
@@ -694,10 +716,7 @@ app.get('/api/deposit/status/:reffId', async (req, res) => {
             return res.json({ status: 'pending', remainingTime: 30 - diffMinutes });
         }
 
-        const cashify = new CashifyPayment({
-            licenseKey: process.env.CASHIFY_LICENSE,
-            qrisId: process.env.CASHIFY_QRIS_ID || '9dc36342-84d9-4b0d-b9d0-e9489a6b3910'
-        });
+        const cashify = createCashifyClient();
         const paymentStatus = await cashify.checkStatus(cashifyTransactionId);
         const normalizedPaymentStatus = String(paymentStatus.paymentStatus || paymentStatus.status || '').toLowerCase();
 
@@ -756,6 +775,26 @@ app.post('/api/deposit/cancel/:reffId', async (req, res) => {
 
         if (deposit.status !== 'pending') {
             return res.status(400).json({ error: 'Hanya orderan pending yang bisa dibatalkan' });
+        }
+
+        const cashifyTransactionId = deposit.paymentData?.transactionId;
+        if (cashifyTransactionId) {
+            try {
+                const cashify = createCashifyClient();
+                const cancelResult = await cashify.cancelStatus(cashifyTransactionId);
+                deposit.paymentData = {
+                    ...(deposit.paymentData || {}),
+                    cancelledAt: new Date(),
+                    lastCashifyCancel: cancelResult
+                };
+            } catch (cancelErr) {
+                console.error('[CASHIFY] Cancel status failed:', cancelErr.message || cancelErr);
+                deposit.paymentData = {
+                    ...(deposit.paymentData || {}),
+                    cancelledAt: new Date(),
+                    cashifyCancelError: cancelErr.message || String(cancelErr)
+                };
+            }
         }
 
         deposit.status = 'cancelled';
