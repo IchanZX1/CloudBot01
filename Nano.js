@@ -373,12 +373,12 @@ let chandev = teks
 }
 
      // Konversi thumbnail ke JPEG kecil sebelum dipakai
-//         const sharp = require('sharp');
-// const thumbs = await sharp(thumbnail)
-//   .resize(300, 300, { fit: 'cover' })
-//   .jpeg({ quality: 80 })
-//   .toBuffer();
-const thumbs = thumbnail
+        const sharp = require('sharp');
+const thumbs = await sharp(thumbnail)
+  .resize(300, 300, { fit: 'cover' })
+  .jpeg({ quality: 80 })
+  .toBuffer();
+//const thumbs = thumbnail
 const userChannelJid = NanoBotz.userConfig?.idsal || NanoBotz.userConfig?.channel_id || global.idsal || '120363344962076305@newsletter'
 const userChannelName = NanoBotz.userConfig?.saluran || NanoBotz.userConfig?.channel_name || global.saluran || 'ZXcoderID OFC'
      NanoBotz.sendMessage(m.chat, {
