@@ -147,6 +147,66 @@ function saveDb(botNum, db, sock) {
     }
 }
 
+function parseWhatsappChannelInvite(channelUrl) {
+    const url = new URL(String(channelUrl || '').trim());
+    if (!/^https?:$/i.test(url.protocol) || !/^(www\.)?whatsapp\.com$/i.test(url.hostname)) {
+        throw new Error('Link saluran WhatsApp tidak valid');
+    }
+    const parts = url.pathname.split('/').filter(Boolean);
+    const channelIndex = parts.indexOf('channel');
+    const inviteCode = channelIndex >= 0 ? parts[channelIndex + 1] : '';
+    if (!inviteCode || !/^[A-Za-z0-9_-]+$/.test(inviteCode)) {
+        throw new Error('Invite code saluran tidak ditemukan');
+    }
+    return inviteCode;
+}
+
+function getNewsletterName(metadata) {
+    return metadata?.thread_metadata?.name?.text
+        || metadata?.name
+        || metadata?.result?.thread_metadata?.name?.text
+        || metadata?.result?.name
+        || '';
+}
+
+async function resolveWhatsappChannel(sock, channelUrl) {
+    if (!sock) throw new Error('Bot belum tersambung di wings. Connect bot terlebih dahulu untuk mengecek ID saluran.');
+    const inviteCode = parseWhatsappChannelInvite(channelUrl);
+    let metadata = null;
+    let channelJid = '';
+
+    if (typeof sock.newsletterLinkToId === 'function') {
+        const result = await sock.newsletterLinkToId(channelUrl);
+        channelJid = result?.jid || '';
+    }
+
+    if (typeof sock.newsletterMetadata === 'function') {
+        metadata = await sock.newsletterMetadata('invite', inviteCode);
+        channelJid = channelJid || metadata?.id || metadata?.result?.id || '';
+    }
+
+    if (!channelJid) throw new Error('ID saluran tidak ditemukan dari link tersebut.');
+    return {
+        inviteCode,
+        channelJid,
+        detectedName: getNewsletterName(metadata)
+    };
+}
+
+function saveChannelUserConfig(botNum, configPatch, sock) {
+    const { sessionDir } = getBotPaths(botNum);
+    const configPath = path.join(sessionDir, 'config.json');
+    const oldConfig = readJsonFile(configPath, {});
+    const nextConfig = { ...oldConfig, ...configPatch };
+    writeJsonFile(configPath, nextConfig);
+    if (sock) {
+        const thumbPath = path.join(sessionDir, 'thumb.jpg');
+        const thumbBuffer = fs.existsSync(thumbPath) ? fs.readFileSync(thumbPath) : sock.userConfig?.thumbBuffer;
+        sock.userConfig = { ...(sock.userConfig || {}), ...nextConfig, thumbBuffer };
+    }
+    return nextConfig;
+}
+
 function normalizeGroupId(groupId) {
     const clean = String(groupId || '').trim();
     return clean.endsWith('@g.us') ? clean : '';
@@ -403,17 +463,68 @@ app.post('/api/wings/bot/settings/get', requireMaster, (req, res) => {
     res.json({ success: true, settings: db.settings ? (db.settings[botJid] || {}) : {} });
 });
 
-app.post('/api/wings/bot/settings/save', requireMaster, (req, res) => {
-    const botNum = normalizeBotNum(req.body.botNum);
-    const botJid = `${botNum}@s.whatsapp.net`;
-    const { db, sock } = getDb(botNum);
-    if (!db.settings) db.settings = {};
-    if (!db.users) db.users = {};
-    if (!db.chats) db.chats = {};
-    db.settings[botJid] = { ...(db.settings[botJid] || {}), ...(req.body.settings || {}) };
-    if (db.settings[botNum]) delete db.settings[botNum];
-    saveDb(botNum, db, sock);
-    res.json({ success: true, message: 'Settings saved on wings' });
+app.post('/api/wings/bot/settings/save', requireMaster, async (req, res) => {
+    try {
+        const botNum = normalizeBotNum(req.body.botNum);
+        const botJid = `${botNum}@s.whatsapp.net`;
+        const { db, sock } = getDb(botNum);
+        if (!db.settings) db.settings = {};
+        if (!db.users) db.users = {};
+        if (!db.chats) db.chats = {};
+        const cleanBody = { ...(req.body.settings || {}) };
+
+    if ('channel_name' in cleanBody) {
+        cleanBody.channel_name = String(cleanBody.channel_name || '').trim().slice(0, 80);
+    }
+
+    if ('whatsapp_channel' in cleanBody) {
+        const channelUrl = String(cleanBody.whatsapp_channel || '').trim();
+        cleanBody.whatsapp_channel = /^https:\/\/(?:www\.)?whatsapp\.com\/channel\/[A-Za-z0-9_-]+\/?$/i.test(channelUrl) ? channelUrl : '';
+    }
+
+    if (cleanBody.whatsapp_channel) {
+        const resolvedChannel = await resolveWhatsappChannel(sock, cleanBody.whatsapp_channel);
+        const customName = String(cleanBody.channel_name || '').trim();
+        const finalChannelName = customName || resolvedChannel.detectedName || 'WhatsApp Channel';
+
+        cleanBody.channel_id = resolvedChannel.channelJid;
+        cleanBody.channel_invite = resolvedChannel.inviteCode;
+        cleanBody.channel_name = finalChannelName;
+        cleanBody.idsal = resolvedChannel.channelJid;
+        cleanBody.saluran = finalChannelName;
+
+        saveChannelUserConfig(botNum, {
+            whatsapp_channel: cleanBody.whatsapp_channel,
+            channel_id: cleanBody.channel_id,
+            channel_invite: cleanBody.channel_invite,
+            channel_name: cleanBody.channel_name,
+            idsal: cleanBody.idsal,
+            saluran: cleanBody.saluran
+        }, sock);
+    } else if ('whatsapp_channel' in cleanBody) {
+        cleanBody.channel_id = '';
+        cleanBody.channel_invite = '';
+        cleanBody.channel_name = '';
+        cleanBody.idsal = '';
+        cleanBody.saluran = '';
+        saveChannelUserConfig(botNum, {
+            whatsapp_channel: '',
+            channel_id: '',
+            channel_invite: '',
+            channel_name: '',
+            idsal: '',
+            saluran: ''
+        }, sock);
+    }
+
+        db.settings[botJid] = { ...(db.settings[botJid] || {}), ...cleanBody };
+        if (db.settings[botNum]) delete db.settings[botNum];
+        saveDb(botNum, db, sock);
+        res.json({ success: true, message: 'Settings saved on wings', settings: db.settings[botJid] });
+    } catch (err) {
+        console.error('[WINGS SETTINGS] Save error:', err);
+        res.status(500).json({ error: err.message || 'Failed to save settings on wings' });
+    }
 });
 
 app.post('/api/wings/bot/groups', requireMaster, async (req, res) => {

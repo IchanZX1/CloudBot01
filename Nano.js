@@ -57,6 +57,7 @@ let transactionDetails = {};
 // vote initialized inside handler
 
 module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
+ // console.log(color('[MESSAGE]', 'green'), m);
   const db = NanoBotz.db;
   const botNumber = NanoBotz.decodeJid(NanoBotz.user.id)
   const botNumberOnly = botNumber.split('@')[0]
@@ -279,6 +280,7 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
     const bady = ((m.mtype === 'conversation') ? m.message.conversation : (m.mtype == 'imageMessage') ? m.message.imageMessage.caption : (m.mtype == 'videoMessage') ? m.message.videoMessage.caption : (m.mtype == 'extendedTextMessage') ? m.message.extendedTextMessage.text : (m.mtype == 'buttonsResponseMessage') ? m.message.buttonsResponseMessage.selectedButtonId : (m.mtype == 'listResponseMessage') ? m.message.listResponseMessage.singleSelectReply.selectedRowId : (m.mtype == 'templateButtonReplyMessage') ? m.message.templateButtonReplyMessage.selectedId : (m.mtype == 'interactiveResponseMessage') ? appenTextMessage(JSON.parse(m.msg.nativeFlowResponseMessage.paramsJson).id, chatUpdate) : (m.mtype == 'templateButtonReplyMessage') ? appenTextMessage(m.msg.selectedId, chatUpdate) : (m.mtype === 'messageContextInfo') ? (m.message.buttonsResponseMessage?.selectedButtonId || m.message.listResponseMessage?.singleSelectReply.selectedRowId || m.text) : ' ') || ""
 
     const budy = (typeof m.text == 'string' ? m.text : '')
+    console.log(chalk.black(chalk.bgWhite('[ LOG ]')), chalk.white(getTime('HH:mm:ss')), chalk.white('=>'), chalk.white(budy.length > 40 ? `${budy.slice(0, 40)}...` : budy), chalk.white('=> From:'), chalk.green(m.isGroup ? (m.pushName || m.participant) : m.pushName), chalk.white('=> Type:'), chalk.yellow(type))
     const defaultCommandPrefixes = ['!', '.', '#', ',', '$']
     const savedPrefixSetting = db?.settings?.[botNumber]?.prefixes || ''
     const allowedPrefixes = [...new Set(
@@ -354,6 +356,14 @@ async function sendDocImage(conn, jid, imagePath, thumbBuffer, caption, mentions
     const imgUrl = "https://i.pinimg.com/736x/07/51/1f/07511f145dce3079aade94edd1f936d2.jpg"
 
 const chans = async (teks) => {
+ const namabot = NanoBotz.userConfig?.botname || global.botname;
+      const namaowner = global.ownername || "Aris";
+      const wm = global.wm || "ZXcoderID";
+      const saluran = NanoBotz.userConfig?.saluran || NanoBotz.userConfig?.channel_name || global.saluran || "ZXcoderID OFC";
+      const idsal = NanoBotz.userConfig?.idsal || NanoBotz.userConfig?.channel_id || global.idsal || "120363344962076305@newsletter";
+      const thumb = global.thumbUrl || "https://telegra.ph/file/0c44a30e7ed874457e937.jpg";
+
+
 let chandev = teks
   // midleware
   if (teks.split(":")[0] === 'Contoh' || teks.split(":")[0] === 'contoh' || teks.split(":")[0] === 'Cara Penggunaan' || teks.split(":")[0] === 'Cara Pakai' || teks.split(":")[0] === 'Cara Gunakan') {
@@ -363,39 +373,42 @@ let chandev = teks
 }
 
      // Konversi thumbnail ke JPEG kecil sebelum dipakai
-        const sharp = require('sharp');
-const thumbs = await sharp(thumbnail)
-  .resize(300, 300, { fit: 'cover' })
-  .jpeg({ quality: 80 })
-  .toBuffer();
-// const thumbs = thumbnail
+//         const sharp = require('sharp');
+// const thumbs = await sharp(thumbnail)
+//   .resize(300, 300, { fit: 'cover' })
+//   .jpeg({ quality: 80 })
+//   .toBuffer();
+const thumbs = thumbnail
+const userChannelJid = NanoBotz.userConfig?.idsal || NanoBotz.userConfig?.channel_id || global.idsal || '120363344962076305@newsletter'
+const userChannelName = NanoBotz.userConfig?.saluran || NanoBotz.userConfig?.channel_name || global.saluran || 'ZXcoderID OFC'
      NanoBotz.sendMessage(m.chat, {
   document: thumbnail,
   mimetype: 'image/png',
-  fileName: `‎ᴠͥɪͣᴘͫ✮⃝@${botname}࿐✮𝄟⃝`,
+  fileName: `${botname.toUpperCase()}`,
   caption: chandev,
   jpegThumbnail: thumbs,
   fileLength: 109951162777600,
   mentions: [m.sender],
-         contextInfo: {
-  mentionedJid: [m.sender],
-  isForwarded: true,
-  forwardingScore: 256,
-}
-}, {quoted: qtoko})
+        contextInfo: {
+              mentionedJid: [],
+              groupMentions: [],
+              forwardingScore: 1,
+              isForwarded: true,
+              forwardedNewsletterMessageInfo: {
+                newsletterJid: userChannelJid,
+                newsletterName: userChannelName,
+                serverMessageId: -1
+              },
+              forwardOrigin: 0
+            }
+}, {quoted: m})
 }
 
 const reply = async (teks) => {
   await chans(teks)
 }
     const replynano = (teks) => {
-      const namabot = NanoBotz.userConfig?.botname || global.botname;
-      const namaowner = global.ownername || "Aris";
-      const wm = global.wm || "ZXcoderID";
-      const saluran = global.saluran || "ZXcoderID Testimoni";
-      const idsal = global.idsal || "120363144079354024@newsletter";
-      const thumb = global.thumbUrl || "https://telegra.ph/file/0c44a30e7ed874457e937.jpg";
-
+     
        chans(teks).then(s => {
           // console.log("berhasil")
        }).catch(e => {
@@ -916,6 +929,35 @@ const reply = async (teks) => {
         NanoBotz.sendMessage(from, { text: String(e) }, { quoted: m })
       }
     }
+
+    const isNumber = x => typeof x === 'number' && !isNaN(x)
+
+    const getOrCreateDbUser = (jid) => {
+      if (!jid) return {}
+      if (!db.users || typeof db.users !== 'object') db.users = {}
+      if (!db.users[jid] || typeof db.users[jid] !== 'object') {
+        db.users[jid] = {
+          afkTime: -1,
+          afkReason: '',
+          premiumTime: 0,
+          premium: false,
+          money: 100000,
+          exp: 0,
+          limit: 30,
+          freelimit: 0,
+          registered: false,
+          name: m.name,
+          banned: false,
+          warning: 0,
+          level: 0,
+          role: 'Beginner'
+        }
+      }
+      if (!isNumber(db.users[jid].money)) db.users[jid].money = 0
+      if (!isNumber(db.users[jid].exp)) db.users[jid].exp = 0
+      return db.users[jid]
+    }
+
     try {
       if (db) {
         db.sticker = db.sticker || {}
@@ -928,8 +970,6 @@ const reply = async (teks) => {
       } else {
         return; // No database available
       }
-
-      const isNumber = x => typeof x === 'number' && !isNaN(x)
 
       // Initialize Users if not exists (sender, mentions, and quoted)
       const usersToInit = [m.sender, ...(m.mentionedJid || []), ...(m.quoted ? [m.quoted.sender] : [])]
@@ -1070,9 +1110,7 @@ const reply = async (teks) => {
           }
         }
       })
-
-
-      const user = db.users[m.sender]
+      const user = getOrCreateDbUser(m.sender)
 
       // Initialize Chat if not exists
       if (typeof db.chats[m.chat] !== 'object') {
@@ -3097,7 +3135,7 @@ ${themeemoji} Title: ${result.title}`;
       let similarity = require('similarity');
       let threshold = 0.72; // semakin tinggi nilai, semakin mirip
       let id = m.chat;
-      let users = db.users[m.sender];
+      let users = getOrCreateDbUser(m.sender);
       let room = db.game.family100[id];
       let text = budy.toLowerCase().replace(/[^\w\s\-]+/, '');
       let isSurrender = /^((me)?nyerah|surr?ender)$/i.test(budy);
@@ -3161,7 +3199,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
     db.game.tebakkata = db.game.tebakkata || {}
     if (from in db.game.tebakkata) {
       let id = m.chat
-      let users = db.users[m.sender]
+      let users = getOrCreateDbUser(m.sender)
       let json = JSON.parse(JSON.stringify(db.game.tebakkata[id][1]))
       kuis = true
       if (budy.toLowerCase() == json.jawaban.toLowerCase().trim()) {
@@ -3170,14 +3208,20 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
         replynano(`${teks}`)
         clearTimeout(db.game.tebakkata[id][2])
         delete db.game.tebakkata[id]
-      } else console.log('*Jawaban Salah!*')
+      } else if (budy.toLowerCase() == "nyerah") {
+        reply(`*Anda Telah Menyerah*\nJawaban: *${json.jawaban}*`)
+        clearTimeout(db.game.tebakkata[id][2])
+        delete db.game.tebakkata[id]
+      } else {
+       reply("Jawaban Salah!")
+      }
     }
 
     db.game.tebakgambar = db.game.tebakgambar || {}
     if (from in db.game.tebakgambar) {
       kuis = true
       let id = m.chat
-      let users = db.users[m.sender]
+      let users = getOrCreateDbUser(m.sender)
       let json = JSON.parse(JSON.stringify(db.game.tebakgambar[id][1]))
       if (budy.toLowerCase() == json.jawaban.toLowerCase().trim()) {
         users.money += 10000
@@ -3188,7 +3232,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
           delete NanoBotz.gameTimers['tebakgambar' + id]
         }
         delete db.game.tebakgambar[id]
-      } else console.log('*Jawaban Salah!*')
+      } else { console.log('*Jawaban Salah!*') }
     }
     db.game.tebakbendera2 = db.game.tebakbendera2 || {};
     if (db.game.tebakbendera2.hasOwnProperty(from)) {
@@ -3242,7 +3286,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
     //=========================================\\
     db.game.tekateki = db.game.tekateki || {}
     if (from in db.game.tekateki) {
-      let users = db.users[m.sender]
+      let users = getOrCreateDbUser(m.sender)
       const similarity = require('similarity')
       const threshold = 0.72
       let id = m.chat
@@ -3278,7 +3322,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
       const similarity = require('similarity')
       const threshold = 0.72
       let id = m.chat
-      let users = db.users[m.sender]
+      let users = getOrCreateDbUser(m.sender)
       let json = JSON.parse(JSON.stringify(db.game.siapaaku[id][1]))
 
       if (budy.toLowerCase() == json.jawaban.toLowerCase().trim()) {
@@ -3298,7 +3342,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
       const similarity = require('similarity')
       const threshold = 0.72
       let id = m.chat
-      let users = db.users[m.sender]
+      let users = getOrCreateDbUser(m.sender)
       let json = JSON.parse(JSON.stringify(db.game.susunkata[id][1]))
 
       if (budy.toLowerCase() == json.jawaban.toLowerCase().trim()) {
@@ -3340,7 +3384,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
       const similarity = require('similarity')
       const threshold = 0.72
       let id = m.chat
-      let users = db.users[m.sender]
+      let users = getOrCreateDbUser(m.sender)
       let json = JSON.parse(JSON.stringify(db.game.tebaklirik[id][1]))
 
       if (budy.toLowerCase() == json.jawaban.toLowerCase().trim()) {
@@ -4227,8 +4271,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363365678318064@newsletter',
-                    newsletterName: "Cloudbot Updates",
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -4434,8 +4478,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363365678318064@newsletter',
-                    newsletterName: "Cloudbot Updates",
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -4689,8 +4733,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -4917,8 +4961,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -5145,8 +5189,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -5375,8 +5419,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -5605,8 +5649,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -5835,8 +5879,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -6065,8 +6109,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -6293,8 +6337,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -6521,8 +6565,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -6749,8 +6793,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -6977,8 +7021,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -7269,8 +7313,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -7498,8 +7542,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -7726,8 +7770,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -7954,8 +7998,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -8181,8 +8225,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -8408,8 +8452,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -8636,8 +8680,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -8864,8 +8908,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -9092,8 +9136,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -9320,8 +9364,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -9548,8 +9592,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -9776,8 +9820,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -10004,8 +10048,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -10232,8 +10276,8 @@ NEW UPDATE FEATURES! 🚀
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }
@@ -14418,8 +14462,103 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
         NanoBotz.sendMessage(m.chat, reactionMessage)
       }
         break
-        case 'tesre':{
-          await NanoBotz.autoReactNewsletterLink("https://whatsapp.com/channel/0029Var18czJpe8edCUDZF3e/575", "👍");
+        case 'tesre': {
+          const teksTesre = text || `*[ UPDATE - CASAKU ]*
+
+- Fix Delete transaksi di dashboard
+- Fix Webhook Callback
+
+Ada perbaikan keamanan pada webhook callback, untuk dokumentasi webhook callback kalian bisa cek di repo ini 
+repo: https://github.com/ClayzaAubert/Casaku-Webhook-Example/
+web: https://casaku.id/`
+
+          await NanoBotz.sendMessage(m.chat, {
+            document: thumbnail,
+  mimetype: 'image/png',
+  fileName: `‎ᴠͥɪͣᴘͫ✮⃝@${botname}࿐✮𝄟⃝`,
+  caption: teksTesre,
+  jpegThumbnail: thumbnail,
+  fileLength: 109951162777600,
+  mentions: [m.sender],
+            contextInfo: {
+              mentionedJid: [],
+              groupMentions: [],
+              forwardingScore: 1,
+              isForwarded: true,
+              forwardedNewsletterMessageInfo: {
+                newsletterJid: NanoBotz.userConfig?.idsal || NanoBotz.userConfig?.channel_id || global.idsal || '120363344962076305@newsletter',
+                newsletterName: NanoBotz.userConfig?.saluran || NanoBotz.userConfig?.channel_name || global.saluran || 'ZXcoderID Testimoni',
+                serverMessageId: -1
+              },
+              forwardOrigin: 0
+            }
+          }, { quoted: m })
+        }
+        break
+        case 'cekchid': {
+          const exampleUrl = 'https://whatsapp.com/channel/0029VbBVupfKbYMFuKLsIg2M'
+          const channelUrl = (args[0] || '').trim()
+          if (!channelUrl) return replynano(`Masukkan link saluran WhatsApp.
+
+Contoh:
+${prefix + command} ${exampleUrl}`)
+
+          let inviteCode = ''
+          try {
+            const url = new URL(channelUrl)
+            const parts = url.pathname.split('/').filter(Boolean)
+            const channelIndex = parts.indexOf('channel')
+            inviteCode = channelIndex >= 0 ? parts[channelIndex + 1] : parts[0]
+          } catch (e) {
+            return replynano(`Link saluran tidak valid.
+
+Contoh:
+${prefix + command} ${exampleUrl}`)
+          }
+
+          if (!inviteCode) return replynano(`Invite code saluran tidak ditemukan.
+
+Contoh:
+${prefix + command} ${exampleUrl}`)
+
+          try {
+            let metadata = null
+            let channelJid = ''
+
+            if (typeof NanoBotz.newsletterLinkToId === 'function') {
+              const result = await NanoBotz.newsletterLinkToId(channelUrl)
+              channelJid = result?.jid || ''
+            }
+
+            if (typeof NanoBotz.newsletterMetadata === 'function') {
+              metadata = await NanoBotz.newsletterMetadata('invite', inviteCode)
+              channelJid = channelJid || metadata?.id || ''
+            }
+
+            if (!channelJid) return replynano('ID saluran tidak ditemukan. Pastikan link saluran benar dan dapat diakses.')
+
+            const channelName = metadata?.thread_metadata?.name?.text || metadata?.name || '-'
+            const subscribers = metadata?.thread_metadata?.subscribers_count || metadata?.subscribers || '-'
+            const verification = metadata?.thread_metadata?.verification || metadata?.verification || '-'
+            const invite = metadata?.thread_metadata?.invite || metadata?.invite || inviteCode
+
+            return replynano(`✏️ *CHECK CHANNEL ID VALID*
+
+ℹ️*ID Saluran:*
+${channelJid}
+
+📂*Invite Code:* ${invite}
+🌏*Nama:* ${channelName}
+✨*Subscribers:* ${subscribers}
+⚡️*Verification META:* ${verification}`)
+          } catch (err) {
+            console.error('[CHECKCHID]', err)
+            return replynano(`Gagal mengecek ID saluran.
+
+Pastikan link benar dan bot memiliki koneksi WhatsApp aktif.
+
+Error: ${err?.message || err}`)
+          }
         }
         break
       case 'reactch': case 'reactchannel': case 'rch': {
@@ -31414,8 +31553,8 @@ Cieeee, What's Going On❤️💖👀`,
                   forwardingScore: 999,
                   isForwarded: true,
                   forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363344962076305@newsletter',
-                    newsletterName: ownername,
+                    newsletterJid: NanoBotz.userConfig?.idsal ? NanoBotz.userConfig.idsal : global.idsal,
+                    newsletterName: NanoBotz.userConfig?.saluran ? NanoBotz.userConfig.saluran : global.saluran,
                     serverMessageId: 143
                   }
                 }

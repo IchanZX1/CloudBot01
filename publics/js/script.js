@@ -541,6 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sholatProvinceSelect = document.getElementById('sholat-province-select');
         const sholatCitySelect = document.getElementById('sholat-city-select');
         const sholatCityCurrent = document.getElementById('sholat-city-current');
+        const whatsappChannelCurrent = document.getElementById('whatsapp-channel-current');
         const configAutosaveStatus = document.getElementById('config-autosave-status');
         const editMsgAutosaveStatus = document.getElementById('editmsg-autosave-status');
 
@@ -652,6 +653,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 sholatCityCurrent.textContent = value
                     ? `Kota jadwal sholat aktif: ${displayName} -> disimpan sebagai ${value}`
                     : 'Pilih provinsi lalu kota untuk jadwal sholat.';
+            }
+        }
+
+        function setWhatsappChannelInfo(settings = {}) {
+            if (!whatsappChannelCurrent) return;
+            const channelJid = settings.channel_id || settings.idsal || '';
+            const channelName = settings.channel_name || settings.saluran || '';
+            if (channelJid) {
+                whatsappChannelCurrent.textContent = `ID saluran aktif: ${channelJid}${channelName ? ` | Nama: ${channelName}` : ''}`;
+            } else {
+                whatsappChannelCurrent.textContent = 'Saat link tersimpan, backend otomatis mengambil ID saluran dan nama saluran dapat dikustom.';
             }
         }
 
@@ -1007,6 +1019,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     await initializeSholatLocation(settings.sholat_city || '');
                     if (configForm['settings_prefixes']) configForm['settings_prefixes'].value = settings.prefixes || '!,.,#,,,$';
                     if (configForm['settings_whatsapp_channel']) configForm['settings_whatsapp_channel'].value = settings.whatsapp_channel || '';
+                    if (configForm['settings_channel_name']) configForm['settings_channel_name'].value = settings.channel_name || settings.saluran || '';
+                    setWhatsappChannelInfo(settings);
                 }
                 lastConfigPayloadHash = hashPayload(buildConfigPayload(false).hashObject);
                 lastSettingsPayloadHash = hashPayload(buildSettingsPayload());
@@ -1052,6 +1066,7 @@ document.addEventListener('DOMContentLoaded', () => {
             settings.sholat_city = configForm['settings_sholat_city']?.value || '';
             settings.prefixes = configForm['settings_prefixes']?.value || '!,.,#,,,$';
             settings.whatsapp_channel = configForm['settings_whatsapp_channel']?.value || '';
+            settings.channel_name = configForm['settings_channel_name']?.value || '';
             return settings;
         }
 
@@ -1134,7 +1149,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }).then(async response => {
                         const data = await response.json();
                         if (!response.ok || !data.success) throw new Error(data.error || 'Gagal menyimpan fitur');
-                        lastSettingsPayloadHash = settingsHash;
+                        if (data.settings) {
+                            if (configForm['settings_channel_name'] && data.settings.channel_name) {
+                                configForm['settings_channel_name'].value = data.settings.channel_name;
+                            }
+                            setWhatsappChannelInfo(data.settings);
+                        }
+                        lastSettingsPayloadHash = hashPayload(buildSettingsPayload());
                         return data;
                     }));
                 }

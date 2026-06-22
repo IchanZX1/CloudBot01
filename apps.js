@@ -1450,6 +1450,74 @@ app.post('/api/bot/group-rental/:groupId', async (req, res) => {
     }
 });
 
+function parseWhatsappChannelInvite(channelUrl) {
+    const url = new URL(String(channelUrl || '').trim());
+    if (!/^https?:$/i.test(url.protocol) || !/^(www\.)?whatsapp\.com$/i.test(url.hostname)) {
+        throw new Error('Link saluran WhatsApp tidak valid');
+    }
+    const parts = url.pathname.split('/').filter(Boolean);
+    const channelIndex = parts.indexOf('channel');
+    const inviteCode = channelIndex >= 0 ? parts[channelIndex + 1] : '';
+    if (!inviteCode || !/^[A-Za-z0-9_-]+$/.test(inviteCode)) {
+        throw new Error('Invite code saluran tidak ditemukan');
+    }
+    return inviteCode;
+}
+
+function getNewsletterName(metadata) {
+    return metadata?.thread_metadata?.name?.text
+        || metadata?.name
+        || metadata?.result?.thread_metadata?.name?.text
+        || metadata?.result?.name
+        || '';
+}
+
+async function resolveWhatsappChannel(sock, channelUrl) {
+    if (!sock) throw new Error('Bot belum tersambung. Connect bot terlebih dahulu untuk mengecek ID saluran.');
+    const inviteCode = parseWhatsappChannelInvite(channelUrl);
+    let metadata = null;
+    let channelJid = '';
+
+    if (typeof sock.newsletterLinkToId === 'function') {
+        const result = await sock.newsletterLinkToId(channelUrl);
+        channelJid = result?.jid || '';
+    }
+
+    if (typeof sock.newsletterMetadata === 'function') {
+        metadata = await sock.newsletterMetadata('invite', inviteCode);
+        channelJid = channelJid || metadata?.id || metadata?.result?.id || '';
+    }
+
+    if (!channelJid) throw new Error('ID saluran tidak ditemukan dari link tersebut.');
+    return {
+        inviteCode,
+        channelJid,
+        detectedName: getNewsletterName(metadata)
+    };
+}
+
+function saveChannelUserConfig(botNum, configPatch, sock) {
+    const dirPath = path.join(__dirname, 'session', `device${botNum}`);
+    const configPath = path.join(dirPath, 'config.json');
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    let oldConfig = {};
+    if (fs.existsSync(configPath)) {
+        try {
+            oldConfig = JSON.parse(fs.readFileSync(configPath));
+        } catch (e) {
+            oldConfig = {};
+        }
+    }
+    const newConfig = { ...oldConfig, ...configPatch };
+    fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2));
+    if (sock) {
+        const thumbPath = path.join(dirPath, 'thumb.jpg');
+        const thumbBuffer = fs.existsSync(thumbPath) ? fs.readFileSync(thumbPath) : sock.userConfig?.thumbBuffer;
+        sock.userConfig = { ...(sock.userConfig || {}), ...newConfig, thumbBuffer };
+    }
+    return newConfig;
+}
+
 app.get('/api/bot/config', async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -1554,9 +1622,31 @@ app.post('/api/bot/settings', async (req, res) => {
     const dbDir = path.join(__dirname, 'database', `data${botNum}`);
     const dbPath = path.join(dbDir, 'database.json');
     const botJid = botNum + '@s.whatsapp.net';
+    const canEditWhatsappChannel = ['basic', 'starter'].includes(String(req.user.paket || '').toLowerCase());
+    const allowedPrefixes = ['!', '.', '#', ',', '$'];
+    const incomingSettings = { ...req.body };
+
+    if ('prefixes' in incomingSettings) {
+        const prefixes = [...new Set(String(incomingSettings.prefixes || '')
+            .split('')
+            .filter(char => allowedPrefixes.includes(char)))];
+        incomingSettings.prefixes = prefixes.length ? prefixes.join(',') : allowedPrefixes.join(',');
+    }
+    if ('channel_name' in incomingSettings) {
+        incomingSettings.channel_name = String(incomingSettings.channel_name || '').trim().slice(0, 80);
+    }
+    if ('whatsapp_channel' in incomingSettings) {
+        if (canEditWhatsappChannel) {
+            const channelUrl = String(incomingSettings.whatsapp_channel || '').trim();
+            incomingSettings.whatsapp_channel = /^https:\/\/(?:www\.)?whatsapp\.com\/channel\/[A-Za-z0-9_-]+\/?$/i.test(channelUrl) ? channelUrl : '';
+        } else {
+            delete incomingSettings.whatsapp_channel;
+            delete incomingSettings.channel_name;
+        }
+    }
 
     try {
-        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/settings/save', { settings: req.body });
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/settings/save', { settings: incomingSettings });
         if (remoteResult) return res.json(remoteResult);
 
         if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
@@ -1588,8 +1678,7 @@ app.post('/api/bot/settings', async (req, res) => {
         if (!db.users) db.users = {};
         if (!db.chats) db.chats = {};
 
-        const allowedPrefixes = ['!', '.', '#', ',', '$'];
-        const cleanBody = { ...req.body };
+        const cleanBody = { ...incomingSettings };
         if ('prefixes' in cleanBody) {
             const prefixes = [...new Set(String(cleanBody.prefixes || '')
                 .split('')
@@ -1600,10 +1689,50 @@ app.post('/api/bot/settings', async (req, res) => {
             const canEditWhatsappChannel = ['basic', 'starter'].includes(String(req.user.paket || '').toLowerCase());
             if (canEditWhatsappChannel) {
                 const channelUrl = String(cleanBody.whatsapp_channel || '').trim();
-                cleanBody.whatsapp_channel = /^https:\/\/whatsapp\.com\/channel\/[A-Za-z0-9_-]+\/?$/i.test(channelUrl) ? channelUrl : '';
+                cleanBody.whatsapp_channel = /^https:\/\/(?:www\.)?whatsapp\.com\/channel\/[A-Za-z0-9_-]+\/?$/i.test(channelUrl) ? channelUrl : '';
             } else {
                 delete cleanBody.whatsapp_channel;
+                delete cleanBody.channel_name;
             }
+        }
+
+        if ('channel_name' in cleanBody) {
+            cleanBody.channel_name = String(cleanBody.channel_name || '').trim().slice(0, 80);
+        }
+
+        if (cleanBody.whatsapp_channel) {
+            const resolvedChannel = await resolveWhatsappChannel(sock, cleanBody.whatsapp_channel);
+            const customName = String(cleanBody.channel_name || '').trim();
+            const finalChannelName = customName || resolvedChannel.detectedName || 'WhatsApp Channel';
+
+            cleanBody.channel_id = resolvedChannel.channelJid;
+            cleanBody.channel_invite = resolvedChannel.inviteCode;
+            cleanBody.channel_name = finalChannelName;
+            cleanBody.idsal = resolvedChannel.channelJid;
+            cleanBody.saluran = finalChannelName;
+
+            saveChannelUserConfig(botNum, {
+                whatsapp_channel: cleanBody.whatsapp_channel,
+                channel_id: cleanBody.channel_id,
+                channel_invite: cleanBody.channel_invite,
+                channel_name: cleanBody.channel_name,
+                idsal: cleanBody.idsal,
+                saluran: cleanBody.saluran
+            }, sock);
+        } else if ('whatsapp_channel' in cleanBody) {
+            cleanBody.channel_id = '';
+            cleanBody.channel_invite = '';
+            cleanBody.channel_name = '';
+            cleanBody.idsal = '';
+            cleanBody.saluran = '';
+            saveChannelUserConfig(botNum, {
+                whatsapp_channel: '',
+                channel_id: '',
+                channel_invite: '',
+                channel_name: '',
+                idsal: '',
+                saluran: ''
+            }, sock);
         }
 
         // Merge settings only on JID key (matching Nano.js)
@@ -1619,7 +1748,7 @@ app.post('/api/bot/settings', async (req, res) => {
         if (sock) sock.lastDbSync = Date.now();
 
         console.log(`[DATABASE] Settings saved for bot ${botNum} to ${dbPath}`);
-        res.json({ success: true, message: 'Settings saved' });
+        res.json({ success: true, message: 'Settings saved', settings: db.settings[botJid] });
     } catch (err) {
         console.error('[DATABASE] Save Settings Error:', err);
         res.status(500).json({ error: 'Failed to save settings: ' + err.message });

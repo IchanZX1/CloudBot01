@@ -22,6 +22,7 @@ const {
   jidDecode,
   makeCacheableSignalKeyStore,
   getAggregateVotesInPollMessage,
+  getContentType,
   proto
 } = require("@whiskeysockets/baileys")
 const cfonts = require('cfonts');
@@ -404,6 +405,51 @@ function cleanupBotArtifacts(targetNum, reasonText = 'cleanup') {
   removeDirIfExists(`./${global.sessionName}/device${cleanNum}`, cleanNum);
   removeDirIfExists(`./database/data${cleanNum}`, cleanNum);
   console.log(color('[CLEANUP]', 'green'), `Full cleanup finished for bot ${cleanNum}`);
+}
+
+function normalizeMiddlewareText(text) {
+  return String(text || '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+}
+
+function extractMessageText(message) {
+  if (!message || typeof message !== 'object') return '';
+
+  if (message.ephemeralMessage?.message) return extractMessageText(message.ephemeralMessage.message);
+  if (message.viewOnceMessage?.message) return extractMessageText(message.viewOnceMessage.message);
+  if (message.viewOnceMessageV2?.message) return extractMessageText(message.viewOnceMessageV2.message);
+
+  if (typeof message.conversation === 'string') return message.conversation;
+
+  const type = getContentType(message);
+  const msg = type ? message[type] : null;
+  if (!msg || typeof msg !== 'object') return '';
+
+  return msg.text
+    || msg.caption
+    || msg.contentText
+    || msg.selectedDisplayText
+    || msg.title
+    || msg.singleSelectReply?.selectedRowId
+    || msg.selectedButtonId
+    || msg.selectedId
+    || '';
+}
+
+function isSelfWrongAnswerMessage(rawMessage, serializedMessage) {
+  const isFromMe = rawMessage?.key?.fromMe || serializedMessage?.fromMe || serializedMessage?.key?.fromMe;
+  if (!isFromMe) return false;
+
+  const candidates = [
+    serializedMessage?.text,
+    serializedMessage?.body,
+    extractMessageText(rawMessage?.message)
+  ];
+
+  return candidates.some((text) => {
+    const normalized = normalizeMiddlewareText(text);
+    const plainText = normalized.replace(/\*/g, '');
+    return normalized === '*Jawaban Salah!*' || plainText === 'Jawaban Salah!';
+  });
 }
 
 async function sendTrialAdIfNeeded(NanoBotz, m, botNumberJid) {
@@ -1077,6 +1123,12 @@ async function NanoBotzInd(method = null, num = null) {
       // if (!NanoBotz.public && !kay.key.fromMe && chatUpdate.type === 'notify') return // Moved below sync logic
       if (kay.key.id.startsWith('BAE5') && kay.key.id.length === 16) return
       const m = smsg(NanoBotz, kay, store)
+
+      // middleware - Game Command
+      if (isSelfWrongAnswerMessage(kay, m)) return
+
+      // middleware - Game Command
+      //console.log(color('[MESSAGE]', 'green'), `Received message from ${m.sender} in ${m.isGroup ? 'group' : 'private'}: ${m.text || '[non-text message]'}`);
 
       // Load user-specific config
       const configPath = `./${global.sessionName}/device${targetNum}/config.json`;
