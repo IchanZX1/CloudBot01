@@ -990,16 +990,38 @@ app.get('/commands', (req, res) => {
 app.get('/api/bot/mess', async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
     const botNum = (req.user.no_Bot || req.user.no_Wa || '').replace(/[^0-9]/g, '');
+
+    try {
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/mess/get');
+        if (remoteResult) return res.json(remoteResult);
+    } catch (err) {
+        console.error('[WINGS MESS] Failed to load remote messages:', err.message);
+    }
+
     const dbPath = path.join(__dirname, 'database', `data${botNum}`, 'mess.json');
+    const configPath = path.join(__dirname, 'session', `device${botNum}`, 'config.json');
+
+    let messData = {};
 
     if (fs.existsSync(dbPath)) {
-        return res.json(JSON.parse(fs.readFileSync(dbPath)));
+        messData = JSON.parse(fs.readFileSync(dbPath));
+    } else {
+        const defaultPath = path.join(__dirname, 'database', 'mess.json');
+        if (fs.existsSync(defaultPath)) {
+            messData = JSON.parse(fs.readFileSync(defaultPath));
+        }
     }
-    const defaultPath = path.join(__dirname, 'database', 'mess.json');
-    if (fs.existsSync(defaultPath)) {
-        return res.json(JSON.parse(fs.readFileSync(defaultPath)));
+
+    if (fs.existsSync(configPath)) {
+        try {
+            const config = JSON.parse(fs.readFileSync(configPath));
+            if (config.sewa && typeof config.sewa === 'object') {
+                messData.sewa = { ...(messData.sewa || {}), ...config.sewa };
+            }
+        } catch (err) { }
     }
-    res.json({});
+
+    res.json(messData);
 });
 
 app.post('/api/bot/mess', async (req, res) => {
@@ -1041,8 +1063,26 @@ app.post('/api/bot/mess', async (req, res) => {
         return res.status(403).json({ error: 'Silahkan upgrade paket Anda untuk menggunakan fitur Custom Message!' });
     }
 
+    try {
+        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/mess/save', { mess: currentMess });
+        if (remoteResult) return res.json(remoteResult);
+    } catch (err) {
+        console.error('[WINGS MESS] Failed to save remote messages:', err.message);
+    }
+
     fs.writeFileSync(dbPath, JSON.stringify(currentMess, null, 2));
-    res.json({ success: true, message: 'Message customization saved!' });
+
+    if (currentMess.sewa && typeof currentMess.sewa === 'object') {
+        try {
+            const { botStatus } = require('./index');
+            const sock = botStatus.socks[botNum];
+            saveChannelUserConfig(botNum, { sewa: currentMess.sewa }, sock);
+        } catch (err) {
+            console.error('[MESS CONFIG] Failed to sync sewa config:', err.message);
+        }
+    }
+
+    res.json({ success: true, message: 'Message customization saved!', mess: currentMess });
 });
 
 app.get('/api/bot/thumb', async (req, res) => {
@@ -1557,6 +1597,26 @@ function saveChannelUserConfig(botNum, configPatch, sock) {
     return newConfig;
 }
 
+function normalizeOwnerIdentityConfig(config = {}) {
+    const nextConfig = { ...config };
+    const ownerNumberRaw = String(nextConfig.ownernumber || '').trim();
+    const ownerLidRaw = String(nextConfig.ownerlid || '').trim();
+
+    if (/@lid$/i.test(ownerNumberRaw)) {
+        nextConfig.ownerlid = ownerNumberRaw.replace(/\s+/g, '').replace(/:.*@lid$/i, '@lid');
+        nextConfig.ownernumber = '';
+    } else {
+        nextConfig.ownernumber = ownerNumberRaw.replace(/[^0-9]/g, '');
+        if (ownerLidRaw) {
+            const cleanLid = ownerLidRaw.replace(/\s+/g, '');
+            const lidNumber = cleanLid.replace(/[^0-9]/g, '');
+            nextConfig.ownerlid = cleanLid.endsWith('@lid') ? cleanLid : (lidNumber ? `${lidNumber}@lid` : '');
+        }
+    }
+
+    return nextConfig;
+}
+
 app.get('/api/bot/config', async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -1585,7 +1645,7 @@ app.post('/api/bot/config', configUpload.single('thumbnail'), async (req, res) =
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
     // Multer populates req.body with text fields when processing multipart/form-data
-    const config = { ...req.body };
+    const config = normalizeOwnerIdentityConfig(req.body || {});
     const botNum = (req.user.no_Bot || req.user.no_Wa || '').replace(/[^0-9]/g, '');
     const dirPath = path.join(__dirname, 'session', `device${botNum}`);
     const configPath = path.join(dirPath, 'config.json');

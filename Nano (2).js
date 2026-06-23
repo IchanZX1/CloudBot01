@@ -373,12 +373,12 @@ let chandev = teks
 }
 
      // Konversi thumbnail ke JPEG kecil sebelum dipakai
-        const sharp = require('sharp');
-const thumbs = await sharp(thumbnail)
-  .resize(300, 300, { fit: 'cover' })
-  .jpeg({ quality: 80 })
-  .toBuffer();
-//const thumbs = thumbnail
+//         const sharp = require('sharp');
+// const thumbs = await sharp(thumbnail)
+//   .resize(300, 300, { fit: 'cover' })
+//   .jpeg({ quality: 80 })
+//   .toBuffer();
+const thumbs = thumbnail
 const userChannelJid = NanoBotz.userConfig?.idsal || NanoBotz.userConfig?.channel_id || global.idsal || '120363344962076305@newsletter'
 const userChannelName = NanoBotz.userConfig?.saluran || NanoBotz.userConfig?.channel_name || global.saluran || 'ZXcoderID OFC'
      NanoBotz.sendMessage(m.chat, {
@@ -447,6 +447,8 @@ const reply = async (teks) => {
       let s = Math.floor(ms / 1000) % 60
       return [h, m, s].map(v => v.toString().padStart(2, 0)).join(':')
     }
+    const creatorNum = userConfig?.ownernumber || global.ownernumber;
+    const DanzTheCreator = [botNumber, creatorNum, ...global.owner].filter(Boolean).map(v => String(v).replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
     const text = q = args.join(" ")
     const quoted = m.quoted ? m.quoted : m
     const mime = (quoted.msg || quoted).mimetype || ''
@@ -480,39 +482,6 @@ const reply = async (teks) => {
       const number = value.replace(/[^0-9]/g, '')
       return number ? `${number}@s.whatsapp.net` : ''
     }
-    const normalizeOwnerJid = (jid) => {
-      const value = cleanJid(jid)
-      if (!value) return ''
-      if (value.endsWith('@lid')) return value
-      if (value.endsWith('@c.us')) return value.replace('@c.us', '@s.whatsapp.net')
-      if (value.includes('@')) return value
-      const number = value.replace(/[^0-9]/g, '')
-      return number ? `${number}@s.whatsapp.net` : ''
-    }
-    const senderIdentityJids = [
-      m.sender,
-      sender,
-      m.participant,
-      m.participantAlt,
-      m.participantPn,
-      m.participantLid,
-      m.key?.participant,
-      m.key?.participantAlt,
-      m.key?.participantPn,
-      m.key?.participantLid,
-      !m.isGroup ? m.key?.remoteJid : ''
-    ].map(normalizeOwnerJid).filter(Boolean)
-    const ownerIdentityJids = [
-      botNumber,
-      userConfig?.ownernumber,
-      userConfig?.ownerlid,
-      userConfig?.creator,
-      global.ownernumber,
-      global.creator,
-      ...(Array.isArray(global.owner) ? global.owner : []),
-      ...(Array.isArray(global.ownerNumber) ? global.ownerNumber : [])
-    ].map(normalizeOwnerJid).filter(Boolean)
-    const DanzTheCreator = senderIdentityJids.some(jid => ownerIdentityJids.includes(jid))
     const botAdminJids = [
       botNumber,
       NanoBotz.user?.lid,
@@ -3941,24 +3910,6 @@ const chat_time = getJakartaTime();
 jadi ${botname} memiliki total fitur ${nanototalpitur()}
 bantu support dan donasinya biar fitur nya 
 tambah banyak yaa..... terimakasih.🔥🔥`)
-        break
-      case 'id': {
-        const lidJid = senderIdentityJids.find(jid => jid.endsWith('@lid')) || ''
-        const phoneJid = senderIdentityJids.find(jid => jid.endsWith('@s.whatsapp.net')) || ''
-        const senderJid = cleanJid(m.sender || sender || '')
-        const lidText = lidJid || 'Tidak terdeteksi pada pesan ini. Coba kirim perintah ini di dalam grup.'
-        const idText = `*USER ID BAILEYS*
-
-Name: ${pushname}
-Sender: ${senderJid || '-'}
-Phone JID: ${phoneJid || '-'}
-Owner LID:
-${lidText}
-
-Salin nilai *Owner LID* di atas lalu tempel ke Dashboard -> Bot Config -> Owner LID (Baileys).`
-
-        return replynano(idText)
-      }
         break
       case 'owner': {
         let name = m.pushName || NanoBotz.getName(m.sender);
@@ -13738,9 +13689,11 @@ Terima kasih telah menghubungi kami. Kami akan menghubungi Anda kembali melalui 
         {
           let eek = m.sender;
 
-          // Dashboard -> Edit Msg -> Special Feature Messages (Sewa)
-          // sekarang disimpan juga ke session/device<bot>/config.json.
-          let sewaCfg = { ...(mess.sewa || {}), ...(NanoBotz.userConfig?.sewa || {}) };
+          // Cek apakah owner sudah mengatur konfigurasi fitur sewa bot melalui
+          // Dashboard -> Edit Msg -> Special Feature Messages (Sewa).
+          // Dianggap "sudah dikonfigurasi" jika judul, minimal 1 harga sewa,
+          // dan nomor pembayaran sudah diisi oleh owner.
+          let sewaCfg = mess.sewa || {};
           let sewaJudulOk = typeof sewaCfg.judul === 'string' && sewaCfg.judul.trim().length > 0;
           let sewaHargaOk = [sewaCfg.price_1d, sewaCfg.price_7d, sewaCfg.price_15d, sewaCfg.price_30d, sewaCfg.price_permanent]
             .some(v => typeof v === 'string' && v.trim().length > 0);
@@ -13759,12 +13712,14 @@ Terima kasih telah menghubungi kami. Kami akan menghubungi Anda kembali melalui 
           });
 
           let pesan = "*Haloo Kak " + pushname + " " + nanoliatwaktu + "*\n*Mau Sewa Botz?, Langsung saja pilih dibagian list sewa ≧﹏≦*\n";
-          if (sewaCfg.caption) {
-            pesan = sewaCfg.caption
+          if (mess.sewa && mess.sewa.caption) {
+            pesan = mess.sewa.caption
               .replace(/\{name\}/g, pushname)
               .replace(/\{time\}/g, nanoliatwaktu);
           }
 
+          // Susun blok informasi tambahan (Judul, Deskripsi, Benefit, Harga)
+          // dari konfigurasi dashboard, jika diisi oleh owner.
           let sewaInfoBlocks = [];
           if (sewaCfg.judul && sewaCfg.judul.trim()) sewaInfoBlocks.push('*' + sewaCfg.judul.trim() + '*');
           if (sewaCfg.deskripsi && sewaCfg.deskripsi.trim()) sewaInfoBlocks.push(sewaCfg.deskripsi.trim());
@@ -13784,14 +13739,15 @@ Terima kasih telah menghubungi kami. Kami akan menghubungi Anda kembali melalui 
             pesan = pesan + '\n\n' + sewaInfoBlocks.join('\n\n');
           }
 
+          // Footer interaktif: pakai footer dari dashboard jika diisi, fallback ke teks lama.
           let sewaFooterText = (sewaCfg.footer && sewaCfg.footer.trim())
             ? sewaCfg.footer.trim()
             : ("🚩Jika ragu kami juga mempunyai testimoni yang bisa dilihat sendiri di saluran whatsapp kami maupun instagram " + wagc + "⌓̈⃝୨");
           sewaFooterText = sewaFooterText + "\n" + wm;
 
-          let listTitle = sewaCfg.list_title ? sewaCfg.list_title : "LIST SEWA";
-          let paymentText = sewaCfg.payment_text ? sewaCfg.payment_text : "PAYMENT💰";
-          let ownerText = sewaCfg.owner_text ? sewaCfg.owner_text : "OWNER👥";
+          let listTitle = (mess.sewa && mess.sewa.list_title) ? mess.sewa.list_title : "LIST SEWA";
+          let paymentText = (mess.sewa && mess.sewa.payment_text) ? mess.sewa.payment_text : "PAYMENT💰";
+          let ownerText = (mess.sewa && mess.sewa.owner_text) ? mess.sewa.owner_text : "OWNER👥";
 
           let msg = generateWAMessageFromContent(from, {
             'viewOnceMessage': {
@@ -14671,11 +14627,11 @@ Error: ${err?.message || err}`)
         if (!text) return replynano(`Format salah.\n\nContoh:\n${prefix + command} ${exampleUrl} 😍🔥`)
 
         const [channelUrlRaw, reactionRaw, apiKeyRaw] = text.split(' ').map(v => (v || '').trim())
-        const apiKey = apiKeyRaw || NanoBotz.userConfig?.apikey_reaction || NanoBotz.userConfig?.reaction_api_key || process.env.VIP_KEY || global.VIP_KEY || global.vip_key
+        const apiKey = apiKeyRaw || process.env.VIP_KEY || global.VIP_KEY || global.vip_key
         const channelUrl = channelUrlRaw || ''
         let reaction = reactionRaw || ''
 
-        if (!apiKey) return replynano('API key reaction belum disetting. Isi Api key Reaction di Dashboard terlebih dahulu atau kirim API key sebagai argumen ketiga.')
+        if (!apiKey) return replynano('VIP_KEY belum disetting. Tambahkan VIP_KEY di environment atau global.VIP_KEY.')
         if (!channelUrl) return replynano(`Masukkan URL postingan channel.\nContoh: ${exampleUrl}`)
         if (!reaction) return replynano(`Masukkan reaction.\nContoh: 😍🔥`)
           reaction = [...reaction].join(",")
@@ -17907,6 +17863,46 @@ ${v.translation}
           return imageMessage;
         }
 
+        // Kartu pembayaran khusus Sewa Bot, dibaca dari konfigurasi
+        // Dashboard -> Edit Msg -> Special Feature Messages (Sewa).
+        // Hanya ditambahkan jika owner sudah mengisi nomor pembayaran,
+        // agar tidak pernah mengirim kartu pembayaran yang kosong.
+        let sewaPayCfg = mess.sewa || {};
+        let sewaPaymentCard = null;
+        if (typeof sewaPayCfg.payment_number === 'string' && sewaPayCfg.payment_number.trim().length > 0) {
+          let sewaPayLabel = (sewaPayCfg.payment_name && sewaPayCfg.payment_name.trim()) ? sewaPayCfg.payment_name.trim() : 'Sewa Bot';
+          let sewaPayOwner = (sewaPayCfg.payment_owner && sewaPayCfg.payment_owner.trim()) ? sewaPayCfg.payment_owner.trim() : ownername;
+          let sewaPayNumber = sewaPayCfg.payment_number.trim();
+          let sewaPayBody = (sewaPayCfg.payment_caption && sewaPayCfg.payment_caption.trim())
+            ? sewaPayCfg.payment_caption.trim()
+            : ('> Pembayaran Sewa Bot via ' + sewaPayLabel + '\n> A/N: ' + sewaPayOwner + '\n> No: ' + sewaPayNumber);
+          if (sewaPayCfg.payment_instruction && sewaPayCfg.payment_instruction.trim()) {
+            sewaPayBody = sewaPayBody + '\n\n' + sewaPayCfg.payment_instruction.trim();
+          }
+          let sewaPayImageUrl = (sewaPayCfg.payment_qris && sewaPayCfg.payment_qris.trim())
+            ? sewaPayCfg.payment_qris.trim()
+            : './data/image/payment/qris.jpg';
+
+          sewaPaymentCard = {
+            header: proto.Message.InteractiveMessage.Header.create({
+              ...(await prepareWAMessageMedia({ image: { url: sewaPayImageUrl } }, { upload: NanoBotz.waUploadToServer })),
+              title: '',
+              gifPlayback: true,
+              subtitle: ownername,
+              hasMediaAttachment: false
+            }),
+            body: { text: sewaPayBody },
+            nativeFlowMessage: {
+              buttons: [
+                {
+                  "name": "cta_copy",
+                  "buttonParamsJson": JSON.stringify({ display_text: `Copy ${sewaPayLabel}`, id: "123456789", copy_code: sewaPayNumber })
+                },
+              ],
+            },
+          };
+        }
+
         let msg = generateWAMessageFromContent(
           m.chat,
           {
@@ -17918,6 +17914,7 @@ ${v.translation}
                   },
                   carouselMessage: {
                     cards: [
+                      ...(sewaPaymentCard ? [sewaPaymentCard] : []),
                       {
                         header: proto.Message.InteractiveMessage.Header.create({
                           ...(await prepareWAMessageMedia({ image: { url: './data/image/payment/dana.jpg' } }, { upload: NanoBotz.waUploadToServer })),
@@ -30122,7 +30119,7 @@ ${meg.result}`)
         NanoBotz.sendContact(m.chat, participants.map(a => a.id), huhuhs)
         break
 
-      case 'chatid': {
+      case 'id': {
         replynano(from)
       }
         break

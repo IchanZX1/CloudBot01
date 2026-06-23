@@ -1096,9 +1096,29 @@ async function NanoBotzInd(method = null, num = null) {
 
     let setting = sessionDb.settings ? (sessionDb.settings[botNumber] || {}) : {};
     let isAntiCall = setting.anticall;
-    if (!isAntiCall) return;
 
     for (let XeonFucks of XeonPapa) {
+      const groupJid = XeonFucks.groupJid || XeonFucks.chatId;
+      const groupSetting = groupJid && sessionDb.settings && typeof sessionDb.settings[groupJid] === 'object'
+        ? sessionDb.settings[groupJid]
+        : {};
+      const isAntiNgobrol = !!groupSetting.antingobrol;
+
+      if (XeonFucks.isGroup && !XeonFucks.isVideo && XeonFucks.status == "offer" && isAntiNgobrol) {
+        try {
+          if (typeof NanoBotz.rejectCall === 'function') {
+            await NanoBotz.rejectCall(XeonFucks.id, XeonFucks.from || XeonFucks.chatId);
+          }
+        } catch (e) {
+          console.error(color('[ANTINGOBROL]', 'red'), `Failed to reject group audio call: ${e.message}`);
+        }
+        try {
+          await NanoBotz.sendMessage(groupJid, { text: 'Oups!! Tidak boleh melakukan obrolan suara di group ini' });
+        } catch (e) { }
+        continue;
+      }
+
+      if (!isAntiCall) continue;
       if (XeonFucks.isGroup == false) {
         if (XeonFucks.status == "offer") {
           let XeonBlokMsg = await NanoBotz.sendTextWithMentions(XeonFucks.from, `*${NanoBotz.user.name}* can't receive ${XeonFucks.isVideo ? `video` : `voice`} call. Sorry @${XeonFucks.from.split('@')[0]} you will be blocked. If accidentally please contact the owner to be unblocked !`)

@@ -207,6 +207,26 @@ function saveChannelUserConfig(botNum, configPatch, sock) {
     return nextConfig;
 }
 
+function normalizeOwnerIdentityConfig(config = {}) {
+    const nextConfig = { ...config };
+    const ownerNumberRaw = String(nextConfig.ownernumber || '').trim();
+    const ownerLidRaw = String(nextConfig.ownerlid || '').trim();
+
+    if (/@lid$/i.test(ownerNumberRaw)) {
+        nextConfig.ownerlid = ownerNumberRaw.replace(/\s+/g, '').replace(/:.*@lid$/i, '@lid');
+        nextConfig.ownernumber = '';
+    } else {
+        nextConfig.ownernumber = ownerNumberRaw.replace(/[^0-9]/g, '');
+        if (ownerLidRaw) {
+            const cleanLid = ownerLidRaw.replace(/\s+/g, '');
+            const lidNumber = cleanLid.replace(/[^0-9]/g, '');
+            nextConfig.ownerlid = cleanLid.endsWith('@lid') ? cleanLid : (lidNumber ? `${lidNumber}@lid` : '');
+        }
+    }
+
+    return nextConfig;
+}
+
 function normalizeGroupId(groupId) {
     const clean = String(groupId || '').trim();
     return clean.endsWith('@g.us') ? clean : '';
@@ -438,7 +458,7 @@ app.post('/api/wings/bot/config/save', requireMaster, (req, res) => {
     if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
     const configPath = path.join(sessionDir, 'config.json');
     const oldConfig = readJsonFile(configPath, {});
-    const nextConfig = { ...oldConfig, ...(req.body.config || {}) };
+    const nextConfig = { ...oldConfig, ...normalizeOwnerIdentityConfig(req.body.config || {}) };
     let thumbBuffer = null;
     if (req.body.thumbnailBase64) {
         thumbBuffer = Buffer.from(req.body.thumbnailBase64, 'base64');
@@ -454,6 +474,47 @@ app.post('/api/wings/bot/config/save', requireMaster, (req, res) => {
         sock.userConfig = { ...nextConfig, thumbBuffer };
     }
     res.json({ success: true, message: 'Configuration saved on wings' });
+});
+
+app.post('/api/wings/bot/mess/get', requireMaster, (req, res) => {
+    const botNum = normalizeBotNum(req.body.botNum);
+    const { sessionDir, dbDir } = getBotPaths(botNum);
+    const messPath = path.join(dbDir, 'mess.json');
+    const defaultMessPath = path.join(__dirname, 'database', 'mess.json');
+    const configPath = path.join(sessionDir, 'config.json');
+
+    const mess = readJsonFile(messPath, readJsonFile(defaultMessPath, {}));
+    const config = readJsonFile(configPath, {});
+    if (config.sewa && typeof config.sewa === 'object') {
+        mess.sewa = { ...(mess.sewa || {}), ...config.sewa };
+    }
+
+    res.json(mess);
+});
+
+app.post('/api/wings/bot/mess/save', requireMaster, (req, res) => {
+    const botNum = normalizeBotNum(req.body.botNum);
+    const { sessionDir, dbDir } = getBotPaths(botNum);
+    const messPath = path.join(dbDir, 'mess.json');
+    const configPath = path.join(sessionDir, 'config.json');
+    const nextMess = req.body.mess || {};
+
+    writeJsonFile(messPath, nextMess);
+
+    if (nextMess.sewa && typeof nextMess.sewa === 'object') {
+        const oldConfig = readJsonFile(configPath, {});
+        const nextConfig = { ...oldConfig, sewa: nextMess.sewa };
+        writeJsonFile(configPath, nextConfig);
+
+        const sock = botService.getBotStrict(botNum);
+        if (sock) {
+            const thumbPath = path.join(sessionDir, 'thumb.jpg');
+            const thumbBuffer = fs.existsSync(thumbPath) ? fs.readFileSync(thumbPath) : sock.userConfig?.thumbBuffer;
+            sock.userConfig = { ...(sock.userConfig || {}), ...nextConfig, thumbBuffer };
+        }
+    }
+
+    res.json({ success: true, message: 'Message customization saved on wings', mess: nextMess });
 });
 
 app.post('/api/wings/bot/settings/get', requireMaster, (req, res) => {

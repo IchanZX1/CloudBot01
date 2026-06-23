@@ -305,15 +305,25 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Owner Number</label>
-                            <input type="tel" id="owner-num" name="owner-num"
-                                class="auth-input w-full py-3 px-4 rounded-xl text-sm" placeholder="e.g. 62812xxxx">
-                        </div>
-                        <div class="flex items-center space-x-2 py-2">
-                            <input type="checkbox" id="same-num"
-                                class="w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500 accent-green-500">
-                            <label for="same-num" class="text-xs font-bold text-gray-400 cursor-pointer">Same as Bot
-                                Number</label>
+                            <div class="flex items-center justify-between gap-3 mb-2 ml-1">
+                                <label class="block text-xs font-bold text-gray-400">Api key Reaction</label>
+                                <button type="button"
+                                    class="inline-flex items-center gap-1 rounded-lg border border-green-400/25 bg-green-400/10 px-2.5 py-1 text-[10px] font-bold text-green-300 hover:bg-green-400/20 transition-colors"
+                                    onclick="window.open('https://auto-reaction.zxcoderid.web.id/vip-dashboard', '_blank', 'noopener,noreferrer')">
+                                    <span>VIP Dashboard</span>
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </button>
+                            </div>
+                            <input type="text" id="reaction-api-key" name="apikey_reaction"
+                                class="auth-input w-full py-3 px-4 rounded-xl text-sm font-mono" placeholder="Masukkan API key reaction">
+                            <details class="mt-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[10px] text-gray-400">
+                                <summary class="cursor-pointer font-bold text-gray-300">Tutorial mendapatkan API key reaction</summary>
+                                <ol class="mt-2 list-decimal space-y-1 pl-4 leading-relaxed">
+                                    <li>Login ke akun Google yang anda inginkan.</li>
+                                    <li>Pilih option paket yang diinginkan.</li>
+                                    <li>Gunakan pembayaran by QRIS untuk melakukan pembayaran dan akan secara otomatis konfirmasi oleh system.</li>
+                                </ol>
+                            </details>
                         </div>
 
                         <div class="pt-2">
@@ -435,6 +445,24 @@
                                 <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Owner Number</label>
                                 <input type="text" name="ownernumber"
                                     class="auth-input w-full py-3 px-4 rounded-xl text-sm" placeholder="62812xxxx">
+                                <p class="text-[9px] text-gray-500 mt-1">Nomor WhatsApp biasa tanpa +. Jika sender owner terbaca @lid, isi field Owner LID di bawah.</p>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-2 ml-1">
+                                    <label class="block text-xs font-bold text-gray-400">Owner LID (Baileys)</label>
+                                    <span class="inline-flex h-5 w-5 items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-400/10 text-[10px] font-black text-cyan-300" title="Ketik !id ke bot untuk melihat @lid akun kamu.">i</span>
+                                </div>
+                                <input type="text" name="ownerlid"
+                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm font-mono" placeholder="253xxxxx@lid">
+                                <div class="mt-2 rounded-xl border border-cyan-400/15 bg-cyan-400/5 p-3 text-[10px] text-gray-400 leading-relaxed">
+                                    <div class="flex items-start gap-2">
+                                        <i class="bi bi-info-circle text-cyan-300 mt-0.5"></i>
+                                        <div>
+                                            <p class="font-bold text-cyan-200 uppercase tracking-widest text-[9px]">Cara mendapatkan @lid</p>
+                                            <p>Kirim perintah <span class="font-mono text-white">!id</span> ke nomor bot yang tersambung. Bot akan membalas <span class="font-mono text-white">Owner LID</span> yang siap disalin ke field ini.</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -648,6 +676,129 @@
                                                                 class="auth-input w-full py-3 px-4 rounded-xl text-sm"
                                                                 placeholder="OWNER👥">
                                                         </div>
+                                                    </div>
+
+                                                    <p class="text-[10px] font-bold text-green-500 uppercase tracking-widest pt-2 border-t border-white/5">
+                                                        Judul, Deskripsi &amp; Benefit
+                                                    </p>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Judul
+                                                            Sewa</label>
+                                                        <input type="text" name="sewa.judul"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                            placeholder="🤖 SEWA BOT WHATSAPP MURAH">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Deskripsi
+                                                            Sewa</label>
+                                                        <textarea name="sewa.deskripsi"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-24"
+                                                            placeholder="Jelaskan singkat tentang layanan sewa bot kamu..."></textarea>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">List
+                                                            Benefit</label>
+                                                        <textarea name="sewa.benefit"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-28"
+                                                            placeholder="Jaga Group&#10;Game Seru&#10;Antilink GC lain&#10;Anti Promosi"></textarea>
+                                                        <p class="text-[9px] text-gray-500 mt-1">* Satu benefit per baris</p>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Footer
+                                                            Sewa</label>
+                                                        <textarea name="sewa.footer"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-20"
+                                                            placeholder="🚩Jika ragu kami juga mempunyai testimoni..."></textarea>
+                                                    </div>
+
+                                                    <p class="text-[10px] font-bold text-green-500 uppercase tracking-widest pt-2 border-t border-white/5">
+                                                        💰 Harga Sewa
+                                                    </p>
+                                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
+                                                                1 Hari</label>
+                                                            <input type="text" name="sewa.price_1d"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Rp3.000">
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
+                                                                7 Hari</label>
+                                                            <input type="text" name="sewa.price_7d"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Rp5.000">
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
+                                                                15 Hari</label>
+                                                            <input type="text" name="sewa.price_15d"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Rp10.000">
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
+                                                                30 Hari</label>
+                                                            <input type="text" name="sewa.price_30d"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Rp20.000">
+                                                        </div>
+                                                        <div class="sm:col-span-2">
+                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
+                                                                Permanen</label>
+                                                            <input type="text" name="sewa.price_permanent"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Rp50.000">
+                                                        </div>
+                                                    </div>
+
+                                                    <p class="text-[10px] font-bold text-green-500 uppercase tracking-widest pt-2 border-t border-white/5">
+                                                        💳 Konfigurasi Pembayaran
+                                                    </p>
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Nama
+                                                                Payment</label>
+                                                            <input type="text" name="sewa.payment_name"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="DANA / QRIS / BCA">
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Nama
+                                                                Pemilik Rekening / E-Wallet</label>
+                                                            <input type="text" name="sewa.payment_owner"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Nama Pemilik">
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Nomor
+                                                            Pembayaran</label>
+                                                        <input type="text" name="sewa.payment_number"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                            placeholder="0812xxxxxxx">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">QRIS
+                                                            Image URL</label>
+                                                        <input type="text" name="sewa.payment_qris"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                            placeholder="https://contoh.com/qris.jpg">
+                                                        <p class="text-[9px] text-gray-500 mt-1">* Opsional, kosongkan untuk pakai gambar QRIS default</p>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Caption
+                                                            Pembayaran</label>
+                                                        <textarea name="sewa.payment_caption"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-24"
+                                                            placeholder="> Pembayaran Sewa Bot via DANA&#10;> A/N: Nama Kamu&#10;> No: 0812xxxxxxx"></textarea>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Instruksi
+                                                            Pembayaran</label>
+                                                        <textarea name="sewa.payment_instruction"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-24"
+                                                            placeholder="Setelah transfer, kirim bukti pembayaran ke owner ya kak~"></textarea>
                                                     </div>
                                                 </div>
                                             </div>

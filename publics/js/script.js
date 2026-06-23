@@ -522,9 +522,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const qrBtn = document.getElementById('qr-btn');
         const pairingBtn = document.getElementById('pairing-btn');
         const methodInput = document.getElementById('connect-method');
-        const sameNumCheckbox = document.getElementById('same-num');
         const botNumberInput = document.getElementById('bot-number');
-        const ownerNumberInput = document.getElementById('owner-num');
+        const reactionApiKeyInput = document.getElementById('reaction-api-key');
         const connectForm = document.getElementById('connect-form');
         const configForm = document.getElementById('config-form');
         const editMsgForm = document.getElementById('editmsg-form');
@@ -860,8 +859,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 ['group', 'private', 'owner', 'admin', 'badmin', 'premium'].forEach(f => {
                     if (editMsgActualForm[`only.${f}`]) editMsgActualForm[`only.${f}`].value = mess.only?.[f] || '';
                 });
-                ['caption', 'list_title', 'payment_text', 'owner_text'].forEach(f => {
-                    if (editMsgActualForm[`sewa.${f}`]) editMsgActualForm[`sewa.${f}`].value = mess.sewa?.[f] || '';
+                editMsgActualForm.querySelectorAll('[name^="sewa."]').forEach(control => {
+                    const field = control.name.split('.')[1];
+                    control.value = mess.sewa?.[field] || '';
                 });
                 lastEditMsgPayloadHash = hashPayload(buildEditMsgPayload());
                 setEditMsgAutosaveStatus('saved');
@@ -984,14 +984,6 @@ document.addEventListener('DOMContentLoaded', () => {
             qrBtn.classList.remove('border-green-500'); qrBtn.classList.add('border-white/5', 'text-gray-400');
         });
 
-        sameNumCheckbox?.addEventListener('change', () => {
-            ownerNumberInput.value = sameNumCheckbox.checked ? botNumberInput.value : ownerNumberInput.value;
-            ownerNumberInput.readOnly = sameNumCheckbox.checked;
-            ownerNumberInput.classList.toggle('opacity-50', sameNumCheckbox.checked);
-        });
-
-        botNumberInput?.addEventListener('input', () => { if (sameNumCheckbox.checked) ownerNumberInput.value = botNumberInput.value; });
-
         async function loadConfig() {
             try {
                 configHydrating = true;
@@ -1004,9 +996,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (configData.success && configData.config) {
                     const config = configData.config;
-                    ['botname', 'ownernumber', 'wm', 'packname', 'author', 'creator'].forEach(f => {
+                    ['botname', 'ownernumber', 'ownerlid', 'wm', 'packname', 'author', 'creator'].forEach(f => {
                         if (configForm[f]) configForm[f].value = config[f] || '';
                     });
+                    if (reactionApiKeyInput) reactionApiKeyInput.value = config.apikey_reaction || '';
                 }
 
                 if (settingsData.success && settingsData.settings) {
@@ -1038,13 +1031,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function buildConfigPayload(includeThumbnail = thumbnailDirty) {
             const formData = new FormData();
-            const configFields = ['botname', 'ownernumber', 'wm', 'packname', 'author', 'creator'];
+            const configFields = ['botname', 'ownernumber', 'ownerlid', 'wm', 'packname', 'author', 'creator'];
             const hashObject = {};
             configFields.forEach(field => {
                 const value = configForm?.[field]?.value || '';
                 formData.append(field, value);
                 hashObject[field] = value;
             });
+
+            const reactionApiKey = reactionApiKeyInput?.value || '';
+            formData.append('apikey_reaction', reactionApiKey);
+            hashObject.apikey_reaction = reactionApiKey;
 
             const thumbnailInput = configForm?.['thumbnail'];
             const file = thumbnailInput?.files?.[0] || null;
@@ -1189,6 +1186,11 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             await saveConfigRealtime({ force: true });
         });
+
+        reactionApiKeyInput?.addEventListener('input', () => scheduleConfigAutosave());
+        reactionApiKeyInput?.addEventListener('change', () => scheduleConfigAutosave(900));
+
+        loadConfig();
 
         connectForm?.addEventListener('submit', async (e) => {
             e.preventDefault();
