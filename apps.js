@@ -1641,40 +1641,64 @@ app.get('/api/bot/config', async (req, res) => {
 });
 
 // Bot Config Endpoints
-app.post('/api/bot/config', configUpload.single('thumbnail'), async (req, res) => {
+app.post('/api/bot/config', (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
-    // Multer populates req.body with text fields when processing multipart/form-data
-    const config = normalizeOwnerIdentityConfig(req.body || {});
-    const botNum = (req.user.no_Bot || req.user.no_Wa || '').replace(/[^0-9]/g, '');
-    const dirPath = path.join(__dirname, 'session', `device${botNum}`);
-    const configPath = path.join(dirPath, 'config.json');
-
-    try {
-        const remoteResult = await forwardToWings(botNum, '/api/wings/bot/config/save', {
-            config,
-            thumbnailBase64: req.file ? req.file.buffer.toString('base64') : null
-        });
-        if (remoteResult) return res.json(remoteResult);
-
-        if (!fs.existsSync(dirPath)) {
-            return res.status(400).json({ error: 'Bot belum connect. Silahkan connect terlebih dahulu.' });
+    configUpload.single('thumbnail')(req, res, async (uploadErr) => {
+        if (uploadErr) {
+            const isSizeError = uploadErr.code === 'LIMIT_FILE_SIZE';
+            return res.status(400).json({
+                success: false,
+                error: isSizeError ? 'Ukuran thumbnail maksimal 10MB.' : (uploadErr.message || 'Gagal mengupload thumbnail.')
+            });
         }
 
-        let oldConfig = {};
-        if (fs.existsSync(configPath)) {
-            oldConfig = JSON.parse(fs.readFileSync(configPath));
+        // Multer populates req.body with text fields when processing multipart/form-data
+        const config = normalizeOwnerIdentityConfig(req.body || {});
+        const botNum = (req.user.no_Bot || req.user.no_Wa || '').replace(/[^0-9]/g, '');
+        const dirPath = path.join(__dirname, 'session', `device${botNum}`);
+        const configPath = path.join(dirPath, 'config.json');
+
+        try {
+            const remoteResult = await forwardToWings(botNum, '/api/wings/bot/config/save', {
+                config,
+                thumbnailBase64: req.file ? req.file.buffer.toString('base64') : null
+            });
+            if (remoteResult) return res.json(remoteResult);
+
+            if (!botNum) {
+                return res.status(400).json({ success: false, error: 'Nomor bot belum tersedia. Connect bot terlebih dahulu.' });
+            }
+
+            if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+
+            let oldConfig = {};
+            if (fs.existsSync(configPath)) {
+                oldConfig = JSON.parse(fs.readFileSync(configPath));
+            }
+
+            const newConfig = { ...oldConfig, ...config };
+
+            if (req.file) fs.writeFileSync(path.join(dirPath, 'thumb.jpg'), req.file.buffer);
+            fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2));
+
+            try {
+                const { botStatus } = require('./index');
+                const sock = botStatus.socks[botNum];
+                if (sock) {
+                    const thumbBuffer = req.file ? req.file.buffer : (fs.existsSync(path.join(dirPath, 'thumb.jpg')) ? fs.readFileSync(path.join(dirPath, 'thumb.jpg')) : sock.userConfig?.thumbBuffer);
+                    sock.userConfig = { ...(sock.userConfig || {}), ...newConfig, thumbBuffer };
+                }
+            } catch (syncErr) {
+                console.error('[CONFIG] Failed to sync running bot config:', syncErr.message);
+            }
+
+            res.json({ success: true, message: 'Configuration saved' });
+        } catch (err) {
+            console.error('Save Config Error:', err);
+            res.status(500).json({ success: false, error: err.message || 'Failed to save configuration' });
         }
-
-        const newConfig = { ...oldConfig, ...config };
-
-        if (req.file) fs.writeFileSync(path.join(dirPath, 'thumb.jpg'), req.file.buffer);
-        fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2));
-        res.json({ success: true, message: 'Configuration saved' });
-    } catch (err) {
-        console.error('Save Config Error:', err);
-        res.status(500).json({ error: err.message || 'Failed to save configuration' });
-    }
+    });
 });
 
 app.get('/api/bot/settings', async (req, res) => {

@@ -543,6 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const whatsappChannelCurrent = document.getElementById('whatsapp-channel-current');
         const configAutosaveStatus = document.getElementById('config-autosave-status');
         const editMsgAutosaveStatus = document.getElementById('editmsg-autosave-status');
+        const maxThumbnailSize = 10 * 1024 * 1024;
 
         let pollingInterval = null;
         let connectStartedAt = 0;
@@ -1095,6 +1096,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        async function readJsonResponse(response) {
+            const text = await response.text();
+            if (!text) return {};
+            try {
+                return JSON.parse(text);
+            } catch (err) {
+                return { error: text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || response.statusText };
+            }
+        }
+
         function scheduleConfigAutosave(delay = 1200) {
             if (!configForm || configHydrating) return;
             clearTimeout(configAutosaveTimer);
@@ -1130,7 +1141,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (shouldSaveConfig) {
                     requests.push(fetch('/api/bot/config', { method: 'POST', body: configFormData }).then(async response => {
-                        const data = await response.json();
+                        const data = await readJsonResponse(response);
                         if (!response.ok || !data.success) throw new Error(data.error || 'Gagal menyimpan konfigurasi');
                         lastConfigPayloadHash = configHash;
                         thumbnailDirty = false;
@@ -1178,7 +1189,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         configForm?.addEventListener('change', (event) => {
             if (event.target?.id === 'sholat-province-select') return;
-            if (event.target?.type === 'file') thumbnailDirty = true;
+            if (event.target?.type === 'file') {
+                const file = event.target.files?.[0] || null;
+                if (file && !file.type.startsWith('image/')) {
+                    event.target.value = '';
+                    thumbnailDirty = false;
+                    setConfigAutosaveStatus('error', 'Thumbnail harus berupa file gambar.');
+                    return;
+                }
+                if (file && file.size > maxThumbnailSize) {
+                    event.target.value = '';
+                    thumbnailDirty = false;
+                    setConfigAutosaveStatus('error', 'Ukuran thumbnail maksimal 10MB.');
+                    return;
+                }
+                thumbnailDirty = !!file;
+            }
             scheduleConfigAutosave(event.target?.type === 'file' ? 300 : 900);
         });
 

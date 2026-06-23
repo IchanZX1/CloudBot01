@@ -16395,7 +16395,11 @@ ${prefix + command} off`)
           try { if (fs.existsSync(media)) fs.unlinkSync(media) } catch (e) { }
         } catch (err) {
           console.error('[REMINI] Error:', err.message || err)
-          reply('yah eror kak')
+          const respl = await Api.neoxr('/remini', {
+            image: resultURL,
+          });
+          if (!respl.status) return reply('Error!');
+          NanoBotz.sendMessage(m.chat, { image: respl.data.url, caption: `_Sukses Membuat ${command}_` }, { quoted: m })
         }
       }
         break
@@ -27211,7 +27215,7 @@ CPU: ${server.limits.cpu}%
       //==================================================================
       case 'hdvid':
       case 'vidhd': {
-        reply(`‼️*[MAINTENANCE FEATURES]*\nCreated by: *ChanDev*\n\n` + "Ups Fitur Ini Sedang Dalam Perbaikan")
+        reply("Yah fitur ini tidak dapat dikembangkan perlu menggunakan API pihak ke-3 untuk mengunduh video HD, dan API tersebut tidak gratis. Jika Anda menemukan API yang dapat digunakan, silakan hubungi saya di Telegram @ichanxd.")
       }
         break
       //==================================================================
