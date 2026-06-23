@@ -16385,7 +16385,7 @@ ${prefix + command} off`)
         try {
           const media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
           const resultURL = await TelegraPh(media)
-          const response = await fetchJson(`https://api-faa.my.ids/faa/hdv2s?url=${encodeURIComponent(resultURL)}`)
+          const response = await fetchJson(`https://api-faa.my.id/faa/hdv2s?url=${resultURL}`)
 
           if (!response || response.status !== true || !response.result) {
             throw new Error('API gagal memproses gambar')
@@ -16397,11 +16397,14 @@ ${prefix + command} off`)
         } catch (err) {
           console.error('[REMINI] Error:', err.message || err)
           try {
+            const medias = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+          const resultURLs = await TelegraPh(medias)
           const respl = await Api.neoxr('/remini', {
-            image: resultURL,
+            image: resultURLs,
           });
           if (!respl.status) return reply('Error!');
-          NanoBotz.sendMessage(m.chat, { image: respl.data.url, caption: `_Sukses Membuat ${command}_` }, { quoted: m })
+          let buffer = await getBuffer(respl.data.url)
+          NanoBotz.sendMessage(m.chat, { image: buffer, caption: `_Sukses Membuat ${command}_` }, { quoted: m })
         } catch (err) {
           console.error('[REMINI] Fallback Error:', err.message || err)
           reply('yah Error kak laporankan ke owner agar di perbaiki')
