@@ -323,6 +323,7 @@ module.exports = NanoBotz = async (NanoBotz, m, chatUpdate, store) => {
     const messagesD = bodyStr.slice(0).trim().split(/ +/).shift().toLowerCase();
     command = isCmd ? bodyStr.slice(prefix.length).trim().split(/ +/).shift().toLowerCase() : '';
     const args = isCmd ? bodyStr.slice(prefix.length).trim().split(/ +/).slice(1) : [];
+    const shouldHandleGameAnswer = !m.key.fromMe && !isCmd
     const activeBotNumber = botNumber || NanoBotz.decodeJid(NanoBotz.user.id) || ""
     const sender = m.isGroup ? (m.key.participant ? m.key.participant : m.participant) : m.key.remoteJid
     const from = m.key.remoteJid
@@ -373,12 +374,12 @@ let chandev = teks
 }
 
      // Konversi thumbnail ke JPEG kecil sebelum dipakai
-        const sharp = require('sharp');
-const thumbs = await sharp(thumbnail)
-  .resize(300, 300, { fit: 'cover' })
-  .jpeg({ quality: 80 })
-  .toBuffer();
-//const thumbs = thumbnail
+//         const sharp = require('sharp');
+// const thumbs = await sharp(thumbnail)
+//   .resize(300, 300, { fit: 'cover' })
+//   .jpeg({ quality: 80 })
+//   .toBuffer();
+const thumbs = thumbnail
 const userChannelJid = NanoBotz.userConfig?.idsal || NanoBotz.userConfig?.channel_id || global.idsal || '120363344962076305@newsletter'
 const userChannelName = NanoBotz.userConfig?.saluran || NanoBotz.userConfig?.channel_name || global.saluran || 'ZXcoderID OFC'
      NanoBotz.sendMessage(m.chat, {
@@ -1352,7 +1353,7 @@ const reply = async (teks) => {
 
     //math
     db.game.kuismath = db.game.kuismath || {}
-    if (db.game.kuismath.hasOwnProperty(m.sender.split('@')[0])) {
+    if (shouldHandleGameAnswer && db.game.kuismath.hasOwnProperty(m.sender.split('@')[0])) {
       kuis = true
       jawaban = db.game.kuismath[m.sender.split('@')[0]]
       if (budy.toLowerCase() == jawaban) {
@@ -3180,7 +3181,7 @@ ${themeemoji} Title: ${result.title}`;
       }
 
     db.game.family100 = db.game.family100 || {};
-    if (from in db.game.family100 && !m.key.fromMe) {
+    if (shouldHandleGameAnswer && from in db.game.family100) {
       let similarity = require('similarity');
       let threshold = 0.72; // semakin tinggi nilai, semakin mirip
       let id = m.chat;
@@ -3234,7 +3235,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
       }
     }
     db.game.tebaklagu = db.game.tebaklagu || {};
-    if (db.game.tebaklagu.hasOwnProperty(from)) {
+    if (shouldHandleGameAnswer && db.game.tebaklagu.hasOwnProperty(from)) {
       kuis = true
       jawaban = db.game.tebaklagu[from]
       if (budy.toLowerCase() == jawaban) {
@@ -3246,7 +3247,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
     // Tebak Games Response Handler
     db.game = db.game || {}
     db.game.tebakkata = db.game.tebakkata || {}
-    if (from in db.game.tebakkata) {
+    if (shouldHandleGameAnswer && from in db.game.tebakkata) {
       let id = m.chat
       let users = getOrCreateDbUser(m.sender)
       let json = JSON.parse(JSON.stringify(db.game.tebakkata[id][1]))
@@ -3267,7 +3268,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
     }
 
     db.game.tebakgambar = db.game.tebakgambar || {}
-    if (from in db.game.tebakgambar) {
+    if (shouldHandleGameAnswer && from in db.game.tebakgambar) {
       kuis = true
       let id = m.chat
       let users = getOrCreateDbUser(m.sender)
@@ -3284,7 +3285,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
       } else { console.log('*Jawaban Salah!*') }
     }
     db.game.tebakbendera2 = db.game.tebakbendera2 || {};
-    if (db.game.tebakbendera2.hasOwnProperty(from)) {
+    if (shouldHandleGameAnswer && db.game.tebakbendera2.hasOwnProperty(from)) {
       kuis = true
       jawaban = db.game.tebakbendera2[from]
       if (budy.toLowerCase() == "nyerah") {
@@ -3296,7 +3297,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
       } else console.log('*Jawaban Salah!*')
     }
     db.game.tebakbendera = db.game.tebakbendera || {};
-    if (db.game.tebakbendera.hasOwnProperty(from)) {
+    if (shouldHandleGameAnswer && db.game.tebakbendera.hasOwnProperty(from)) {
       kuis = true
       jawaban = db.game.tebakbendera[from]
       if (budy.toLowerCase() == "nyerah") {
@@ -3308,7 +3309,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
       } else console.log('*Jawaban Salah!*')
     }
     db.game.tebakkabupaten = db.game.tebakkabupaten || {};
-    if (db.game.tebakkabupaten.hasOwnProperty(from)) {
+    if (shouldHandleGameAnswer && db.game.tebakkabupaten.hasOwnProperty(from)) {
       kuis = true
       jawaban = db.game.tebakkabupaten[from]
       if (budy.toLowerCase() == "nyerah") {
@@ -3320,7 +3321,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
       } else console.log('*Jawaban Salah!*')
     }
     db.game.tebakkimia = db.game.tebakkimia || {};
-    if (db.game.tebakkimia.hasOwnProperty(from)) {
+    if (shouldHandleGameAnswer && db.game.tebakkimia.hasOwnProperty(from)) {
       kuis = true
       jawaban = db.game.tebakkimia[from]
       if (budy.toLowerCase() == "nyerah") {
@@ -3334,7 +3335,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
 
     //=========================================\\
     db.game.tekateki = db.game.tekateki || {}
-    if (from in db.game.tekateki) {
+    if (shouldHandleGameAnswer && from in db.game.tekateki) {
       let users = getOrCreateDbUser(m.sender)
       const similarity = require('similarity')
       const threshold = 0.72
@@ -3354,7 +3355,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
     }
     //=========================================\\
     db.game.tebakasahotak = db.game.tebakasahotak || {};
-    if (db.game.tebakasahotak.hasOwnProperty(from)) {
+    if (shouldHandleGameAnswer && db.game.tebakasahotak.hasOwnProperty(from)) {
       kuis = true
       jawaban = db.game.tebakasahotak[from]
       if (budy.toLowerCase() == "nyerah") {
@@ -3367,7 +3368,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
     }
     //=========================================\\
     db.game.siapaaku = db.game.siapaaku || {}
-    if (from in db.game.siapaaku) {
+    if (shouldHandleGameAnswer && from in db.game.siapaaku) {
       const similarity = require('similarity')
       const threshold = 0.72
       let id = m.chat
@@ -3387,7 +3388,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
     }
     //=========================================\\
     db.game.susunkata = db.game.susunkata || {}
-    if (from in db.game.susunkata) {
+    if (shouldHandleGameAnswer && from in db.game.susunkata) {
       const similarity = require('similarity')
       const threshold = 0.72
       let id = m.chat
@@ -3407,7 +3408,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
     }
     //=========================================\\
     db.game.caklontong = db.game.caklontong || {};
-    if (db.game.caklontong.hasOwnProperty(from)) {
+    if (shouldHandleGameAnswer && db.game.caklontong.hasOwnProperty(from)) {
       kuis = true
       jawaban = db.game.caklontong[from]
       deskripsi = db.game.caklontong_desk[from]
@@ -3418,7 +3419,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
       } else console.log('*Jawaban Salah!*')
     }
     db.game.tebakkalimat = db.game.tebakkalimat || {};
-    if (db.game.tebakkalimat.hasOwnProperty(from)) {
+    if (shouldHandleGameAnswer && db.game.tebakkalimat.hasOwnProperty(from)) {
       kuis = true
       jawaban = db.game.tebakkalimat[from]
       if (budy.toLowerCase() == jawaban) {
@@ -3429,7 +3430,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
 
     //=========================================//
     db.game.tebaklirik = db.game.tebaklirik || {}
-    if (from in db.game.tebaklirik) {
+    if (shouldHandleGameAnswer && from in db.game.tebaklirik) {
       const similarity = require('similarity')
       const threshold = 0.72
       let id = m.chat
@@ -3447,7 +3448,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
     }
     //=========================================\\
     db.game.tebaktebakan = db.game.tebaktebakan || {};
-    if (db.game.tebaktebakan.hasOwnProperty(from)) {
+    if (shouldHandleGameAnswer && db.game.tebaktebakan.hasOwnProperty(from)) {
       kuis = true
       jawaban = db.game.tebaktebakan[from]
       if (budy.toLowerCase() == jawaban) {
@@ -3620,7 +3621,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
         userLimit.limit -= commandCost;
       }
     }
-
+console.log("[DEBUG CMD]: ", command)
     switch (command) {
       case 'ttc': case 'ttt': case 'tictactoe': {
         let TicTacToe = require("./lib/tictactoe.js")
@@ -16384,7 +16385,7 @@ ${prefix + command} off`)
         try {
           const media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
           const resultURL = await TelegraPh(media)
-          const response = await fetchJson(`https://api-faa.my.id/faa/hdv2?url=${encodeURIComponent(resultURL)}`)
+          const response = await fetchJson(`https://api-faa.my.ids/faa/hdv2s?url=${encodeURIComponent(resultURL)}`)
 
           if (!response || response.status !== true || !response.result) {
             throw new Error('API gagal memproses gambar')
@@ -16395,13 +16396,18 @@ ${prefix + command} off`)
           try { if (fs.existsSync(media)) fs.unlinkSync(media) } catch (e) { }
         } catch (err) {
           console.error('[REMINI] Error:', err.message || err)
+          try {
           const respl = await Api.neoxr('/remini', {
             image: resultURL,
           });
           if (!respl.status) return reply('Error!');
           NanoBotz.sendMessage(m.chat, { image: respl.data.url, caption: `_Sukses Membuat ${command}_` }, { quoted: m })
+        } catch (err) {
+          console.error('[REMINI] Fallback Error:', err.message || err)
+          reply('yah Error kak laporankan ke owner agar di perbaiki')
         }
       }
+    }
         break
       //=========================================\\
       case 'ss':
@@ -20068,6 +20074,19 @@ ${hewan1 ? `
       case 'upswgc':
       case 'swgc':
       case 'statusgc': {
+
+      // FIX: Bersihkan sesi game orphan yang mungkin aktif di chat ini
+if (db.game) {
+  const gameKeys = ['tebaktebakan', 'tebakkata', 'caklontong', 'susunkata', 'family100', 'tekateki', 'tebaklirik', 'siapaaku']
+  for (const key of gameKeys) {
+    if (db.game[key] && db.game[key][from]) {
+      console.log(`[FIX] Clearing orphan game session: ${key} for chat ${from}`)
+      delete db.game[key][from]
+    }
+  }
+}
+//console.log('[DEBUG BEFORE SWITCH]', { command, sender: m.sender, from })
+
         if (!m.isGroup) return reply(mess.only.group)
         const isNoCaption = args[0]?.toLowerCase() === 'nc';
         const textInput = isNoCaption ? args.slice(1).join(' ') : (text || '');
@@ -20178,9 +20197,11 @@ ${hewan1 ? `
           reply(`❌ Gagal mengirim status: ${err.message}`)
         }
       }
+        break
 
       //==================================================================
       case 'tebaktebakan': {
+        console.log("Masuk Tebak Tebakan", command)
         if (!m.isGroup) return reply(mess.only.group)
         db.game.tebaktebakan = db.game.tebaktebakan || {}
         if (db.game.tebaktebakan.hasOwnProperty(from)) return replynano("Masih Ada Sesi Yang Belum Diselesaikan!")
@@ -20189,12 +20210,13 @@ ${hewan1 ? `
         NanoBotz.sendText(m.chat, `Jawablah Pertanyaan Berikut : *${result.soal}*?\nWaktu : 60s`, m).then(() => {
           db.game.tebaktebakan[from] = result.jawaban.toLowerCase()
         })
-        await sleep(60000)
-        if (db.game.tebaktebakan.hasOwnProperty(from)) {
-          console.log("Jawaban: " + result.jawaban)
-          NanoBotz.sendText(m.chat, `Waktu Habis\nJawaban:  ${db.game.tebaktebakan[from]}`, m)
-          delete db.game.tebaktebakan[from]
-        }
+       // SESUDAH (gunakan setTimeout, tidak blokir):
+setTimeout(async () => {
+  if (db.game.tebaktebakan && db.game.tebaktebakan.hasOwnProperty(from)) {
+    delete db.game.tebaktebakan[from]
+    NanoBotz.sendText(m.chat, `Waktu Habis\nJawaban: ${db.game.tebaktebakan[from]}`, m)
+  }
+}, 60000)
       }
         break
       //==================================================================
