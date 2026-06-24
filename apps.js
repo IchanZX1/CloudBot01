@@ -1617,6 +1617,40 @@ function normalizeOwnerIdentityConfig(config = {}) {
     return nextConfig;
 }
 
+/**
+ * Resolve ownerlid (LID) dari ownernumber (PN) menggunakan signalRepository Baileys v7.xx.
+ * Baileys v7.xx: PN (Phone Number) dipetakan ke LID lewat NanoBotz.signalRepository.lidMapping.getLIDForPN().
+ *
+ * if   -> ownerValue BELUM berbentuk @lid  => lakukan proses lidMapping (getLIDForPN)
+ * else -> ownerValue SUDAH berbentuk @lid  => skip proses lidMapping, langsung dipakai
+ *
+ * Referensi: https://baileys.wiki/docs/migration/to-v7.0.0/
+ */
+async function resolveOwnerLidBaileys(NanoBotz, ownerValueRaw) {
+    const ownerValue = String(ownerValueRaw || '').trim();
+    if (!ownerValue) return '';
+
+    if (/@lid$/i.test(ownerValue)) {
+        // Sudah berbentuk @lid (migrasi Baileys v7.xx) -> skip proses lidMapping
+        return ownerValue.replace(/\s+/g, '');
+    }
+
+    // Belum berbentuk @lid -> lakukan proses lidMapping via signalRepository
+    if (!NanoBotz || !NanoBotz.signalRepository || !NanoBotz.signalRepository.lidMapping) {
+        console.warn('[LID MAPPING] Socket bot tidak aktif / signalRepository tidak tersedia, skip mapping LID.');
+        return '';
+    }
+
+    try {
+        const pnJid = ownerValue.includes('@') ? ownerValue : `${ownerValue}@s.whatsapp.net`;
+        const LidBaileys = await NanoBotz.signalRepository.lidMapping.getLIDForPN(pnJid);
+        return LidBaileys || '';
+    } catch (err) {
+        console.error('[LID MAPPING] Gagal resolve LID untuk PN:', err.message);
+        return '';
+    }
+}
+
 app.get('/api/bot/config', async (req, res) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -1654,6 +1688,7 @@ app.post('/api/bot/config', (req, res) => {
         }
 
         // Multer populates req.body with text fields when processing multipart/form-data
+       // console.log(req.body);
         const config = normalizeOwnerIdentityConfig(req.body || {});
         const botNum = (req.user.no_Bot || req.user.no_Wa || '').replace(/[^0-9]/g, '');
         const dirPath = path.join(__dirname, 'session', `device${botNum}`);
@@ -1679,12 +1714,22 @@ app.post('/api/bot/config', (req, res) => {
 
             const newConfig = { ...oldConfig, ...config };
 
+            // Ambil socket bot yang sedang berjalan (dibutuhkan untuk akses signalRepository.lidMapping - Baileys v7.xx)
+            const { botStatus } = require('./index');
+            const sock = botStatus.socks[botNum];
+
+            // Resolve ownerlid dari ownernumber.
+            // if  -> config.ownernumber terisi (belum @lid) => lakukan proses lidMapping via signalRepository
+            // else -> tidak ada ownernumber baru (mis. sudah berbentuk @lid dari normalizeOwnerIdentityConfig) => skip, pakai nilai yang sudah ter-merge
+            if (config.ownernumber) {
+                const resolvedLid = await resolveOwnerLidBaileys(sock, config.ownernumber);
+                if (resolvedLid) newConfig.ownerlid = resolvedLid;
+            }
+
             if (req.file) fs.writeFileSync(path.join(dirPath, 'thumb.jpg'), req.file.buffer);
             fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2));
 
             try {
-                const { botStatus } = require('./index');
-                const sock = botStatus.socks[botNum];
                 if (sock) {
                     const thumbBuffer = req.file ? req.file.buffer : (fs.existsSync(path.join(dirPath, 'thumb.jpg')) ? fs.readFileSync(path.join(dirPath, 'thumb.jpg')) : sock.userConfig?.thumbBuffer);
                     sock.userConfig = { ...(sock.userConfig || {}), ...newConfig, thumbBuffer };
@@ -2700,4 +2745,3 @@ setInterval(async () => {
         console.error('[SYSTEM CLEANUP ERROR]:', err);
     }
 }, 30 * 60 * 1000); // 30 Menit dalam milidetik
-

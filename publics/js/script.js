@@ -997,7 +997,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (configData.success && configData.config) {
                     const config = configData.config;
-                    ['botname', 'ownernumber', 'ownerlid', 'wm', 'packname', 'author', 'creator'].forEach(f => {
+                    ['botname', 'ownernumber', 'wm', 'packname', 'author', 'creator'].forEach(f => {
                         if (configForm[f]) configForm[f].value = config[f] || '';
                     });
                     if (reactionApiKeyInput) reactionApiKeyInput.value = config.apikey_reaction || '';
@@ -1032,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function buildConfigPayload(includeThumbnail = thumbnailDirty) {
             const formData = new FormData();
-            const configFields = ['botname', 'ownernumber', 'ownerlid', 'wm', 'packname', 'author', 'creator'];
+            const configFields = ['botname', 'ownernumber', 'wm', 'packname', 'author', 'creator'];
             const hashObject = {};
             configFields.forEach(field => {
                 const value = configForm?.[field]?.value || '';

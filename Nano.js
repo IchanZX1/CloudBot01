@@ -481,39 +481,20 @@ const reply = async (teks) => {
       const number = value.replace(/[^0-9]/g, '')
       return number ? `${number}@s.whatsapp.net` : ''
     }
-    const normalizeOwnerJid = (jid) => {
-      const value = cleanJid(jid)
-      if (!value) return ''
-      if (value.endsWith('@lid')) return value
-      if (value.endsWith('@c.us')) return value.replace('@c.us', '@s.whatsapp.net')
-      if (value.includes('@')) return value
-      const number = value.replace(/[^0-9]/g, '')
-      return number ? `${number}@s.whatsapp.net` : ''
-    }
-    const senderIdentityJids = [
-      m.sender,
-      sender,
-      m.participant,
-      m.participantAlt,
-      m.participantPn,
-      m.participantLid,
-      m.key?.participant,
-      m.key?.participantAlt,
-      m.key?.participantPn,
-      m.key?.participantLid,
-      !m.isGroup ? m.key?.remoteJid : ''
-    ].map(normalizeOwnerJid).filter(Boolean)
-    const ownerIdentityJids = [
-      botNumber,
-      userConfig?.ownernumber,
-      userConfig?.ownerlid,
-      userConfig?.creator,
-      global.ownernumber,
-      global.creator,
-      ...(Array.isArray(global.owner) ? global.owner : []),
-      ...(Array.isArray(global.ownerNumber) ? global.ownerNumber : [])
-    ].map(normalizeOwnerJid).filter(Boolean)
-    const DanzTheCreator = senderIdentityJids.some(jid => ownerIdentityJids.includes(jid))
+     const creatorNum = userConfig?.ownernumber || global.ownernumber;
+const creatorLid = userConfig?.ownerlid || global.ownerlid;
+const ownerIdentityJids = [botNumber, creatorNum, creatorLid, ...global.owner]
+  .filter(Boolean)
+  .map(v => {
+    const value = cleanJid(v)
+    if (!value) return ''
+    if (value.endsWith('@lid')) return value          // sudah @lid -> pakai langsung, jangan diutak-atik
+    if (value.includes('@')) return value              // sudah JID lain, biarkan
+    const digits = value.replace(/[^0-9]/g, '')
+    return digits ? `${digits}@s.whatsapp.net` : ''     // baru nomor polos -> bentuk PN JID
+  })
+  .filter(Boolean)
+const DanzTheCreator = ownerIdentityJids.includes(cleanJid(m.sender));
     const botAdminJids = [
       botNumber,
       NanoBotz.user?.lid,
@@ -3621,7 +3602,7 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
         userLimit.limit -= commandCost;
       }
     }
-console.log("[DEBUG CMD]: ", command)
+//console.log("[DEBUG CMD]: ", command)
     switch (command) {
       case 'ttc': case 'ttt': case 'tictactoe': {
         let TicTacToe = require("./lib/tictactoe.js")
@@ -4358,7 +4339,7 @@ NEW UPDATE FEATURES! 🚀
 
       //=========================================\\
       case 'allmenu': {
-        let nano_sad = `${allmenu(prefix, hituet)}`
+        let nano_sad = `${allmenu(prefix, hituet, botname)}`
         let msg = generateWAMessageFromContent(from, {
           viewOnceMessage: {
             message: {
@@ -14569,36 +14550,8 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
       }
         break
         case 'tesre': {
-          const teksTesre = text || `*[ UPDATE - CASAKU ]*
-
-- Fix Delete transaksi di dashboard
-- Fix Webhook Callback
-
-Ada perbaikan keamanan pada webhook callback, untuk dokumentasi webhook callback kalian bisa cek di repo ini 
-repo: https://github.com/ClayzaAubert/Casaku-Webhook-Example/
-web: https://casaku.id/`
-
-          await NanoBotz.sendMessage(m.chat, {
-            document: thumbnail,
-  mimetype: 'image/png',
-  fileName: `‎ᴠͥɪͣᴘͫ✮⃝@${botname}࿐✮𝄟⃝`,
-  caption: teksTesre,
-  jpegThumbnail: thumbnail,
-  fileLength: 109951162777600,
-  mentions: [m.sender],
-            contextInfo: {
-              mentionedJid: [],
-              groupMentions: [],
-              forwardingScore: 1,
-              isForwarded: true,
-              forwardedNewsletterMessageInfo: {
-                newsletterJid: NanoBotz.userConfig?.idsal || NanoBotz.userConfig?.channel_id || global.idsal || '120363344962076305@newsletter',
-                newsletterName: NanoBotz.userConfig?.saluran || NanoBotz.userConfig?.channel_name || global.saluran || 'ZXcoderID Testimoni',
-                serverMessageId: -1
-              },
-              forwardOrigin: 0
-            }
-          }, { quoted: m })
+         const lid = await NanoBotz.signalRepository.lidMapping.getLIDForPN("6285258751681@s.whatsapp.net")
+         console.log("[DEBUG PN BAILEYS]",lid)
         }
         break
         case 'cekchid': {
@@ -28483,8 +28436,9 @@ Copy the link above and type the .ytmp3 link for audio and the .ytmp4 link for v
         if (!args[0]) return replynano(`Use ${prefix + command} number\nExample ${prefix + command} 6285892928715`)
         prrkek = q.split("|")[0].replace(/[^0-9]/g, '') + `@s.whatsapp.net`
         let ceknya = await NanoBotz.onWhatsApp(prrkek)
+        const lid = await NanoBotz.signalRepository.lidMapping.getLIDForPN(prrkek)
         if (ceknya.length == 0) return replynano(`Enter a valid and registered number on WhatsApp!!!`)
-        prem.push(prrkek)
+        prem.push(lid)
         fs.writeFileSync(botDir + 'premium.json', JSON.stringify(prem))
         replynano(`The Number ${prrkek} Has Been Premium!`)
       }
@@ -30084,7 +30038,7 @@ ${meg.result}`)
         break
 
       case 'jpm': {
-        if (!DanzTheCreator) return reply(`Khusus Owner Aja`)
+        if (!isPrem) return reply(mess.premium)
         if (!text) return reply(`*Penggunaan Salah Silahkan Gunakan Seperti Ini*\n${prefix + command} teks|jeda\n\nReply Gambar Untuk Mengirim Gambar Ke Semua Group\nUntuk Jeda Itu Delay Jadi Nominal Jeda Itu 1000 = 1 detik`)
         await reply("_Wait Tuan Ku✅_")
         let getGroups = await NanoBotz.groupFetchAllParticipating()
