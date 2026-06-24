@@ -1722,7 +1722,7 @@ app.post('/api/bot/config', (req, res) => {
             // if  -> config.ownernumber terisi (belum @lid) => lakukan proses lidMapping via signalRepository
             // else -> tidak ada ownernumber baru (mis. sudah berbentuk @lid dari normalizeOwnerIdentityConfig) => skip, pakai nilai yang sudah ter-merge
             if (config.ownernumber) {
-                const resolvedLid = await resolveOwnerLidBaileys(sock, config.ownernumber);
+                const resolvedLid = await resolveOwnerLidBaileys(sock, `${config.ownernumber}@s.whatsapp.net`);
                 if (resolvedLid) newConfig.ownerlid = resolvedLid;
             }
 

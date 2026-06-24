@@ -494,7 +494,9 @@ const ownerIdentityJids = [botNumber, creatorNum, creatorLid, ...global.owner]
     return digits ? `${digits}@s.whatsapp.net` : ''     // baru nomor polos -> bentuk PN JID
   })
   .filter(Boolean)
-const DanzTheCreator = ownerIdentityJids.includes(cleanJid(m.sender));
+ // console.log("Owner Identity JIDs:", ownerIdentityJids, m.sender);
+const DanzTheCreator = ownerIdentityJids.includes(m.sender);
+// console.log("Is DanzTheCreator:", DanzTheCreator, " | Sender:", m.sender);
     const botAdminJids = [
       botNumber,
       NanoBotz.user?.lid,
@@ -14550,7 +14552,7 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
       }
         break
         case 'tesre': {
-         const lid = await NanoBotz.signalRepository.lidMapping.getLIDForPN("6285258751681@s.whatsapp.net")
+         const lid = await NanoBotz.signalRepository.lidMapping.getLIDForPN("6288989013781@s.whatsapp.net")
          console.log("[DEBUG PN BAILEYS]",lid)
         }
         break
