@@ -1142,6 +1142,8 @@ const DanzTheCreator = ownerIdentityJids.includes(m.sender);
           antiviewonce: false,
           antivideocall: false,
           antitoxic: false,
+          openTeks: '',
+          closeTeks: '',
           antivirtex: false,
           antichannel: false,
           antivoice: false,
@@ -1150,6 +1152,8 @@ const DanzTheCreator = ownerIdentityJids.includes(m.sender);
         }
       }
       const chats = db.chats[m.chat]
+      if (typeof chats.openTeks !== 'string') chats.openTeks = ''
+      if (typeof chats.closeTeks !== 'string') chats.closeTeks = ''
       // ... (existing property checks)
       if (!isNumber(user.chip)) user.chip = 0
       if (!isNumber(user.atm)) user.atm = 0
@@ -3210,10 +3214,11 @@ ${isSurrender ? '' : `+${room.winScore} Money tiap jawaban benar`}
     `.trim();
 
       NanoBotz.sendMessage(from, { text: `${caption}`, mentions: [room.terjawab + '@s.whatsapp.net'] }, { quoted: m }).then(msg => {
-        db.game.family100[id].msg = msg;
+        if (db.game.family100[id]) db.game.family100[id].msg = msg;
       }).catch(_ => _);
 
       if (isWin || isSurrender) {
+        if (room.timeout) clearTimeout(room.timeout);
         delete db.game.family100[id];
       }
     }
@@ -14672,25 +14677,55 @@ Error: ${err?.message || err}`)
         }
       }
         break
+      case 'setgc': {
+        if (!m.isGroup) return reply(mess.only.group)
+        if (!isAdmins && !DanzTheCreator) return reply('Khusus Admin!!')
+        const mode = (args[0] || '').toLowerCase()
+        const caption = args.slice(1).join(' ').trim()
+
+        if (!['open', 'close'].includes(mode) || !caption) {
+          return replynano(`*SET CAPTION GROUP OPEN/CLOSE*
+
+Gunakan:
+${prefix + command} open teks pembuka grup
+${prefix + command} close teks penutup grup
+
+Contoh:
+${prefix + command} open halo semuanya group telah kami buka selamat berkomunikasi
+${prefix + command} close Terimakasih telah menggunakan group kami, kami senang anda berdiskusi di grup ini`)
+        }
+
+        db.chats = db.chats || {}
+        db.chats[m.chat] = db.chats[m.chat] && typeof db.chats[m.chat] === 'object' ? db.chats[m.chat] : {}
+        db.chats[m.chat][mode === 'open' ? 'openTeks' : 'closeTeks'] = caption
+        if (NanoBotz.dbPath) fs.writeFileSync(NanoBotz.dbPath, safeJsonStringify(db, 2))
+        NanoBotz.lastDbSync = Date.now()
+
+        return replynano(`Caption group *${mode}* berhasil disimpan.\n\n${caption}`)
+      }
+        break
       case 'group': case 'gc': {
         if (!m.isGroup) return reply(mess.only.group)
         if (!isAdmins && !DanzTheCreator) return reply('Khusus Admin!!')
         if (!isBotAdmins) return reply('_Bot Harus Menjadi Admin Terlebih Dahulu_')
         if (!q) return replynano(`Send orders ${command} _options_\nOptions : close & open\nExample : ${command} close`)
         if (args[0] == 'close') {
-          reply(`*₊˚🗝 ࣪𓂃˚☽ ｡⋆ . . .  「 _it's time_ ${botname} close the store_ 〞*
+          if (!chats.closeTeks || !chats.closeTeks.trim()) {
+            return replynano(`Caption close group belum diset.
 
-     ♡゙. . .trimakasii yang suda jajan distoreku hari nii ,semoga rejekinya lancar selaluu˚☽˚｡⋆
- ━ ━༝ ₊˚good night everyone sleep wellﾟ｡𓊇
-· · • • • 🪷 • • • ·`)
+Gunakan:
+${prefix}setgc close Terimakasih telah menggunakan group kami, kami senang anda berdiskusi di grup ini`)
+          }
+          reply(chats.closeTeks)
           NanoBotz.groupSettingUpdate(from, 'announcement')
         } else if (args[0] == 'open') {
-          reply(`*₊˚🗝 ࣪𓂃˚☽ ｡⋆ . . .  「 _hello everyone ,it's time to open_ 〞*
+          if (!chats.openTeks || !chats.openTeks.trim()) {
+            return replynano(`Caption open group belum diset.
 
-     ♡゙. . .ayoo jajan, happy shopping
-ketik *.list* untuk melihat list˚☽˚｡⋆
- ━ ━༝ ₊˚ testimoni : ${saluran} ﾟ｡𓊇
-· · • • • 🪷 • • • ·`)
+Gunakan:
+${prefix}setgc open halo semuanya group telah kami buka selamat berkomunikasi`)
+          }
+          reply(chats.openTeks)
           NanoBotz.groupSettingUpdate(from, 'not_announcement')
         } else {
           let msg = generateWAMessageFromContent(from, {
@@ -19527,6 +19562,57 @@ ${hewan1 ? `
           delete db.game.tebakgambar[id]
           delete NanoBotz.gameTimers['tebakgambar' + id]
         }, 60000)
+      }
+        break
+      //==================================================================
+      case 'family100': {
+        if (!m.isGroup) return reply(mess.only.group)
+        const timeout = 120000
+        const winScore = 10000
+        const id = m.chat
+
+        db.game.family100 = db.game.family100 || {}
+        if (id in db.game.family100) return replynano('Masih Ada Sesi Yang Belum Diselesaikan!')
+
+        reply(mess.wait)
+        try {
+          const response = await fetchJson('https://api.siputzx.my.id/api/games/family100')
+          const data = response?.data || {}
+          const soal = String(data.soal || '').trim()
+          const jawaban = Array.isArray(data.jawaban)
+            ? data.jawaban.map(v => String(v || '').toLowerCase().trim()).filter(Boolean)
+            : []
+
+          if (!response?.status || !soal || !jawaban.length) throw new Error('Response API family100 tidak valid')
+
+          const caption = `*GAME FAMILY100*
+
+*Soal:* ${soal}
+
+Terdapat *${jawaban.length}* jawaban${jawaban.find(v => v.includes(' ')) ? '\n(beberapa jawaban terdapat spasi)' : ''}
+Waktu: *${Math.floor(timeout / 1000)} detik*
+Hadiah: *${winScore.toLocaleString('id-ID')} money* tiap jawaban benar
+
+Ketik *nyerah* untuk menyerah.`
+
+          const sentMsg = await replynano(caption)
+          db.game.family100[id] = {
+            soal,
+            jawaban,
+            terjawab: Array(jawaban.length).fill(false),
+            winScore,
+            msg: sentMsg,
+            timeout: setTimeout(() => {
+              if (!db.game.family100[id]) return
+              const room = db.game.family100[id]
+              replynano(`*GAME FAMILY100*\n\nWaktu habis!\n\n*Soal:* ${room.soal}\n\n*Jawaban:*\n${room.jawaban.map((v, i) => `${i + 1}. ${v}`).join('\n')}`)
+              delete db.game.family100[id]
+            }, timeout)
+          }
+        } catch (err) {
+          console.error('[FAMILY100] Error:', err.message || err)
+          replynano('Gagal mengambil soal Family100. Silakan coba lagi nanti.')
+        }
       }
         break
       //==================================================================
@@ -27238,6 +27324,7 @@ CPU: ${server.limits.cpu}%
       //==================================================================
       case 'ww':
       case 'werewolf': {
+        if(!isGroup) return m.reply(mess.group)
         let jimp = require("jimp")
         const resize = async (image, width, height) => {
           const read = await jimp.read(image);
@@ -27998,19 +28085,27 @@ CPU: ${server.limits.cpu}%
         if (!q.includes("|")) return reply(`Gunakan dengan cara ${prefix + command} *key|response*\n\n_Contoh_\n\n${prefix + command} tes|apa`)
         if (isAlreadyResponList(m.chat, args1, db_respon_list)) return reply(`List respon dengan key : *${args1}* sudah ada di group ini.`)
         if (/image/.test(mime)) {
-          let media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
-          const fd = new FormData();
-          fd.append('file', fs.readFileSync(media), '.tmp', '.jpg')
-          fetch('https://telegra.ph/upload', {
-            method: 'POST',
-            body: fd
-          }).then(res => res.json())
-            .then((json) => {
-              addResponList(m.chat, args1, args2, true, `https://telegra.ph${json[0].src}`, db_respon_list, responListPath)
-              reply(`Sukses set list message dengan key : *${args1}*`)
-              if (fs.existsSync(media)) fs.unlinkSync(media)
-            })
-        } else {
+    const media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+
+    try {
+        const url = await TelegraPh(media)
+
+        addResponList(
+            m.chat,
+            args1,
+            args2,
+            true,
+            url,
+            db_respon_list,
+            responListPath
+        )
+
+        reply(`Sukses set list message dengan key : *${args1}*`)
+    } catch (e) {
+        console.error(e)
+        reply('Gagal upload gambar.')
+    }
+} else {
           addResponList(m.chat, args1, args2, false, '-', db_respon_list, responListPath)
           reply(`Sukses set list message dengan key : *${args1}*`)
         }
@@ -30042,7 +30137,7 @@ ${meg.result}`)
       case 'jpm': {
         if (!isPrem) return reply(mess.premium)
         if (!text) return reply(`*Penggunaan Salah Silahkan Gunakan Seperti Ini*\n${prefix + command} teks|jeda\n\nReply Gambar Untuk Mengirim Gambar Ke Semua Group\nUntuk Jeda Itu Delay Jadi Nominal Jeda Itu 1000 = 1 detik`)
-        await reply("_Wait Tuan Ku✅_")
+        await reply(mess.wait)
         let getGroups = await NanoBotz.groupFetchAllParticipating()
         let groups = Object.entries(getGroups).slice(0).map((entry) => entry[1])
         let anu = groups.map((v) => v.id)
@@ -30059,14 +30154,14 @@ ${meg.result}`)
             await sleep(text.split('|')[1])
           }
         }
-        reply("*SUCCESFUL TUAN ONWER✅*")
+        reply(mess.success)
       }
         break
 
       case 'jpm2': {
         if (!DanzTheCreator) return reply(`Khusus Owner Aja`)
         if (!text) return reply(`*Penggunaan Salah Silahkan Gunakan Seperti Ini*\n${prefix + command} teks|jeda\n\nReply Gambar Untuk Mengirim Gambar Ke Semua Group\nUntuk Jeda Itu Delay Jadi Nominal Jeda Itu 1000 = 1 detik`)
-        await reply("_Wait Tuan Ku✅_")
+        await reply(mess.wait)
         let getGroups = await NanoBotz.groupFetchAllParticipating()
         let groups = Object.entries(getGroups).slice(0).map((entry) => entry[1])
         let anu = groups.map((v) => v.id)
@@ -30083,7 +30178,7 @@ ${meg.result}`)
             await sleep(text.split('|')[1])
           }
         }
-        reply("*SUCCESFUL TUAN ONWER✅*")
+        reply(mess.success)
       }
         break
 

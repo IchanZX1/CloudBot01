@@ -75,6 +75,49 @@ let botStatus = {
   reconnectTimers: {}
 };
 
+const GROUP_RENTAL_EXPIRED_TEXT = 'Papayy Bot keluar ya kak karena masa aktif sewa pada group ini telah habis. Ingin sewa lagi? hubungi owner ya kak ketik !owner';
+
+async function checkExpiredGroupRentals(sock, targetNum, dbPath) {
+  if (!sock || !sock.db || !sock.db.settings || typeof sock.db.settings !== 'object') return;
+  const now = Date.now();
+  let changed = false;
+
+  for (const [groupId, settings] of Object.entries(sock.db.settings)) {
+    if (!groupId.endsWith('@g.us') || !settings || typeof settings !== 'object') continue;
+    const rental = settings.sewa_group;
+    if (!rental || typeof rental !== 'object' || !rental.enabled || !rental.expired_at) continue;
+
+    const expiredAt = new Date(rental.expired_at).getTime();
+    if (!expiredAt || Number.isNaN(expiredAt) || expiredAt > now) continue;
+
+    try {
+      if (!rental.expired_notice_sent_at) {
+        await sock.sendMessage(groupId, { text: GROUP_RENTAL_EXPIRED_TEXT });
+        rental.expired_notice_sent_at = new Date().toISOString();
+        changed = true;
+        await sleep(1500);
+      }
+
+      await sock.groupLeave(groupId);
+      rental.enabled = false;
+      rental.expired_left_at = new Date().toISOString();
+      rental.expired_last_error = '';
+      changed = true;
+      console.log(color('[GROUP RENTAL]', 'yellow'), `Bot ${targetNum} left expired rental group ${groupId}`);
+    } catch (err) {
+      rental.expired_last_error = err?.message || String(err);
+      rental.expired_last_attempt_at = new Date().toISOString();
+      changed = true;
+      console.error(color('[GROUP RENTAL]', 'red'), `Failed to leave expired rental group ${groupId}: ${rental.expired_last_error}`);
+    }
+  }
+
+  if (changed && dbPath) {
+    fs.writeFileSync(dbPath, JSON.stringify(sock.db, null, 2));
+    sock.lastDbSync = Date.now();
+  }
+}
+
 function hasSupportedCountryCode(phone) {
   if (!PHONENUMBER_MCC || typeof PHONENUMBER_MCC !== 'object') {
     return true;
@@ -1060,6 +1103,12 @@ async function NanoBotzInd(method = null, num = null) {
         } else {
           // Optional: log if feature is disabled to confirm why nothing is happening
           // console.log(color('[SHOLAT]', 'yellow'), `Auto Sholat is disabled or city not set for ${botJid}`);
+        }
+
+        try {
+          await checkExpiredGroupRentals(NanoBotz, targetNum, dbPath);
+        } catch (rentalErr) {
+          console.error(color('[GROUP RENTAL]', 'red'), `Expired rental checker failed for ${targetNum}: ${rentalErr.message}`);
         }
       } catch (e) {
         console.log(chalk.red(`[HEARTBEAT] Bot ${targetNum} failed: ${e.message}. Temporary stop and reconnect in 7 seconds...`));
