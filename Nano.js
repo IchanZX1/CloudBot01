@@ -3879,7 +3879,19 @@ const chat_time = getJakartaTime();
         }
       }
         break
-
+      case 'blurstiker': {
+        if (!/webp/.test(mime) && /image/.test(mime)) {
+          let { TelegraPh } = require('./lib/uploader.js')
+          mee = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+          mem = await TelegraPh(mee)
+          meme = `https://api.siputzx.my.id/api/canvas/blur?image=${encodeURIComponent(mem)}`
+          memek = await NanoBotz.sendImageAsSticker(m.chat, meme, m, { packname: packname, author: author })
+          if (fs.existsSync(mee)) fs.unlinkSync(mee)
+        } else {
+          replynano(`Kirim/Balas Gambar Dengan Caption ${prefix + command}`)
+        }
+      }
+        break
       case 'jadibot': {
         replynano('mau jadi bot ?')
       }

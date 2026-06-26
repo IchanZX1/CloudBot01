@@ -276,6 +276,29 @@ function setGroupEnabled(filePath, groupId, enabled) {
     writeJsonFile(filePath, current);
 }
 
+async function resolveOwnerLidBaileys(sock, ownerValueRaw) {
+    const ownerValue = String(ownerValueRaw || '').trim();
+    if (!ownerValue) return '';
+
+    if (/@lid$/i.test(ownerValue)) {
+        return ownerValue.replace(/\s+/g, '');
+    }
+
+    if (!sock || !sock.signalRepository || !sock.signalRepository.lidMapping) {
+        console.warn('[WINGS LID MAPPING] Socket bot tidak aktif / signalRepository tidak tersedia, skip mapping LID.');
+        return '';
+    }
+
+    try {
+        const pnJid = ownerValue.includes('@') ? ownerValue : `${ownerValue}@s.whatsapp.net`;
+        const LidBaileys = await sock.signalRepository.lidMapping.getLIDForPN(pnJid);
+        return LidBaileys || '';
+    } catch (err) {
+        console.error('[WINGS LID MAPPING] Gagal resolve LID untuk PN:', err.message);
+        return '';
+    }
+}
+
 function upsertGroupText(filePath, groupId, text) {
     const current = readJsonFile(filePath, []);
     const idx = current.findIndex(item => item.id === groupId);
@@ -452,13 +475,26 @@ app.post('/api/wings/bot/config/get', requireMaster, (req, res) => {
     res.json({ success: true, config });
 });
 
-app.post('/api/wings/bot/config/save', requireMaster, (req, res) => {
+app.post('/api/wings/bot/config/save', requireMaster, async (req, res) => {
     const botNum = normalizeBotNum(req.body.botNum);
     const { sessionDir } = getBotPaths(botNum);
     if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
     const configPath = path.join(sessionDir, 'config.json');
     const oldConfig = readJsonFile(configPath, {});
-    const nextConfig = { ...oldConfig, ...normalizeOwnerIdentityConfig(req.body.config || {}) };
+    const incomingRaw = normalizeOwnerIdentityConfig(req.body.config || {});
+    const nextConfig = { ...oldConfig, ...incomingRaw };
+
+    // Ambil socket bot yang sedang berjalan (dibutuhkan untuk akses signalRepository.lidMapping - Baileys v7.xx)
+    const sock = botService.getBotStrict(botNum);
+
+    // Resolve ownerlid dari ownernumber.
+    // if  -> incomingRaw.ownernumber terisi (belum @lid) => lakukan proses lidMapping via signalRepository
+    // else -> tidak ada ownernumber baru (mis. sudah berbentuk @lid dari normalizeOwnerIdentityConfig) => skip, pakai nilai yang sudah ter-merge
+    if (incomingRaw.ownernumber) {
+        const resolvedLid = await resolveOwnerLidBaileys(sock, `${incomingRaw.ownernumber}@s.whatsapp.net`);
+        if (resolvedLid) nextConfig.ownerlid = resolvedLid;
+    }
+
     let thumbBuffer = null;
     if (req.body.thumbnailBase64) {
         thumbBuffer = Buffer.from(req.body.thumbnailBase64, 'base64');
@@ -469,7 +505,6 @@ app.post('/api/wings/bot/config/save', requireMaster, (req, res) => {
     }
     writeJsonFile(configPath, nextConfig);
 
-    const sock = botService.getBotStrict(botNum);
     if (sock) {
         sock.userConfig = { ...nextConfig, thumbBuffer };
     }
