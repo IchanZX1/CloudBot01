@@ -3704,13 +3704,25 @@ Type *surrender* to surrender and admit defeat`
         break
       case 'public': {
         if (!DanzTheCreator) return reply(mess.only.owner)
+        if (typeof db.settings[botNumber] !== 'object') db.settings[botNumber] = {}
+        db.settings[botNumber].public = true
         NanoBotz.public = true
+        if (NanoBotz.dbPath) {
+          fs.writeFileSync(NanoBotz.dbPath, safeJsonStringify(db, 2))
+          NanoBotz.lastDbSync = Date.now()
+        }
         replynano('*Berhasil Mengubah Ke Penggunaan Publik*')
       }
         break
       case 'self': {
         if (!DanzTheCreator) return reply(mess.only.owner)
+        if (typeof db.settings[botNumber] !== 'object') db.settings[botNumber] = {}
+        db.settings[botNumber].public = false
         NanoBotz.public = false
+        if (NanoBotz.dbPath) {
+          fs.writeFileSync(NanoBotz.dbPath, safeJsonStringify(db, 2))
+          NanoBotz.lastDbSync = Date.now()
+        }
         replynano('*Sukses Berubah Menjadi Pemakaian Sendiri*')
       }
         break
@@ -3834,6 +3846,7 @@ Maksimal nama: 25 karakter`
       }
         break
       case 'hytamkan': case 'tohitam': case 'irengkan': {
+        if(!isPremium || !DanzTheCreator) return replynano(mess.only.premium)
         if (!/webp/.test(mime) && /image/.test(mime)) {
           let { TelegraPh } = require('./lib/uploader.js')
           mee = await NanoBotz.downloadAndSaveMediaMessage(quoted)
@@ -3867,6 +3880,7 @@ const chat_time = getJakartaTime();
       }
         break
       case 'toputih': case 'putihkan': {
+        if(!isPremium || !DanzTheCreator) return replynano(mess.only.premium)
         if (!/webp/.test(mime) && /image/.test(mime)) {
           let { TelegraPh } = require('./lib/uploader.js')
           mee = await NanoBotz.downloadAndSaveMediaMessage(quoted)
@@ -3893,22 +3907,11 @@ const chat_time = getJakartaTime();
       }
         break
       case 'jadibot': {
-        replynano('mau jadi bot ?')
+        replynano('Jadibot Whatsapp Gratis Di ZXcoderID Store Saja\n> Websitenya: https://zxcoderid.web.id\n> Telegram: https://t.me/ichanxd\n> Discord: https://discord.gg/ichanxd')
       }
         break
       case 'listjadibot':
-        try {
-          let user = [... new Set([...global.conns.filter(NanoBotz => NanoBotz.user).map(NanoBotz => NanoBotz.user)])]
-          te = "*Rentbot List*\n\n"
-          for (let i of user) {
-            y = await NanoBotz.decodeJid(i.id)
-            te += " × User : @" + y.split("@")[0] + "\n"
-            te += " × Name : " + i.name + "\n\n"
-          }
-          NanoBotz.sendMessage(from, { text: te, mentions: [y], }, { quoted: m })
-        } catch (err) {
-          replynano(`Belum ada pengguna yang menyewa bot`)
-        }
+        replynano(`List Jadibot Whatsapp Gratis Di ZXcoderID Store Saja\n> Websitenya: https://zxcoderid.web.id\n> Telegram: https://t.me/ichanxd\n> Discord: https://discord.gg/ichanxd`)
         break
       case 'clearall': {
         if (!DanzTheCreator) return reply(mess.only.owner)
@@ -3928,11 +3931,7 @@ const chat_time = getJakartaTime();
       }
         break
       case 'restart':
-        if (!DanzTheCreator) return reply(mess.only.owner)
-        replynano(`restarting ${botname}`)
-        replynano(`Done ✅`)
-        await sleep(3000)
-        process.exit()
+        replynano(`*Berhasil Merestart Bot*`)
         break
       case 'totalfeature':
       case 'totalfitur':
@@ -16114,7 +16113,7 @@ ${prefix + command} off`)
       }
         break
       case 'delete': case 'del': {
-        if (!DanzTheCreator) return reply(mess.only.owner)
+        if (!isAdmins) return reply(mess.only.admin)
         if (!m.quoted) throw false
         let { chat, id } = m.quoted
         NanoBotz.sendMessage(m.chat, { delete: { remoteJid: m.chat, fromMe: false, id: m.quoted.id, participant: m.quoted.sender } })
@@ -16294,7 +16293,7 @@ ${prefix + command} off`)
         await replynano(`Done`)
       }
         break
-      case 'hidetag': {
+      case 'hidetag': case 'h': {
         if (!m.isGroup) return reply(mess.only.group)
         if (!isAdmins && !DanzTheCreator) return reply('Khusus Admin!!')
         if (!isBotAdmins) return reply('_Bot Harus Menjadi Admin Terlebih Dahulu_')
@@ -16371,7 +16370,9 @@ ${prefix + command} off`)
           reply(mess.wait)
           const media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
           let anuu = await TelegraPh(media)
-          const getimg = await fetchJson(`https://api.neoxr.eu/api/nobg?image=${anuu}&apikey=chanzxdevw`)
+          const getimg = await Api.neoxr('/nobg', {
+  image: anuu,
+})
           NanoBotz.sendMessage(m.chat, { image: { url: getimg.data.no_background }, caption: 'Selesai' }, { quoted: m })
         } catch {
           reply('yah Error kak laporankan ke owner agar di perbaiki')
@@ -18502,7 +18503,7 @@ dan ketik *${usedPrefix}heal <jumlah>* untuk menggunakan potion.
         let count = command.replace(/^nabung/i, '')
         count = count ? /all/i.test(count) ? Math.floor(db.users[m.sender].money / xpperlimit) : parseInt(count) : args[0] ? parseInt(args[0]) : 1
         count = Math.max(1, count)
-        if (user.atm == 0) return reply('kamu belum mempuyai atm !')
+        if (user.atm == 0) return reply('kamu belum mempuyai atm !\nketik *!craft atm* untuk membuat atm')
         if (user.bank > user.fullatm) return reply('Uang dibankmu sudah penuh!')
         if (count > user.fullatm - user.bank) return reply('Uangnya ga muat dibank')
         if (db.users[m.sender].money >= xpperlimit * count) {
@@ -24143,29 +24144,50 @@ ${ikan1 ? `
           replynano(`Successfully Changed Only-Pc To ${q}`)
         }
         break
-      case 'setwelcome':
+      case 'setwelcome': case 'changewelcome':
         if (!m.isGroup) return reply('Fitur Khusus Group!')
         if (!DanzTheCreator && !isAdmins) return reply('Fitur Khusus owner!')
-        if (!text) return reply(`Gunakan dengan cara ${prefix + command} *teks_welcome*\n\n_Contoh_\n\n${prefix + command} Halo @user, Selamat datang di @group`)
-        if (isSetWelcome(m.chat, set_welcome_db)) return reply(`Set welcome already active`)
-        addSetWelcome(text, m.chat, set_welcome_db)
-        addCountCmd('#setwelcome', m.sender, _cmd)
-        reply(`Successfully set welcome!`)
-        break
-      case 'changewelcome':
-        if (!m.isGroup) return reply('Fitur Khusus Group!')
-        if (!DanzTheCreator && !isAdmins) return reply('Fitur Khusus owner!')
-        if (!text) return reply(`Gunakan dengan cara ${prefix + command} *teks_welcome*\n\n_Contoh_\n\n${prefix + command} Halo @user, Selamat datang di @group`)
-        if (isSetWelcome(m.chat, set_welcome_db)) {
-          addCountCmd('#changewelcome', m.sender, _cmd)
-          changeSetWelcome(q, m.chat, set_welcome_db)
-          reply(`Sukses change set welcome teks!`)
-        } else {
-          addCountCmd('#changewelcome', m.sender, _cmd)
-          addSetWelcome(q, m.chat, set_welcome_db)
-          reply(`Sukses change set welcome teks!`)
+        if (!text) return reply(`Gunakan dengan cara ${prefix + command} *design!teks_welcome*\n\n_Contoh_\n\n${prefix + command} design1!Halo @user, Selamat datang di @group`)
+        const allowedDesigns = ['design1', 'design2', 'design3', 'design4']
+        const designSep = text.indexOf('!')
+        if (designSep === -1) {
+          return reply(`Format: ${prefix + command} *design!teks*\n\nContoh: ${prefix + command} design1!Halo @user selamat datang di @group\n\nPilih design: ${allowedDesigns.join(', ')}\n\nAtur juga di website: https://zxcoderid.web.id/command`)
         }
+        const chosenDesign = text.slice(0, designSep).trim().toLowerCase()
+        const welcomeText = text.slice(designSep + 1).trim()
+        if (!allowedDesigns.includes(chosenDesign)) {
+          return reply(`Design *${chosenDesign}* tidak valid! Pilih salah satu: ${allowedDesigns.join(', ')}`)
+        }
+        if (typeof db.settings[m.chat] !== 'object') db.settings[m.chat] = {}
+        db.settings[m.chat].welcome_design = chosenDesign
+        db.settings[m.chat].welcome_text = welcomeText
+        db.settings[m.chat].welcome = true
+        if (isSetWelcome(m.chat, set_welcome_db)) {
+          changeSetWelcome(welcomeText, m.chat, set_welcome_db)
+        } else {
+          addSetWelcome(welcomeText, m.chat, set_welcome_db)
+        }
+        if (!_welcome.includes(m.chat)) {
+          _welcome.push(m.chat)
+          fs.writeFileSync(botDir + 'welcome.json', JSON.stringify(_welcome))
+        }
+        addCountCmd('#setwelcome', m.sender, _cmd)
+        reply(`✅ Welcome berhasil diatur!\n\nDesign: ${chosenDesign}\n\nKamu juga bisa mengatur di website: https://zxcoderid.web.id/command`)
         break
+      // case 'changewelcome':
+      //   if (!m.isGroup) return reply('Fitur Khusus Group!')
+      //   if (!DanzTheCreator && !isAdmins) return reply('Fitur Khusus owner!')
+      //   if (!text) return reply(`Gunakan dengan cara ${prefix + command} *teks_welcome*\n\n_Contoh_\n\n${prefix + command} Halo @user, Selamat datang di @group`)
+      //   if (isSetWelcome(m.chat, set_welcome_db)) {
+      //     addCountCmd('#changewelcome', m.sender, _cmd)
+      //     changeSetWelcome(q, m.chat, set_welcome_db)
+      //     reply(`Sukses change set welcome teks!`)
+      //   } else {
+      //     addCountCmd('#changewelcome', m.sender, _cmd)
+      //     addSetWelcome(q, m.chat, set_welcome_db)
+      //     reply(`Sukses change set welcome teks!`)
+      //   }
+      //   break
       case 'delsetwelcome':
         if (!m.isGroup) return reply('Fitur Khusus Group!')
         if (!DanzTheCreator && !isAdmins) return reply('Fitur Khusus owner!')
@@ -24174,29 +24196,43 @@ ${ikan1 ? `
         addCountCmd('#delsetwelcome', m.sender, _cmd)
         reply(`Sukses delete set welcome`)
         break
-      case 'setleft':
+      case 'setleft': case 'changeleft':
         if (!m.isGroup) return reply('Fitur Khusus Group!')
         if (!DanzTheCreator && !isAdmins) return reply('Fitur Khusus owner!')
-        if (!text) return reply(`Gunakan dengan cara ${prefix + command} *teks_left*\n\n_Contoh_\n\n${prefix + command} Halo @user, Selamat tinggal dari @group`)
-        if (isSetLeft(m.chat, set_left_db)) return reply(`Set left already active`)
-        addCountCmd('#setleft', m.sender, _cmd)
-        addSetLeft(q, m.chat, set_left_db)
-        reply(`Successfully set left!`)
-        break
-      case 'changeleft':
-        if (!m.isGroup) return reply('Fitur Khusus Group!')
-        if (!DanzTheCreator && !isAdmins) return reply('Fitur Khusus owner!')
-        if (!text) return reply(`Gunakan dengan cara ${prefix + command} *teks_left*\n\n_Contoh_\n\n${prefix + command} Halo @user, Selamat tinggal dari @group`)
+        if (!text) return reply(`Gunakan dengan cara ${prefix + command} *teks_left*\n\n_Contoh_\n\n${prefix + command} Selamat tinggal @user, dari @group`)
+        if (typeof db.settings[m.chat] !== 'object') db.settings[m.chat] = {}
+        db.settings[m.chat].goodbye_text = text
+        db.settings[m.chat].goodbye = true
         if (isSetLeft(m.chat, set_left_db)) {
-          addCountCmd('#changeleft', m.sender, _cmd)
-          changeSetLeft(q, m.chat, set_left_db)
-          reply(`Sukses change set left teks!`)
+          changeSetLeft(text, m.chat, set_left_db)
         } else {
-          addCountCmd('#changeleft', m.sender, _cmd)
-          addSetLeft(q, m.chat, set_left_db)
-          reply(`Sukses change set left teks!`)
+          addSetLeft(text, m.chat, set_left_db)
         }
+        if (!_left.includes(m.chat)) {
+          _left.push(m.chat)
+          fs.writeFileSync(botDir + 'left.json', JSON.stringify(_left))
+        }
+        if (NanoBotz.dbPath) {
+          fs.writeFileSync(NanoBotz.dbPath, safeJsonStringify(db, 2))
+          NanoBotz.lastDbSync = Date.now()
+        }
+        addCountCmd('#setleft', m.sender, _cmd)
+        reply(`✅ Left berhasil diatur!\n\nKamu juga bisa mengatur di website: https://zxcoderid.web.id/command`)
         break
+      // case 'changeleft':
+      //   if (!m.isGroup) return reply('Fitur Khusus Group!')
+      //   if (!DanzTheCreator && !isAdmins) return reply('Fitur Khusus owner!')
+      //   if (!text) return reply(`Gunakan dengan cara ${prefix + command} *teks_left*\n\n_Contoh_\n\n${prefix + command} Halo @user, Selamat tinggal dari @group`)
+      //   if (isSetLeft(m.chat, set_left_db)) {
+      //     addCountCmd('#changeleft', m.sender, _cmd)
+      //     changeSetLeft(q, m.chat, set_left_db)
+      //     reply(`Sukses change set left teks!`)
+      //   } else {
+      //     addCountCmd('#changeleft', m.sender, _cmd)
+      //     addSetLeft(q, m.chat, set_left_db)
+      //     reply(`Sukses change set left teks!`)
+      //   }
+      //   break
       case 'delsetleft':
         if (!m.isGroup) return reply('Fitur Khusus Group!')
         if (!DanzTheCreator && !isAdmins) return reply('Fitur Khusus owner!')
