@@ -742,6 +742,86 @@ app.post('/api/wings/bot/group-rental/save', requireMaster, async (req, res) => 
     res.json({ success: true, message: joinedByBot ? 'Bot berhasil join dan sewa group berhasil disimpan di wings' : 'Sewa group berhasil disimpan di wings', joined: joinedByBot, groupId: targetGroupId, group: { id: targetGroupId, subject: db.settings[targetGroupId].sewa_group.group_name || inviteInfo?.subject || 'Group WhatsApp' }, sewa_group: normalizeGroupRental(db.settings[targetGroupId].sewa_group) });
 });
 
+function cleanupStaleSessions() {
+    console.log('[WINGS CLEANUP] Scanning for stale session data...');
+    const sessionDir = path.join(__dirname, 'session');
+    const dbDir = path.join(__dirname, 'database');
+    const activatePath = path.join(sessionDir, 'activate_session.json');
+
+    if (!fs.existsSync(sessionDir)) { fs.mkdirSync(sessionDir, { recursive: true }); return; }
+
+    let activeBots = [];
+    if (fs.existsSync(activatePath)) {
+        try {
+            activeBots = JSON.parse(fs.readFileSync(activatePath, 'utf8'));
+            if (!Array.isArray(activeBots)) activeBots = [];
+        } catch (err) { activeBots = []; }
+    }
+    const activeSet = new Set(activeBots.map(b => String(b).replace(/[^0-9]/g, '')).filter(Boolean));
+
+    let removedFolders = 0, removedDbFolders = 0, cleanedActivate = 0;
+
+    const entries = fs.readdirSync(sessionDir, { withFileTypes: true });
+    for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+        const match = entry.name.match(/^device(\d+)$/);
+        if (!match) continue;
+        const botNum = match[1];
+
+        if (!activeSet.has(botNum)) {
+            const sessionPath = path.join(sessionDir, entry.name);
+            try {
+                fs.rmSync(sessionPath, { recursive: true, force: true });
+                console.log(`[WINGS CLEANUP] Removed orphaned session: ${entry.name}`);
+                removedFolders++;
+            } catch (err) { console.error(`[WINGS CLEANUP] Failed to remove ${entry.name}:`, err.message); }
+
+            const dbFolder = path.join(dbDir, `data${botNum}`);
+            if (fs.existsSync(dbFolder)) {
+                try {
+                    fs.rmSync(dbFolder, { recursive: true, force: true });
+                    console.log(`[WINGS CLEANUP] Removed orphaned database: data${botNum}`);
+                    removedDbFolders++;
+                } catch (err) { console.error(`[WINGS CLEANUP] Failed to remove data${botNum}:`, err.message); }
+            }
+        }
+    }
+
+    const updatedActive = [];
+    for (const botNum of activeBots) {
+        const cleanNum = String(botNum).replace(/[^0-9]/g, '');
+        if (!cleanNum) continue;
+        const sessionPath = path.join(sessionDir, `device${cleanNum}`);
+        if (fs.existsSync(sessionPath)) {
+            updatedActive.push(cleanNum);
+        } else {
+            cleanedActivate++;
+            console.log(`[WINGS CLEANUP] Removed stale activate entry: ${cleanNum} (no folder)`);
+        }
+    }
+    if (cleanedActivate > 0) writeJsonFile(activatePath, updatedActive);
+
+    if (fs.existsSync(dbDir)) {
+        const dbEntries = fs.readdirSync(dbDir, { withFileTypes: true });
+        for (const entry of dbEntries) {
+            if (!entry.isDirectory()) continue;
+            const match = entry.name.match(/^data(\d+)$/);
+            if (!match) continue;
+            const botNum = match[1];
+            const sessionPath = path.join(sessionDir, `device${botNum}`);
+            if (!fs.existsSync(sessionPath)) {
+                try {
+                    fs.rmSync(path.join(dbDir, entry.name), { recursive: true, force: true });
+                    console.log(`[WINGS CLEANUP] Removed orphaned database: ${entry.name}`);
+                    removedDbFolders++;
+                } catch (err) { console.error(`[WINGS CLEANUP] Failed to remove ${entry.name}:`, err.message); }
+            }
+        }
+    }
+
+    console.log(`[WINGS CLEANUP] Complete: ${removedFolders} sessions, ${removedDbFolders} databases removed, ${cleanedActivate} activate entries cleaned.`);
+}
+
 app.listen(port, async () => {
     try {
         new URL(master);
@@ -755,7 +835,12 @@ app.listen(port, async () => {
     setInterval(sendHeartbeat, 15000);
     setTimeout(cleanupTemporaryFiles, 5000);
     setInterval(cleanupTemporaryFiles, cleanupIntervalMs);
-    setTimeout(() => {
-        restoreAssignedBots().catch(err => console.error('[WINGS] Auto restore error:', err.message));
+    setTimeout(async () => {
+        try {
+            await restoreAssignedBots();
+        } catch (err) {
+            console.error('[WINGS] Auto restore error:', err.message);
+        }
+        cleanupStaleSessions();
     }, 3000);
 });
