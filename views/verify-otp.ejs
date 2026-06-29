@@ -3,25 +3,36 @@
 
         <style>
             #otp-inputs {
-                display: grid;
-                grid-template-columns: repeat(6, minmax(0, 1fr));
-                gap: clamp(6px, 2vw, 10px);
+                width: 100%;
             }
 
             #otp-inputs .otp-input {
                 width: 100%;
                 height: clamp(48px, 14vw, 58px);
                 min-width: 0;
-                padding: 0;
+                padding: 0 12px;
                 color: #ffffff;
-                font-size: clamp(22px, 7vw, 28px);
+                font-size: clamp(20px, 6vw, 26px);
                 line-height: 1;
                 font-weight: 800;
                 text-align: center;
                 caret-color: #22c55e;
                 border-radius: 14px;
+                letter-spacing: 0.5rem;
+                padding-left: 0.5rem; /* to balance the letter-spacing on the rightmost character */
                 font-variant-numeric: tabular-nums;
                 -webkit-text-fill-color: currentColor;
+            }
+
+            #otp-inputs .otp-input::placeholder {
+                color: rgba(255, 255, 255, 0.3);
+            }
+
+            #otp-inputs .otp-input:placeholder-shown {
+                letter-spacing: normal;
+                padding-left: 0;
+                font-size: 15px;
+                font-weight: 600;
             }
 
             #otp-inputs .otp-input::selection {
@@ -31,6 +42,9 @@
             body.light-theme #otp-inputs .otp-input {
                 color: #0f172a;
                 background: rgba(255, 255, 255, 0.85) !important;
+            }
+            body.light-theme #otp-inputs .otp-input::placeholder {
+                color: rgba(15, 23, 42, 0.4);
             }
         </style>
 
@@ -56,17 +70,7 @@
                 <form id="verify-form" class="space-y-6">
                     <input type="hidden" name="email" id="user-email" value="<%= email %>">
                     <div id="otp-inputs">
-                        <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1"
-                            class="otp-input glass border border-white/10 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none transition-all">
-                        <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1"
-                            class="otp-input glass border border-white/10 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none transition-all">
-                        <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1"
-                            class="otp-input glass border border-white/10 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none transition-all">
-                        <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1"
-                            class="otp-input glass border border-white/10 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none transition-all">
-                        <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1"
-                            class="otp-input glass border border-white/10 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none transition-all">
-                        <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="1"
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="6" placeholder="Masukkan 6 Digit Kode OTP"
                             class="otp-input glass border border-white/10 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none transition-all">
                     </div>
 

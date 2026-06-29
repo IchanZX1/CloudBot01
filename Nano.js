@@ -3846,7 +3846,7 @@ Maksimal nama: 25 karakter`
       }
         break
       case 'hytamkan': case 'tohitam': case 'irengkan': {
-        if(!isPremium || !DanzTheCreator) return replynano(mess.only.premium)
+        if(!isPrem || !DanzTheCreator) return replynano(mess.only.premium)
         if (!/webp/.test(mime) && /image/.test(mime)) {
           let { TelegraPh } = require('./lib/uploader.js')
           mee = await NanoBotz.downloadAndSaveMediaMessage(quoted)
@@ -3880,7 +3880,7 @@ const chat_time = getJakartaTime();
       }
         break
       case 'toputih': case 'putihkan': {
-        if(!isPremium || !DanzTheCreator) return replynano(mess.only.premium)
+        if(!isPrem || !DanzTheCreator) return replynano(mess.only.premium)
         if (!/webp/.test(mime) && /image/.test(mime)) {
           let { TelegraPh } = require('./lib/uploader.js')
           mee = await NanoBotz.downloadAndSaveMediaMessage(quoted)
@@ -30042,7 +30042,7 @@ ${meg.result}`)
         if (!DanzTheCreator) return reply(mess.only.owner)
         if (!m.isGroup) return replynano(`The feature works only in grup`)
         if (!text) return replynano(`text?`)
-        let mem = await participants.filter(v => v.jid.endsWith('.net')).map(v => v.jid)
+        let mem = await participants.filter(v => v.jid.endsWith('.net')).map(v => v.phoneNumber)
         replynano(`Success in pushing the message to contacts`)
         for (let pler of mem) {
           NanoBotz.sendMessage(pler, { text: text })
