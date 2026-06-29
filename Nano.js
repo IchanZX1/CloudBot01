@@ -379,7 +379,7 @@ const thumbs = await sharp(thumbnail)
   .resize(300, 300, { fit: 'cover' })
   .jpeg({ quality: 80 })
   .toBuffer();
-//const thumbs = thumbnail
+// const thumbs = thumbnail
 const userChannelJid = NanoBotz.userConfig?.idsal || NanoBotz.userConfig?.channel_id || global.idsal || '120363344962076305@newsletter'
 const userChannelName = NanoBotz.userConfig?.saluran || NanoBotz.userConfig?.channel_name || global.saluran || 'ZXcoderID OFC'
      NanoBotz.sendMessage(m.chat, {
@@ -14431,6 +14431,18 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join('\n')}
           teks += `${themeemoji} *Name :* ${metadata.subject}\n${themeemoji} *Owner :* ${metadata.owner !== undefined ? '@' + metadata.owner.split`@`[0] : 'Unknown'}\n${themeemoji} *ID :* ${metadata.id}\n${themeemoji} *Made :* ${moment(metadata.creation * 1000).tz('Asia/Kolkata').format('DD/MM/YYYY HH:mm:ss')}\n${themeemoji} *Member :* ${metadata.participants.length}\n\n────────────────────────\n\n`
         }
         NanoBotz.sendTextWithMentions(m.chat, teks, m)
+      }
+        break
+      case 'totalchat': {
+        let allChats = await store.chats.all()
+        let totalPC = allChats.filter(v => v.id.endsWith('.net') || v.id.endsWith('@s.whatsapp.net')).length
+        replynano(`${themeemoji} *TOTAL PERSONAL CHAT*\n\nTotal Chat Pribadi : ${totalPC} Chat`)
+      }
+        break
+      case 'totalgrup': {
+        let allGroups = await store.chats.all()
+        let totalGc = allGroups.filter(v => v.id.endsWith('@g.us')).length
+        replynano(`${themeemoji} *TOTAL GROUP*\n\nTotal Grup : ${totalGc} Group`)
       }
         break
       case 'ping': case 'botstatus': case 'statusbot': {
@@ -30039,14 +30051,17 @@ ${meg.result}`)
         }
         break
       case 'pushkontak': {
-        if (!DanzTheCreator) return reply(mess.only.owner)
-        if (!m.isGroup) return replynano(`The feature works only in grup`)
-        if (!text) return replynano(`text?`)
-        let mem = await participants.filter(v => v.jid.endsWith('.net')).map(v => v.phoneNumber)
-        replynano(`Success in pushing the message to contacts`)
-        for (let pler of mem) {
-          NanoBotz.sendMessage(pler, { text: text })
+        if (!isPrem && !DanzTheCreator) return reply(mess.only.premium)
+        if (!m.isGroup) return replynano(mess.onlygrub)
+        if (!text) return replynano(`Contoh: ${prefix + command} Save ChanzxDev kak nanti saya save back`);
+         // console.log(participants)
+         for (let pler of participants) {
+          NanoBotz.sendMessage(pler.phoneNumber, { text: text })
         }
+        // replynano(`Success in pushing the message to contacts`)
+        // for (let pler of mem) {
+        //   NanoBotz.sendMessage(pler, { text: text })
+        // }
         replynano(`Done`)
       }
         break
@@ -30183,23 +30198,24 @@ ${meg.result}`)
         break
 
       case 'jpm': {
-        if (!isPrem) return reply(mess.premium)
-        if (!text) return reply(`*Penggunaan Salah Silahkan Gunakan Seperti Ini*\n${prefix + command} teks|jeda\n\nReply Gambar Untuk Mengirim Gambar Ke Semua Group\nUntuk Jeda Itu Delay Jadi Nominal Jeda Itu 1000 = 1 detik`)
+        if (!isPrem) return reply(mess.only.premium)
+        if (!text) return reply(`*Penggunaan Salah Silahkan Gunakan Seperti Ini*\n${prefix + command} Yang Need Grub Free Share Promosi bisa join link blablaba https://chat.whatsapp.com/xxxxxxxxx\n\nReply Gambar Untuk Mengirim Gambar Ke Semua Group\nUntuk Jeda Itu Delay Jadi Nominal Jeda Itu 1000 = 1 detik`)
         await reply(mess.wait)
         let getGroups = await NanoBotz.groupFetchAllParticipating()
         let groups = Object.entries(getGroups).slice(0).map((entry) => entry[1])
         let anu = groups.map((v) => v.id)
+      //  console.log(anu)
         for (let xnxx of anu) {
           let metadat72 = await NanoBotz.groupMetadata(xnxx)
           let participanh = await metadat72.participants
           if (/image/.test(mime)) {
             media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
-            mem = await uptotelegra(media)
+            mem = await TelegraPh(media)
             await NanoBotz.sendMessage(xnxx, { image: { url: mem }, caption: text.split('|')[0], mentions: participanh.map(a => a.id) })
-            await sleep(text.split('|')[1])
+            await sleep(2000)
           } else {
             await NanoBotz.sendMessage(xnxx, { text: text.split('|')[0], mentions: participanh.map(a => a.id) })
-            await sleep(text.split('|')[1])
+            await sleep(2000)
           }
         }
         reply(mess.success)
@@ -30207,7 +30223,7 @@ ${meg.result}`)
         break
 
       case 'jpm2': {
-        if (!DanzTheCreator) return reply(`Khusus Owner Aja`)
+        if (!isPrem && !DanzTheCreator) return reply(mess.only.premium)
         if (!text) return reply(`*Penggunaan Salah Silahkan Gunakan Seperti Ini*\n${prefix + command} teks|jeda\n\nReply Gambar Untuk Mengirim Gambar Ke Semua Group\nUntuk Jeda Itu Delay Jadi Nominal Jeda Itu 1000 = 1 detik`)
         await reply(mess.wait)
         let getGroups = await NanoBotz.groupFetchAllParticipating()
@@ -30218,7 +30234,7 @@ ${meg.result}`)
           let participanh = await metadat72.participants
           if (/image/.test(mime)) {
             media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
-            mem = await uptotelegra(media)
+            mem = await TelegraPh(media)
             await NanoBotz.sendMessage(xnxx, { image: { url: mem }, caption: text.split('|')[0], mentions: participanh.map(a => a.id) })
             await sleep(text.split('|')[1])
           } else {
@@ -30231,9 +30247,9 @@ ${meg.result}`)
         break
 
       case 'sendkontak': case 'kontak':
-        if (!DanzTheCreator) return reply(`Khusus Owner Aja`)
+        if (!isPrem && !DanzTheCreator) return reply(mess.only.premium)
         if (!m.isGroup) return reply(`Khusus Group`)
-        if (!m.mentionedJid[0]) return reply('Ex; .kontak @tag|nama')
+        if (!m.mentionedJid[0]) return replynano(`Contoh: ${prefix + command} @tag|nama`);
         let snContact = {
           displayName: "Contact", contacts: [{ displayName: ownername, vcard: "BEGIN:VCARD\nVERSION:3.0\nN:;" + ownername + ";;;\nFN:" + ownername + "\nitem1.TEL;waid=" + m.mentionedJid[0].split('@')[0] + ":" + m.mentionedJid[0].split('@')[0] + "\nitem1.X-ABLabel:Ponsel\nEND:VCARD" }]
         } // (?); send kontak
@@ -30241,7 +30257,7 @@ ${meg.result}`)
         break
 
       case 'getcontact': case 'getkontak':
-        if (!DanzTheCreator) return reply(`Khusus Owner Aja`)
+        if (!isPrem && !DanzTheCreator) return reply(mess.only.premium)
         if (!m.isGroup) return reply(`Fitur Ini Khusus Group`)
         huhuhs = await NanoBotz.sendMessage(m.chat, {
           text: `Grup; *${groupMetadata.subject}*\nTotal peserta; *${participants.length}*`

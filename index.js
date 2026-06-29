@@ -105,10 +105,15 @@ async function checkExpiredGroupRentals(sock, targetNum, dbPath) {
       changed = true;
       console.log(color('[GROUP RENTAL]', 'yellow'), `Bot ${targetNum} left expired rental group ${groupId}`);
     } catch (err) {
-      rental.expired_last_error = err?.message || String(err);
+      const errMsg = err?.message || String(err);
+      rental.expired_last_error = errMsg;
       rental.expired_last_attempt_at = new Date().toISOString();
       changed = true;
-      console.error(color('[GROUP RENTAL]', 'red'), `Failed to leave expired rental group ${groupId}: ${rental.expired_last_error}`);
+      console.error(color('[GROUP RENTAL]', 'red'), `Failed to leave expired rental group ${groupId}: ${errMsg}`);
+      if (errMsg.toLowerCase().includes('forbidden')) {
+        delete settings.sewa_group;
+        console.log(color('[GROUP RENTAL]', 'yellow'), `Bot ${targetNum} already not in group ${groupId}, rental data cleared`);
+      }
     }
   }
 
