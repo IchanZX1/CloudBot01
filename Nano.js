@@ -30055,18 +30055,23 @@ ${meg.result}`)
         if (!m.isGroup) return replynano(mess.onlygrub)
         if (!text) return replynano(`Contoh: ${prefix + command} Save ChanzxDev kak nanti saya save back`);
          // console.log(participants)
-         for (let pler of participants) {
-          NanoBotz.sendMessage(pler.phoneNumber, { text: text })
+         const ambilDataGrup = await NanoBotz.groupMetadata(m.chat)
+          const ambilParticipants = ambilDataGrup.participants.map(u => u.phoneNumber)
+         for (let pler of ambilParticipants) {
+          // console.log(pler)
+          NanoBotz.sendMessage(pler, { text: text })
+          sleep(2000)
+         // NanoBotz.sendMessage(pler.phoneNumber, { text: text })
         }
         // replynano(`Success in pushing the message to contacts`)
         // for (let pler of mem) {
         //   NanoBotz.sendMessage(pler, { text: text })
         // }
-        replynano(`Done`)
+      //  replynano(`Done`)
       }
         break
       case 'pushkontakv2': {
-        if (!DanzTheCreator) return reply(mess.only.owner)
+        if (!isPrem && !DanzTheCreator) return reply(mess.only.owner)
         if (!text) return replynano(`Incorrect Usage Please Use Command Like This\n${prefix + command} idgc|text`)
         reply(mess.wait)
         const metadata2 = await NanoBotz.groupMetadata(text.split("|")[0])
@@ -30080,7 +30085,7 @@ ${meg.result}`)
         break
 
       case 'pushkontakv3':
-        if (!DanzTheCreator) return reply(`Khusus Owner Aja`)
+        if (!isPrem && !DanzTheCreator) return reply(mess.only.premium)
         if (!text) return reply(`Penggunaan Salah Silahkan Gunakan Command Seperti Ini\n${prefix + command} idgroup|jeda|teks\nUntuk Liat Id Group Silahkan Ketik .idgroup`)
         if (m.isGroup) return reply(mess.only.private)
         if (!text.includes('|')) return reply(`Format salah.\nContoh: ${prefix + command} idgroup|5000|teks`)
@@ -30108,7 +30113,7 @@ ${meg.result}`)
         reply("Succes Boss!")
         break
       case 'pushkontakv4':
-        if (!DanzTheCreator) return reply(`Khusus Owner Aja`)
+        if (!isPrem && !DanzTheCreator) return reply(mess.only.premium)
         if (!m.isGroup) return reply(mess.only.private)
         if (!text) return reply(`Penggunaan Salah Silahkan Gunakan Command Seperti Ini\n${prefix + command} jeda|teks`)
         await reply("Otw Boskuuu")
@@ -30129,7 +30134,7 @@ ${meg.result}`)
         break
 
       case 'savekontak': case 'svkontak':
-        if (!DanzTheCreator) return reply(`Khusus Owner Ajah`)
+        if (!isPrem && !DanzTheCreator) return reply(mess.only.premium)
         if (!m.isGroup) return reply(`Fitur Ini Khusus Group`)
         let cmiggc = await NanoBotz.groupMetadata(m.chat)
         let orgiggc = participants.map(a => a.id)
@@ -30162,7 +30167,7 @@ ${meg.result}`)
       }
         break
       case 'savekontakv2': {
-        if (!DanzTheCreator) return reply(`Khusus Owner Aja`)
+        if (!DanzTheCreator) return reply(mess.only.premium)
         if (!m.isGroup) return reply(mess.only.private)
         if (!text) return reply(`Penggunaan Salah Silahkan Gunakan Command Seperti Ini\n${prefix + command} idgroup\nUntuk Liat Id Group Silahkan Ketik .cekidgc`)
         await reply("_Wᴀɪᴛɪɴɢ ɪɴ ᴘʀᴏɢʀᴇss !!_")
