@@ -30059,8 +30059,8 @@ ${meg.result}`)
           const ambilParticipants = ambilDataGrup.participants.map(u => u.phoneNumber)
          for (let pler of ambilParticipants) {
           // console.log(pler)
-          NanoBotz.sendMessage(pler, { text: text })
-          sleep(2000)
+          await NanoBotz.sendMessage(pler, { text: text })
+          await sleep(6000)
          // NanoBotz.sendMessage(pler.phoneNumber, { text: text })
         }
         // replynano(`Success in pushing the message to contacts`)

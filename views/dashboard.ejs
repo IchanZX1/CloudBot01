@@ -1,907 +1,1016 @@
 <%- include('partials/head') %>
     <%- include('partials/nav') %>
-        <%
-            const dashboardPackage = String(user.paket || '').toLowerCase();
-            const isStarterPackage = dashboardPackage === 'starter';
-            const isBasicPackage = dashboardPackage === 'basic';
-            const isFreePackage = dashboardPackage === 'free';
-            const canEditWhatsappChannel = ['basic', 'starter'].includes(dashboardPackage);
-        %>
+        <% const dashboardPackage=String(user.paket || '' ).toLowerCase(); const
+            isStarterPackage=dashboardPackage==='starter' ; const isBasicPackage=dashboardPackage==='basic' ; const
+            isFreePackage=dashboardPackage==='free' ; const isTrialPackage=dashboardPackage==='trial' ; const canEditWhatsappChannel=['basic', 'starter'
+            ].includes(dashboardPackage); %>
 
-        <style>
-            .feature-toggle input:checked + .feature-card {
-                border-color: rgba(34, 197, 94, 0.55);
-                background: rgba(34, 197, 94, 0.10);
-            }
+            <style>
+                .feature-toggle input:checked+.feature-card {
+                    border-color: rgba(34, 197, 94, 0.55);
+                    background: rgba(34, 197, 94, 0.10);
+                }
 
-            .feature-toggle input:checked + .feature-card .feature-icon,
-            .feature-toggle input:checked + .feature-card .feature-label {
-                color: #22c55e;
-            }
+                .feature-toggle input:checked+.feature-card .feature-icon,
+                .feature-toggle input:checked+.feature-card .feature-label {
+                    color: #22c55e;
+                }
 
-            .feature-toggle input:checked + .feature-card .feature-switch {
-                background: rgba(34, 197, 94, 0.20);
-                border-color: rgba(34, 197, 94, 0.35);
-            }
+                .feature-toggle input:checked+.feature-card .feature-switch {
+                    background: rgba(34, 197, 94, 0.20);
+                    border-color: rgba(34, 197, 94, 0.35);
+                }
 
-            .feature-toggle input:checked + .feature-card .feature-knob {
-                transform: translateX(16px);
-                background: #22c55e;
-            }
+                .feature-toggle input:checked+.feature-card .feature-knob {
+                    transform: translateX(16px);
+                    background: #22c55e;
+                }
 
-            .dashboard-console {
-                min-height: 540px;
-            }
-
-            @media (max-width: 640px) {
                 .dashboard-console {
-                    min-height: 560px;
+                    min-height: 540px;
                 }
 
-                #status-content {
-                    padding: 14px;
+                @media (max-width: 640px) {
+                    .dashboard-console {
+                        min-height: 560px;
+                    }
+
+                    #status-content {
+                        padding: 14px;
+                    }
                 }
-            }
 
-            .dashboard-ad-overlay {
-                backdrop-filter: blur(14px);
-                -webkit-backdrop-filter: blur(14px);
-            }
+                .dashboard-ad-overlay {
+                    backdrop-filter: blur(14px);
+                    -webkit-backdrop-filter: blur(14px);
+                }
 
-            .dashboard-ad-card {
-                transform: rotate(-2deg);
-                transform-origin: center;
-            }
-
-            @media (max-width: 640px) {
                 .dashboard-ad-card {
-                    transform: rotate(-1deg);
+                    transform: rotate(-2deg);
+                    transform-origin: center;
                 }
-            }
 
-            .msg-lock-overlay {
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-            }
-
-            /* Edit Msg - Single Open Accordion */
-            .msg-accordion {
-                display: flex;
-                flex-direction: column;
-            }
-
-            .accordion-item {
-                margin-bottom: 12px;
-            }
-
-            .accordion-item:last-child {
-                margin-bottom: 0;
-            }
-
-            .accordion-header {
-                width: 100%;
-                height: 52px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 0 16px;
-                border-radius: 12px;
-                background: rgba(255, 255, 255, 0.03);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                color: #e5e7eb;
-                font-size: 0.8rem;
-                font-weight: 700;
-                text-align: left;
-                cursor: pointer;
-                transition: background 220ms ease, border-color 220ms ease, color 220ms ease;
-            }
-
-            .accordion-header:hover {
-                background: rgba(255, 255, 255, 0.06);
-                border-color: rgba(34, 197, 94, 0.30);
-                color: #ffffff;
-            }
-
-            .accordion-item.is-open .accordion-header {
-                background: rgba(34, 197, 94, 0.08);
-                border-color: rgba(34, 197, 94, 0.40);
-                color: #22c55e;
-            }
-
-            .accordion-arrow {
-                display: inline-flex;
-                flex-shrink: 0;
-                font-size: 0.65rem;
-                line-height: 1;
-                transition: transform 280ms ease;
-            }
-
-            .accordion-item.is-open .accordion-arrow {
-                transform: rotate(90deg);
-            }
-
-            .accordion-title {
-                flex: 1;
-                min-width: 0;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-
-            .accordion-content {
-                display: grid;
-                grid-template-rows: 0fr;
-                overflow: hidden;
-                transition: grid-template-rows 280ms ease;
-            }
-
-            .accordion-item.is-open .accordion-content {
-                grid-template-rows: 1fr;
-            }
-
-            .accordion-content-inner {
-                overflow: hidden;
-                min-height: 0;
-                padding: 18px 4px 4px;
-            }
-
-            @media (max-width: 768px) {
-                .accordion-content-inner {
-                    padding: 16px 2px 2px;
+                @media (max-width: 640px) {
+                    .dashboard-ad-card {
+                        transform: rotate(-1deg);
+                    }
                 }
-            }
 
-            @media (max-width: 480px) {
+                .msg-lock-overlay {
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                }
+
+                /* Edit Msg - Single Open Accordion */
+                .msg-accordion {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .accordion-item {
+                    margin-bottom: 12px;
+                }
+
+                .accordion-item:last-child {
+                    margin-bottom: 0;
+                }
+
                 .accordion-header {
-                    height: 48px;
-                    padding: 0 12px;
-                    font-size: 0.75rem;
+                    width: 100%;
+                    height: 52px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 0 16px;
+                    border-radius: 12px;
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    color: #e5e7eb;
+                    font-size: 0.8rem;
+                    font-weight: 700;
+                    text-align: left;
+                    cursor: pointer;
+                    transition: background 220ms ease, border-color 220ms ease, color 220ms ease;
+                }
+
+                .accordion-header:hover {
+                    background: rgba(255, 255, 255, 0.06);
+                    border-color: rgba(34, 197, 94, 0.30);
+                    color: #ffffff;
+                }
+
+                .accordion-item.is-open .accordion-header {
+                    background: rgba(34, 197, 94, 0.08);
+                    border-color: rgba(34, 197, 94, 0.40);
+                    color: #22c55e;
+                }
+
+                .accordion-arrow {
+                    display: inline-flex;
+                    flex-shrink: 0;
+                    font-size: 0.65rem;
+                    line-height: 1;
+                    transition: transform 280ms ease;
+                }
+
+                .accordion-item.is-open .accordion-arrow {
+                    transform: rotate(90deg);
+                }
+
+                .accordion-title {
+                    flex: 1;
+                    min-width: 0;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+
+                .accordion-content {
+                    display: grid;
+                    grid-template-rows: 0fr;
+                    overflow: hidden;
+                    transition: grid-template-rows 280ms ease;
+                }
+
+                .accordion-item.is-open .accordion-content {
+                    grid-template-rows: 1fr;
                 }
 
                 .accordion-content-inner {
-                    padding: 14px 0 0;
+                    overflow: hidden;
+                    min-height: 0;
+                    padding: 18px 4px 4px;
                 }
-            }
-        </style>
 
-        <div id="connect-page" class="min-h-screen pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 hero-gradient relative">
-            <!-- Thumbnail Background Effect -->
-            <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                <img src="/api/bot/thumb" alt="Bot Thumbnail Background" class="w-full h-full object-cover opacity-60 blur-xl mix-blend-overlay scale-105 transition-all duration-1000">
-                <div class="absolute inset-0 bg-gradient-to-b from-[#050505]/70 via-[#050505]/95 to-[#050505] light-theme-gradient"></div>
-            </div>
+                @media (max-width: 768px) {
+                    .accordion-content-inner {
+                        padding: 16px 2px 2px;
+                    }
+                }
 
-            <div id="dashboard-ad-overlay" class="dashboard-ad-overlay fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4 transition-opacity duration-200">
-                <div class="dashboard-ad-card relative w-full max-w-md rounded-2xl border border-white/15 bg-[#0b0b0c]/90 shadow-2xl shadow-black/60 p-5 md:p-6">
-                    <button type="button" id="dashboard-ad-close"
-                        class="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-9 h-9 rounded-full bg-white/10 border border-white/20 text-gray-300 hover:text-white hover:bg-white/15 transition-all flex items-center justify-center"
-                        aria-label="Tutup iklan">
-                        <i class="bi bi-x-lg text-sm"></i>
-                    </button>
+                @media (max-width: 480px) {
+                    .accordion-header {
+                        height: 48px;
+                        padding: 0 12px;
+                        font-size: 0.75rem;
+                    }
 
-                    <div class="flex items-center justify-between gap-3 mb-4">
-                        <span class="px-3 py-1 rounded-lg bg-white/10 border border-white/10 text-[10px] font-black text-gray-400 uppercase tracking-widest">Iklan</span>
-                        <a href="https://whatsapp.com/channel/0029Var18czJpe8edCUDZF3e" class="inline-flex items-center gap-2 text-xs font-extrabold text-white hover:text-green-400 transition-colors">
-                            <i class="bi bi-whatsapp text-green-500 text-base"></i>
-                            <span>Gabung Saluran</span>
-                        </a>
-                    </div>
+                    .accordion-content-inner {
+                        padding: 14px 0 0;
+                    }
+                }
+            </style>
 
-                    <h3 class="text-white text-base md:text-lg font-extrabold leading-snug mb-2">
-                        Paket Hosting Mulai 20rb-an untuk Bot WhatsApp Anda!
-                    </h3>
-                    <p class="text-sm md:text-[15px] text-gray-300 leading-relaxed font-semibold">
-                        Dapatkan pengalaman hosting bot WhatsApp yang cepat, andal, dan mudah digunakan dengan paket hosting kami yang dirancang khusus untuk kebutuhan bot WhatsApp Anda. Nikmati koneksi stabil, fitur lengkap, dan dukungan teknis 24/7 untuk memastikan bot Anda selalu online dan siap melayani pengguna Anda kapan saja.
-                    </p>
-                    <div class="mt-4 flex flex-wrap items-center gap-2 text-[11px] font-bold text-gray-400">
-                        <span class="px-2.5 py-1 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400">Mulai Rp20.000</span>
-                        <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10">Bot Whatsapp</span>
-                        <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10">Garansi 30 Hari</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="relative z-10">
-                <div class="container-responsive text-center mb-8 md:mb-12 popup-float">
-                    <h2 class="text-2xl md:text-4xl font-extrabold mb-2 text-white">Welcome Back, <%= user.username %>!</h2>
-                    <p class="text-gray-400">Manage your WhatsApp Bot connections here</p>
-                </div>
-
-                <div class="container-responsive grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
+            <div id="connect-page"
+                class="min-h-screen pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 hero-gradient relative">
+                <!-- Thumbnail Background Effect -->
+                <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                    <img src="/api/bot/thumb" alt="Bot Thumbnail Background"
+                        class="w-full h-full object-cover opacity-60 blur-xl mix-blend-overlay scale-105 transition-all duration-1000">
                     <div
-                        class="glass relative overflow-hidden p-5 md:p-6 rounded-2xl md:rounded-3xl border flex items-center space-x-4 popup-float transition-all <%= isStarterPackage ? 'border-yellow-400/60 bg-yellow-500/10 shadow-[0_0_28px_rgba(234,179,8,0.16)] hover:border-yellow-300/80' : 'border-white/5 hover:border-green-500/20' %>">
-                        <% if (isStarterPackage) { %>
-                            <div class="absolute right-2 top-2 sm:right-3 sm:top-3 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-yellow-300/50 bg-yellow-400/15 text-[8px] sm:text-[9px] font-black tracking-widest text-yellow-300 flex items-center gap-1">
-                                <i class="bi bi-gem"></i>
-                                VIP TOP
-                            </div>
-                        <% } %>
-                        <div
-                            class="w-10 h-10 md:w-12 md:h-12 <%= isStarterPackage ? 'bg-yellow-400/20 text-yellow-300' : 'bg-green-500/20 text-green-500' %> rounded-xl md:rounded-2xl flex items-center justify-center text-lg md:text-xl shrink-0">
-                            <i class="bi <%= isStarterPackage ? 'bi-gem' : 'bi-box-seam-fill' %>"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Type Paket</p>
-                            <h4 class="text-lg font-extrabold <%= isStarterPackage ? 'text-yellow-300' : 'text-white' %> capitalize">
-                                <%= user.paket %>
-                            </h4>
-                            <% if (isFreePackage || isBasicPackage) { %>
-                                <a href="/pricing" class="mt-1 inline-flex items-center gap-1 rounded-full border <%= isFreePackage ? 'border-green-400/30 bg-green-400/10 text-green-300 hover:border-green-300/60' : 'border-yellow-300/40 bg-yellow-400/10 text-yellow-300 hover:border-yellow-200/70' %> px-2.5 py-1 text-[9px] font-black uppercase tracking-widest transition-all">
-                                    <i class="bi <%= isFreePackage ? 'bi-arrow-up-circle' : 'bi-gem' %>"></i>
-                                    <%= isFreePackage ? 'Upgrade Ke Paket Basic' : 'Upgrade ke VIP FULL' %>
-                                </a>
-                            <% } %>
-                        </div>
+                        class="absolute inset-0 bg-gradient-to-b from-[#050505]/70 via-[#050505]/95 to-[#050505] light-theme-gradient">
                     </div>
-                    <div class="glass p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 flex items-center space-x-4 popup-float transition-all hover:border-blue-500/20"
-                        style="animation-delay: 100ms;">
-                        <div
-                            class="w-10 h-10 md:w-12 md:h-12 bg-blue-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-blue-500 text-lg md:text-xl shrink-0">
-                            <i class="bi bi-calendar-event-fill"></i>
+                </div>
+
+                <div id="dashboard-ad-overlay"
+                    class="dashboard-ad-overlay fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4 transition-opacity duration-200">
+                    <div
+                        class="dashboard-ad-card relative w-full max-w-md rounded-2xl border border-white/15 bg-[#0b0b0c]/90 shadow-2xl shadow-black/60 p-5 md:p-6">
+                        <button type="button" id="dashboard-ad-close"
+                            class="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-9 h-9 rounded-full bg-white/10 border border-white/20 text-gray-300 hover:text-white hover:bg-white/15 transition-all flex items-center justify-center"
+                            aria-label="Tutup iklan">
+                            <i class="bi bi-x-lg text-sm"></i>
+                        </button>
+
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <span
+                                class="px-3 py-1 rounded-lg bg-white/10 border border-white/10 text-[10px] font-black text-gray-400 uppercase tracking-widest">Iklan</span>
+                            <a href="https://whatsapp.com/channel/0029Var18czJpe8edCUDZF3e"
+                                class="inline-flex items-center gap-2 text-xs font-extrabold text-white hover:text-green-400 transition-colors">
+                                <i class="bi bi-whatsapp text-green-500 text-base"></i>
+                                <span>Gabung Saluran</span>
+                            </a>
                         </div>
-                        <div class="min-w-0">
-                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Masa Aktif</p>
-                            <h4 class="text-lg font-extrabold text-white">
-                                <%= user._expired ? new Date(user._expired).toLocaleDateString('id-ID', { day: '2-digit' ,
-                                    month: 'long' , year: 'numeric' }) : 'Permanent' %>
-                            </h4>
-                        </div>
-                    </div>
-                    <div class="glass p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 flex items-center space-x-4 popup-float transition-all hover:border-purple-500/20"
-                        style="animation-delay: 200ms;">
-                        <div
-                            class="w-10 h-10 md:w-12 md:h-12 bg-purple-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-purple-500 text-lg md:text-xl shrink-0">
-                            <i class="bi bi-shop"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Store IchanShop</p>
-                            <h4 class="text-lg font-extrabold text-white">
-                                Yuk Lihat Store <a href="/shop" class="underline text-green-500 hover:text-green-400 transition-colors">Disini</a>
-                            </h4>
+
+                        <h3 class="text-white text-base md:text-lg font-extrabold leading-snug mb-2">
+                            Paket Hosting Mulai 20rb-an untuk Bot WhatsApp Anda!
+                        </h3>
+                        <p class="text-sm md:text-[15px] text-gray-300 leading-relaxed font-semibold">
+                            Dapatkan pengalaman hosting bot WhatsApp yang cepat, andal, dan mudah digunakan dengan paket
+                            hosting kami yang dirancang khusus untuk kebutuhan bot WhatsApp Anda. Nikmati koneksi
+                            stabil, fitur lengkap, dan dukungan teknis 24/7 untuk memastikan bot Anda selalu online dan
+                            siap melayani pengguna Anda kapan saja.
+                        </p>
+                        <div class="mt-4 flex flex-wrap items-center gap-2 text-[11px] font-bold text-gray-400">
+                            <span
+                                class="px-2.5 py-1 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400">Mulai
+                                Rp20.000</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10">Bot Whatsapp</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10">Garansi 30
+                                Hari</span>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="container-responsive grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-start relative z-10">
-                <!-- Form Card -->
-                <div class="glass p-6 md:p-8 rounded-[24px] md:rounded-[40px] border border-white/10 popup-float">
-                    <div class="flex bg-white/5 p-1 rounded-xl mb-8 border border-white/5">
-                        <button type="button" id="tab-editmsg"
-                            class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-400 hover:text-white transition-all">Edit
-                            Msg</button>
-                        <button type="button" id="tab-config"
-                            class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-400 hover:text-white transition-all">Config</button>
-                        <button type="button" id="tab-connect"
-                            class="flex-1 py-2 text-sm font-bold rounded-lg bg-green-500 text-black">Connect</button>
+                <div class="relative z-10">
+                    <div class="container-responsive text-center mb-8 md:mb-12 popup-float">
+                        <h2 class="text-2xl md:text-4xl font-extrabold mb-2 text-white">Welcome Back, <%= user.username
+                                %>!</h2>
+                        <p class="text-gray-400">Manage your WhatsApp Bot connections here</p>
                     </div>
 
-                    <!-- Connect Form (Default) -->
-                    <form id="connect-form" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Username</label>
-                            <input type="text" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                value="<%= user.username %>" readonly>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Email</label>
-                            <input type="email" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                value="<%= user.email %>" readonly>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Bot Number</label>
-                            <div class="flex gap-2">
-                                <div class="relative w-2/5 min-w-[100px] sm:w-1/3 sm:min-w-[120px]">
-                                    <select id="country-code" name="country-code" class="auth-input w-full py-3 px-3 rounded-xl text-sm appearance-none cursor-pointer bg-black/40 border border-white/10 focus:border-green-500/50">
-                                        <option value="+62" selected>Indonesia (+62)</option>
-                                    </select>
-                                    <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                        <i class="bi bi-chevron-down text-[10px]"></i>
-                                    </div>
+                    <div class="container-responsive grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
+                        <div
+                            class="glass relative overflow-hidden p-5 md:p-6 rounded-2xl md:rounded-3xl border flex items-center space-x-4 popup-float transition-all <%= isStarterPackage ? 'border-yellow-400/60 bg-yellow-500/10 shadow-[0_0_28px_rgba(234,179,8,0.16)] hover:border-yellow-300/80' : 'border-white/5 hover:border-green-500/20' %>">
+                            <% if (isStarterPackage) { %>
+                                <div
+                                    class="absolute right-2 top-2 sm:right-3 sm:top-3 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-yellow-300/50 bg-yellow-400/15 text-[8px] sm:text-[9px] font-black tracking-widest text-yellow-300 flex items-center gap-1">
+                                    <i class="bi bi-gem"></i>
+                                    VIP TOP
                                 </div>
-                                <input type="tel" id="bot-number" name="bot-number"
-                                    class="auth-input flex-1 min-w-0 py-3 px-4 rounded-xl text-sm" placeholder="e.g. 812xxxx"
-                                    value="<%= user.no_Bot && user.no_Bot.startsWith('62') ? user.no_Bot.slice(2) : user.no_Bot %>" required>
+                                <% } %>
+                                    <div
+                                        class="w-10 h-10 md:w-12 md:h-12 <%= isStarterPackage ? 'bg-yellow-400/20 text-yellow-300' : 'bg-green-500/20 text-green-500' %> rounded-xl md:rounded-2xl flex items-center justify-center text-lg md:text-xl shrink-0">
+                                        <i class="bi <%= isStarterPackage ? 'bi-gem' : 'bi-box-seam-fill' %>"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Type Paket
+                                        </p>
+                                        <h4
+                                            class="text-lg font-extrabold <%= isStarterPackage ? 'text-yellow-300' : 'text-white' %> capitalize">
+                                            <%= user.paket %>
+                                        </h4>
+                                        <% if (isFreePackage || isTrialPackage || isBasicPackage) { %>
+                                            <a href="/pricing"
+                                                class="mt-1 inline-flex items-center gap-1 rounded-full border <%= (isFreePackage || isTrialPackage) ? 'border-green-400/30 bg-green-400/10 text-green-300 hover:border-green-300/60' : 'border-yellow-300/40 bg-yellow-400/10 text-yellow-300 hover:border-yellow-200/70' %> px-2.5 py-1 text-[9px] font-black uppercase tracking-widest transition-all">
+                                                <i
+                                                    class="bi <%= (isFreePackage || isTrialPackage) ? 'bi-arrow-up-circle' : 'bi-gem' %>"></i>
+                                                <%= (isFreePackage || isTrialPackage) ? 'Upgrade Ke Paket Basic' : 'Upgrade ke VIP FULL' %>
+                                            </a>
+                                            <% } %>
+                                    </div>
+                        </div>
+                        <div class="glass p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 flex items-center space-x-4 popup-float transition-all hover:border-blue-500/20"
+                            style="animation-delay: 100ms;">
+                            <div
+                                class="w-10 h-10 md:w-12 md:h-12 bg-blue-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-blue-500 text-lg md:text-xl shrink-0">
+                                <i class="bi bi-calendar-event-fill"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Masa Aktif</p>
+                                <h4 class="text-lg font-extrabold text-white">
+                                    <%= user._expired ? new Date(user._expired).toLocaleDateString('id-ID', {
+                                        day: '2-digit' , month: 'long' , year: 'numeric' }) : 'Permanent' %>
+                                </h4>
                             </div>
                         </div>
-                        <div>
-                            <div class="flex items-center justify-between gap-3 mb-2 ml-1">
-                                <label class="block text-xs font-bold text-gray-400">Api key Reaction</label>
-                                <button type="button"
-                                    class="inline-flex items-center gap-1 rounded-lg border border-green-400/25 bg-green-400/10 px-2.5 py-1 text-[10px] font-bold text-green-300 hover:bg-green-400/20 transition-colors"
-                                    onclick="window.open('https://auto-reaction.zxcoderid.web.id/vip-dashboard', '_blank', 'noopener,noreferrer')">
-                                    <span>VIP Dashboard</span>
-                                    <i class="bi bi-box-arrow-up-right"></i>
-                                </button>
+                        <div class="glass p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 flex items-center space-x-4 popup-float transition-all hover:border-purple-500/20"
+                            style="animation-delay: 200ms;">
+                            <div
+                                class="w-10 h-10 md:w-12 md:h-12 bg-purple-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-purple-500 text-lg md:text-xl shrink-0">
+                                <i class="bi bi-shop"></i>
                             </div>
-                            <input type="text" id="reaction-api-key" name="apikey_reaction"
-                                class="auth-input w-full py-3 px-4 rounded-xl text-sm font-mono" placeholder="Masukkan API key reaction">
-                            <details class="mt-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[10px] text-gray-400">
-                                <summary class="cursor-pointer font-bold text-gray-300">Tutorial mendapatkan API key reaction</summary>
-                                <ol class="mt-2 list-decimal space-y-1 pl-4 leading-relaxed">
-                                    <li>Login ke akun Google yang anda inginkan.</li>
-                                    <li>Pilih option paket yang diinginkan.</li>
-                                    <li>Gunakan pembayaran by QRIS untuk melakukan pembayaran dan akan secara otomatis konfirmasi oleh system.</li>
-                                </ol>
-                            </details>
-                        </div>
-
-                        <div class="pt-2">
-                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Connection
-                                Method</p>
-                            <input type="hidden" id="connect-method" name="method" value="qr">
-                            <div class="grid grid-cols-2 gap-3">
-                                <button type="button" id="qr-btn"
-                                    class="method-btn flex items-center justify-center space-x-2 py-3 rounded-xl glass border border-green-500 text-xs font-bold hover:bg-green-500/10 transition-all">
-                                    <i class="bi bi-qr-code-scan"></i>
-                                    <span>Scan QR</span>
-                                </button>
-                                <button type="button" id="pairing-btn"
-                                    class="method-btn flex items-center justify-center space-x-2 py-3 rounded-xl glass border border-white/5 text-xs font-bold text-gray-400 hover:text-white transition-all">
-                                    <i class="bi bi-phone"></i>
-                                    <span>Pairing Code</span>
-                                </button>
+                            <div class="min-w-0">
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Store IchanShop</p>
+                                <h4 class="text-lg font-extrabold text-white">
+                                    Yuk Lihat Store <a href="/shop"
+                                        class="underline text-green-500 hover:text-green-400 transition-colors">Disini</a>
+                                </h4>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <button type="submit" id="submit-connect"
-                            class="w-full mt-6 py-4 text-sm font-extrabold text-gray-400 hover:text-green-500 transition-colors uppercase tracking-widest">
-                            Start Connect
-                        </button>
-                    </form>
+                <div
+                    class="container-responsive grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-start relative z-10">
+                    <!-- Form Card -->
+                    <div class="glass p-6 md:p-8 rounded-[24px] md:rounded-[40px] border border-white/10 popup-float">
+                        <div class="flex bg-white/5 p-1 rounded-xl mb-8 border border-white/5">
+                            <button type="button" id="tab-editmsg"
+                                class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-400 hover:text-white transition-all">Edit
+                                Msg</button>
+                            <button type="button" id="tab-config"
+                                class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-400 hover:text-white transition-all">Config</button>
+                            <button type="button" id="tab-connect"
+                                class="flex-1 py-2 text-sm font-bold rounded-lg bg-green-500 text-black">Connect</button>
+                        </div>
 
-                    <!-- Config Form (Hidden by default) -->
-                    <form id="config-form" class="space-y-4 hidden">
-                        <div id="bot-settings-container" class="mb-6 p-4 rounded-2xl bg-white/5 border border-white/5">
-                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Bot Features
-                            </p>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                                <% const features=[ 
-                                    { id: 'public' , label: 'Public Mode', icon: 'bi-broadcast' },
-                                    { id: 'anticall' , label: 'Anti Call', icon: 'bi-telephone-x' },
-                                    { id: 'autobio' , label: 'Membuat bio', icon: 'bi-person-lines-fill' },
-                                    { id: 'onlygrub' , label: 'Untuk Chat grup', icon: 'bi-people' },
-                                    { id: 'onlypc' , label: 'Untuk Chat Pribadi', icon: 'bi-chat-left' },
-                                    { id: 'autoread' , label: 'Membaca Pesan', icon: 'bi-check2-all' },
-                                    { id: 'autoshalat' , label: 'Notifikasi Adzan', icon: 'bi-moon-stars' }
-                                ] %>
-                                    <% features.forEach(feat=> { %>
-                                        <label class="feature-toggle relative flex items-center group cursor-pointer">
-                                            <input type="checkbox" name="settings_<%= feat.id %>" class="sr-only">
-                                            <div
-                                                class="feature-card w-full min-h-[58px] px-4 py-3 rounded-2xl border border-white/5 bg-white/5 transition-all flex items-center justify-between gap-3">
-                                                <div class="flex items-center gap-3 min-w-0">
-                                                    <i class="feature-icon bi <%= feat.icon %> text-gray-500 transition-colors"></i>
-                                                    <span class="feature-label text-xs font-bold text-gray-400 group-hover:text-white transition-colors">
-                                                        <%= feat.label %>
+                        <!-- Connect Form (Default) -->
+                        <form id="connect-form" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Username</label>
+                                <input type="text" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                    value="<%= user.username %>" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Email</label>
+                                <input type="email" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                    value="<%= user.email %>" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Bot Number</label>
+                                <div class="flex gap-2">
+                                    <div class="relative w-2/5 min-w-[100px] sm:w-1/3 sm:min-w-[120px]">
+                                        <select id="country-code" name="country-code"
+                                            class="auth-input w-full py-3 px-3 rounded-xl text-sm appearance-none cursor-pointer bg-black/40 border border-white/10 focus:border-green-500/50">
+                                            <option value="+62" selected>Indonesia (+62)</option>
+                                        </select>
+                                        <div
+                                            class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                            <i class="bi bi-chevron-down text-[10px]"></i>
+                                        </div>
+                                    </div>
+                                    <input type="tel" id="bot-number" name="bot-number"
+                                        class="auth-input flex-1 min-w-0 py-3 px-4 rounded-xl text-sm"
+                                        placeholder="e.g. 812xxxx"
+                                        value="<%= user.no_Bot && user.no_Bot.startsWith('62') ? user.no_Bot.slice(2) : user.no_Bot %>"
+                                        required>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between gap-3 mb-2 ml-1">
+                                    <label class="block text-xs font-bold text-gray-400">Api key Reaction</label>
+                                    <button type="button"
+                                        class="inline-flex items-center gap-1 rounded-lg border border-green-400/25 bg-green-400/10 px-2.5 py-1 text-[10px] font-bold text-green-300 hover:bg-green-400/20 transition-colors"
+                                        onclick="window.open('https://auto-reaction.zxcoderid.web.id/vip-dashboard', '_blank', 'noopener,noreferrer')">
+                                        <span>VIP Dashboard</span>
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </button>
+                                </div>
+                                <input type="text" id="reaction-api-key" name="apikey_reaction"
+                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm font-mono"
+                                    placeholder="Masukkan API key reaction">
+                                <details
+                                    class="mt-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[10px] text-gray-400">
+                                    <summary class="cursor-pointer font-bold text-gray-300">Tutorial mendapatkan API key
+                                        reaction</summary>
+                                    <ol class="mt-2 list-decimal space-y-1 pl-4 leading-relaxed">
+                                        <li>Login ke akun Google yang anda inginkan.</li>
+                                        <li>Pilih option paket yang diinginkan.</li>
+                                        <li>Gunakan pembayaran by QRIS untuk melakukan pembayaran dan akan secara
+                                            otomatis konfirmasi oleh system.</li>
+                                    </ol>
+                                </details>
+                            </div>
+
+                            <div class="pt-2">
+                                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Connection
+                                    Method</p>
+                                <input type="hidden" id="connect-method" name="method" value="qr">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button type="button" id="qr-btn"
+                                        class="method-btn flex items-center justify-center space-x-2 py-3 rounded-xl glass border border-green-500 text-xs font-bold hover:bg-green-500/10 transition-all">
+                                        <i class="bi bi-qr-code-scan"></i>
+                                        <span>Scan QR</span>
+                                    </button>
+                                    <button type="button" id="pairing-btn"
+                                        class="method-btn flex items-center justify-center space-x-2 py-3 rounded-xl glass border border-white/5 text-xs font-bold text-gray-400 hover:text-white transition-all">
+                                        <i class="bi bi-phone"></i>
+                                        <span>Pairing Code</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="submit-connect"
+                                class="w-full mt-6 py-4 text-sm font-extrabold text-gray-400 hover:text-green-500 transition-colors uppercase tracking-widest">
+                                Start Connect
+                            </button>
+                        </form>
+
+                        <!-- Config Form (Hidden by default) -->
+                        <form id="config-form" class="space-y-4 hidden">
+                            <div id="bot-settings-container"
+                                class="mb-6 p-4 rounded-2xl bg-white/5 border border-white/5">
+                                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Bot
+                                    Features
+                                </p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                                    <% const features=[ { id: 'public' , label: 'Public Mode' , icon: 'bi-broadcast' },
+                                        { id: 'anticall' , label: 'Anti Call' , icon: 'bi-telephone-x' }, {
+                                        id: 'autobio' , label: 'Membuat bio' , icon: 'bi-person-lines-fill' }, {
+                                        id: 'onlygrub' , label: 'Untuk Chat grup' , icon: 'bi-people' }, { id: 'onlypc'
+                                        , label: 'Untuk Chat Pribadi' , icon: 'bi-chat-left' }, { id: 'autoread' ,
+                                        label: 'Membaca Pesan' , icon: 'bi-check2-all' }, { id: 'autoshalat' ,
+                                        label: 'Notifikasi Adzan' , icon: 'bi-moon-stars' } ] %>
+                                        <% features.forEach(feat=> { %>
+                                            <label
+                                                class="feature-toggle relative flex items-center group cursor-pointer">
+                                                <input type="checkbox" name="settings_<%= feat.id %>" class="sr-only">
+                                                <div
+                                                    class="feature-card w-full min-h-[58px] px-4 py-3 rounded-2xl border border-white/5 bg-white/5 transition-all flex items-center justify-between gap-3">
+                                                    <div class="flex items-center gap-3 min-w-0">
+                                                        <i
+                                                            class="feature-icon bi <%= feat.icon %> text-gray-500 transition-colors"></i>
+                                                        <span
+                                                            class="feature-label text-xs font-bold text-gray-400 group-hover:text-white transition-colors">
+                                                            <%= feat.label %>
+                                                        </span>
+                                                    </div>
+                                                    <span
+                                                        class="feature-switch w-9 h-5 rounded-full bg-black/30 border border-white/10 relative shrink-0 transition-all">
+                                                        <span
+                                                            class="feature-knob absolute w-3.5 h-3.5 rounded-full bg-gray-500 left-0.5 top-0.5 transition-transform"></span>
                                                     </span>
                                                 </div>
-                                                <span class="feature-switch w-9 h-5 rounded-full bg-black/30 border border-white/10 relative shrink-0 transition-all">
-                                                    <span class="feature-knob absolute w-3.5 h-3.5 rounded-full bg-gray-500 left-0.5 top-0.5 transition-transform"></span>
-                                                </span>
-                                            </div>
-                                        </label>
-                                        <% }) %>
-                            </div>
-                            <div class="mt-4">
-                                <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Auto Sholat City</label>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            </label>
+                                            <% }) %>
+                                </div>
+                                <div class="mt-4">
+                                    <label
+                                        class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Auto
+                                        Sholat City</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div class="relative">
+                                            <select id="sholat-province-select"
+                                                class="auth-input w-full py-2.5 px-4 pr-9 rounded-xl text-xs appearance-none cursor-pointer">
+                                                <option value="">Memuat provinsi...</option>
+                                            </select>
+                                            <i
+                                                class="bi bi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px] pointer-events-none"></i>
+                                        </div>
+                                        <div class="relative">
+                                            <select id="sholat-city-select"
+                                                class="auth-input w-full py-2.5 px-4 pr-9 rounded-xl text-xs appearance-none cursor-pointer"
+                                                disabled>
+                                                <option value="">Pilih provinsi dulu</option>
+                                            </select>
+                                            <i
+                                                class="bi bi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px] pointer-events-none"></i>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="settings_sholat_city">
+                                    <p id="sholat-city-current" class="text-[9px] text-gray-500 mt-1">Pilih provinsi
+                                        lalu kota untuk jadwal sholat.</p>
+                                </div>
+                                <div class="mt-4">
+                                    <label
+                                        class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Command
+                                        Prefixes</label>
                                     <div class="relative">
-                                        <select id="sholat-province-select" class="auth-input w-full py-2.5 px-4 pr-9 rounded-xl text-xs appearance-none cursor-pointer">
-                                            <option value="">Memuat provinsi...</option>
-                                        </select>
-                                        <i class="bi bi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px] pointer-events-none"></i>
+                                        <i
+                                            class="bi bi-terminal absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                                        <input type="text" name="settings_prefixes"
+                                            class="auth-input w-full py-2.5 pl-9 pr-4 rounded-xl text-xs font-mono"
+                                            placeholder="!,.,#,,,$">
+                                    </div>
+                                    <p class="text-[9px] text-gray-500 mt-1">Pisahkan dengan koma. Prefix yang
+                                        diizinkan: ! . # , $</p>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2 ml-1">
+                                        <label
+                                            class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest">Saluran
+                                            Whatsapp</label>
+                                        <span
+                                            class="inline-flex items-center gap-1 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-widest text-cyan-300">
+                                            <i class="bi bi-gem"></i>
+                                            Khusus Paket Basic & Starter
+                                        </span>
                                     </div>
                                     <div class="relative">
-                                        <select id="sholat-city-select" class="auth-input w-full py-2.5 px-4 pr-9 rounded-xl text-xs appearance-none cursor-pointer" disabled>
-                                            <option value="">Pilih provinsi dulu</option>
-                                        </select>
-                                        <i class="bi bi-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-[10px] pointer-events-none"></i>
+                                        <i
+                                            class="bi bi-whatsapp absolute left-3 top-1/2 -translate-y-1/2 <%= canEditWhatsappChannel ? 'text-green-500' : 'text-gray-600' %> text-xs"></i>
+                                        <input type="text" name="settings_whatsapp_channel"
+                                            class="auth-input w-full py-2.5 pl-9 pr-4 rounded-xl text-xs font-mono <%= canEditWhatsappChannel ? '' : 'opacity-60 cursor-not-allowed' %>"
+                                            placeholder="<%= canEditWhatsappChannel ? 'https://whatsapp.com/channel/xxxxxx' : 'Upgrade ke Basic atau Starter untuk mengedit' %>"
+                                            <%=canEditWhatsappChannel ? '' : 'disabled aria-disabled="true"' %>>
                                     </div>
+                                    <div class="relative mt-3">
+                                        <i
+                                            class="bi bi-pencil-square absolute left-3 top-1/2 -translate-y-1/2 <%= canEditWhatsappChannel ? 'text-cyan-400' : 'text-gray-600' %> text-xs"></i>
+                                        <input type="text" name="settings_channel_name"
+                                            class="auth-input w-full py-2.5 pl-9 pr-4 rounded-xl text-xs <%= canEditWhatsappChannel ? '' : 'opacity-60 cursor-not-allowed' %>"
+                                            placeholder="<%= canEditWhatsappChannel ? 'Nama saluran custom, contoh: ZXcoderID OFC' : 'Upgrade ke Basic atau Starter untuk mengedit' %>"
+                                            <%=canEditWhatsappChannel ? '' : 'disabled aria-disabled="true"' %>>
+                                    </div>
+                                    <p id="whatsapp-channel-current" class="text-[9px] text-gray-500 mt-1">
+                                        <%= canEditWhatsappChannel
+                                            ? 'Saat link tersimpan, backend otomatis mengambil ID saluran dan nama saluran dapat dikustom.'
+                                            : 'Fitur ini terkunci untuk paket saat ini.' %>
+                                    </p>
                                 </div>
-                                <input type="hidden" name="settings_sholat_city">
-                                <p id="sholat-city-current" class="text-[9px] text-gray-500 mt-1">Pilih provinsi lalu kota untuk jadwal sholat.</p>
                             </div>
-                            <div class="mt-4">
-                                <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Command Prefixes</label>
-                                <div class="relative">
-                                    <i class="bi bi-terminal absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                                    <input type="text" name="settings_prefixes" class="auth-input w-full py-2.5 pl-9 pr-4 rounded-xl text-xs font-mono"
-                                        placeholder="!,.,#,,,$">
-                                </div>
-                                <p class="text-[9px] text-gray-500 mt-1">Pisahkan dengan koma. Prefix yang diizinkan: ! . # , $</p>
-                            </div>
-                            <div class="mt-4">
-                                <div class="flex flex-wrap items-center justify-between gap-2 mb-2 ml-1">
-                                    <label class="block text-[8px] font-bold text-gray-500 uppercase tracking-widest">Saluran Whatsapp</label>
-                                    <span class="inline-flex items-center gap-1 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-widest text-cyan-300">
-                                        <i class="bi bi-gem"></i>
-                                        Khusus Paket Basic & Starter
-                                    </span>
-                                </div>
-                                <div class="relative">
-                                    <i class="bi bi-whatsapp absolute left-3 top-1/2 -translate-y-1/2 <%= canEditWhatsappChannel ? 'text-green-500' : 'text-gray-600' %> text-xs"></i>
-                                    <input type="text" name="settings_whatsapp_channel" class="auth-input w-full py-2.5 pl-9 pr-4 rounded-xl text-xs font-mono <%= canEditWhatsappChannel ? '' : 'opacity-60 cursor-not-allowed' %>"
-                                        placeholder="<%= canEditWhatsappChannel ? 'https://whatsapp.com/channel/xxxxxx' : 'Upgrade ke Basic atau Starter untuk mengedit' %>"
-                                        <%= canEditWhatsappChannel ? '' : 'disabled aria-disabled="true"' %>>
-                                </div>
-                                <div class="relative mt-3">
-                                    <i class="bi bi-pencil-square absolute left-3 top-1/2 -translate-y-1/2 <%= canEditWhatsappChannel ? 'text-cyan-400' : 'text-gray-600' %> text-xs"></i>
-                                    <input type="text" name="settings_channel_name" class="auth-input w-full py-2.5 pl-9 pr-4 rounded-xl text-xs <%= canEditWhatsappChannel ? '' : 'opacity-60 cursor-not-allowed' %>"
-                                        placeholder="<%= canEditWhatsappChannel ? 'Nama saluran custom, contoh: ZXcoderID OFC' : 'Upgrade ke Basic atau Starter untuk mengedit' %>"
-                                        <%= canEditWhatsappChannel ? '' : 'disabled aria-disabled="true"' %>>
-                                </div>
-                                <p id="whatsapp-channel-current" class="text-[9px] text-gray-500 mt-1"><%= canEditWhatsappChannel ? 'Saat link tersimpan, backend otomatis mengambil ID saluran dan nama saluran dapat dikustom.' : 'Fitur ini terkunci untuk paket saat ini.' %></p>
-                            </div>
-                        </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Bot Name</label>
+                                    <input type="text" name="botname"
+                                        class="auth-input w-full py-3 px-4 rounded-xl text-sm" placeholder="ZXcoderID">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Owner Number</label>
+                                    <input type="text" name="ownernumber"
+                                        class="auth-input w-full py-3 px-4 rounded-xl text-sm" placeholder="62812xxxx">
+                                    <p class="text-[9px] text-gray-500 mt-1">Nomor WhatsApp biasa tanpa +. Jika sender
+                                        owner terbaca @lid, isi field Owner LID di bawah.</p>
+                                </div>
+
+                            </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Bot Name</label>
-                                <input type="text" name="botname" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Watermark
+                                    (global.wm)</label>
+                                <input type="text" name="wm" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
                                     placeholder="ZXcoderID">
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Owner Number</label>
-                                <input type="text" name="ownernumber"
-                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm" placeholder="62812xxxx">
-                                <p class="text-[9px] text-gray-500 mt-1">Nomor WhatsApp biasa tanpa +. Jika sender owner terbaca @lid, isi field Owner LID di bawah.</p>
-                            </div>
-
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Watermark (global.wm)</label>
-                            <input type="text" name="wm" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                placeholder="ZXcoderID">
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Pack Name</label>
-                                <input type="text" name="packname"
-                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm" placeholder="Sticker By">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Pack Name</label>
+                                    <input type="text" name="packname"
+                                        class="auth-input w-full py-3 px-4 rounded-xl text-sm" placeholder="Sticker By">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Author</label>
+                                    <input type="text" name="author"
+                                        class="auth-input w-full py-3 px-4 rounded-xl text-sm" placeholder="IchanDev">
+                                </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Author</label>
-                                <input type="text" name="author" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                    placeholder="IchanDev">
+                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Creator JID
+                                    (global.creator)</label>
+                                <input type="text" name="creator" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                    placeholder="62812xxxx@s.whatsapp.net">
                             </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Creator JID
-                                (global.creator)</label>
-                            <input type="text" name="creator" class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                placeholder="62812xxxx@s.whatsapp.net">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Thumbnail (Max 10MB)</label>
-                            <input type="file" name="thumbnail" accept="image/*"
-                                class="auth-input w-full py-3 px-4 rounded-xl text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-500 file:text-black hover:file:bg-green-400">
-                        </div>
-
-                        <button type="submit" id="submit-config"
-                            class="w-full mt-6 py-4 text-sm font-extrabold text-gray-400 hover:text-green-500 transition-colors uppercase tracking-widest">
-                            Auto Save Active
-                        </button>
-                        <p id="config-autosave-status" class="text-[10px] text-center text-gray-500 font-bold uppercase tracking-widest">
-                            Perubahan akan tersimpan otomatis.
-                        </p>
-                    </form>
-
-                    <!-- Edit Msg Form -->
-                    <div id="editmsg-form" class="space-y-4 hidden">
-                        <form id="editmsg-actual-form" class="space-y-6">
-                            <div class="msg-accordion">
-                                <div class="accordion-item" data-accordion-item="1">
-                                    <button type="button" class="accordion-header" aria-expanded="false" aria-controls="msg-group-1">
-                                        <span class="accordion-arrow">&#9656;</span>
-                                        <span class="accordion-title">Basic Messages</span>
-                                    </button>
-                                    <div class="accordion-content">
-                                        <div class="accordion-content-inner">
-                                            <div id="msg-group-1" class="space-y-4" data-package="<%= user.paket %>">
-                                                <p
-                                                    class="text-[10px] font-bold text-green-500 uppercase tracking-widest bg-green-500/10 w-fit px-2 py-1 rounded">
-                                                    Package: <span class="capitalize">
-                                                        <%= user.paket %>
-                                                    </span></p>
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Wait
-                                                            Message</label>
-                                                        <input type="text" name="wait"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                            placeholder="Tunggu sebentar...">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Success
-                                                            Message</label>
-                                                        <input type="text" name="success"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                            placeholder="Sukses Kak">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">On
-                                                            Message</label>
-                                                        <input type="text" name="on"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                            placeholder="Sudah Aktif">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Off
-                                                            Message</label>
-                                                        <input type="text" name="off"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                            placeholder="Sudah Off">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="accordion-item" data-accordion-item="2">
-                                    <button type="button" class="accordion-header" aria-expanded="false" aria-controls="msg-group-2">
-                                        <span class="accordion-arrow">&#9656;</span>
-                                        <span class="accordion-title">Query &amp; Error Messages</span>
-                                    </button>
-                                    <div class="accordion-content">
-                                        <div class="accordion-content-inner">
-                                            <div id="msg-group-2" class="space-y-4">
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Query
-                                                            Text</label>
-                                                        <input type="text" name="query.text"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                            placeholder="Teks Mana?">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Query
-                                                            Link</label>
-                                                        <input type="text" name="query.link"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                            placeholder="Link Mana?">
-                                                    </div>
-                                                    <div class="md:col-span-2">
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Error
-                                                            Feature</label>
-                                                        <input type="text" name="error.fitur"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                            placeholder="Fitur Error...">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="accordion-item" data-accordion-item="3">
-                                    <button type="button" class="accordion-header" aria-expanded="false" aria-controls="msg-group-3">
-                                        <span class="accordion-arrow">&#9656;</span>
-                                        <span class="accordion-title">Only / Restriction Messages</span>
-                                    </button>
-                                    <div class="accordion-content">
-                                        <div class="accordion-content-inner">
-                                            <div id="msg-group-3" class="space-y-4">
-                                                <div class="space-y-4">
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
-                                                            Group</label>
-                                                        <input type="text" name="only.group"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
-                                                            Private</label>
-                                                        <input type="text" name="only.private"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
-                                                            Owner</label>
-                                                        <input type="text" name="only.owner"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
-                                                            Admin</label>
-                                                        <input type="text" name="only.admin"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only Bot
-                                                            Admin</label>
-                                                        <input type="text" name="only.badmin"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="accordion-item" data-accordion-item="4">
-                                    <button type="button" class="accordion-header" aria-expanded="false" aria-controls="msg-group-4">
-                                        <span class="accordion-arrow">&#9656;</span>
-                                        <span class="accordion-title">Special Feature Messages (Sewa)</span>
-                                    </button>
-                                    <div class="accordion-content">
-                                        <div class="accordion-content-inner">
-                                            <div id="msg-group-4" class="space-y-4">
-                                                <div class="space-y-4">
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Sewa
-                                                            Caption</label>
-                                                        <textarea name="sewa.caption"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-32"
-                                                            placeholder="Haloo Kak {name}..."></textarea>
-                                                        <p class="text-[9px] text-gray-500 mt-1">* Use {name} for User Name and {time}
-                                                            for Greeting</p>
-                                                    </div>
-                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        <div>
-                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">List Sewa
-                                                                Title</label>
-                                                            <input type="text" name="sewa.list_title"
-                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                                placeholder="LIST SEWA">
-                                                        </div>
-                                                        <div>
-                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Payment
-                                                                Button</label>
-                                                            <input type="text" name="sewa.payment_text"
-                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                                placeholder="PAYMENT💰">
-                                                        </div>
-                                                        <div>
-                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Owner
-                                                                Button</label>
-                                                            <input type="text" name="sewa.owner_text"
-                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                                placeholder="OWNER👥">
-                                                        </div>
-                                                    </div>
-
-                                                    <p class="text-[10px] font-bold text-green-500 uppercase tracking-widest pt-2 border-t border-white/5">
-                                                        Judul, Deskripsi &amp; Benefit
-                                                    </p>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Judul
-                                                            Sewa</label>
-                                                        <input type="text" name="sewa.judul"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                            placeholder="🤖 SEWA BOT WHATSAPP MURAH">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Deskripsi
-                                                            Sewa</label>
-                                                        <textarea name="sewa.deskripsi"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-24"
-                                                            placeholder="Jelaskan singkat tentang layanan sewa bot kamu..."></textarea>
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">List
-                                                            Benefit</label>
-                                                        <textarea name="sewa.benefit"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-28"
-                                                            placeholder="Jaga Group&#10;Game Seru&#10;Antilink GC lain&#10;Anti Promosi"></textarea>
-                                                        <p class="text-[9px] text-gray-500 mt-1">* Satu benefit per baris</p>
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Footer
-                                                            Sewa</label>
-                                                        <textarea name="sewa.footer"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-20"
-                                                            placeholder="🚩Jika ragu kami juga mempunyai testimoni..."></textarea>
-                                                    </div>
-
-                                                    <p class="text-[10px] font-bold text-green-500 uppercase tracking-widest pt-2 border-t border-white/5">
-                                                        💰 Harga Sewa
-                                                    </p>
-                                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                        <div>
-                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
-                                                                1 Hari</label>
-                                                            <input type="text" name="sewa.price_1d"
-                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                                placeholder="Rp3.000">
-                                                        </div>
-                                                        <div>
-                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
-                                                                7 Hari</label>
-                                                            <input type="text" name="sewa.price_7d"
-                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                                placeholder="Rp5.000">
-                                                        </div>
-                                                        <div>
-                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
-                                                                15 Hari</label>
-                                                            <input type="text" name="sewa.price_15d"
-                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                                placeholder="Rp10.000">
-                                                        </div>
-                                                        <div>
-                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
-                                                                30 Hari</label>
-                                                            <input type="text" name="sewa.price_30d"
-                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                                placeholder="Rp20.000">
-                                                        </div>
-                                                        <div class="sm:col-span-2">
-                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
-                                                                Permanen</label>
-                                                            <input type="text" name="sewa.price_permanent"
-                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                                placeholder="Rp50.000">
-                                                        </div>
-                                                    </div>
-
-                                                    <p class="text-[10px] font-bold text-green-500 uppercase tracking-widest pt-2 border-t border-white/5">
-                                                        💳 Konfigurasi Pembayaran
-                                                    </p>
-                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        <div>
-                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Nama
-                                                                Payment</label>
-                                                            <input type="text" name="sewa.payment_name"
-                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                                placeholder="DANA / QRIS / BCA">
-                                                        </div>
-                                                        <div>
-                                                            <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Nama
-                                                                Pemilik Rekening / E-Wallet</label>
-                                                            <input type="text" name="sewa.payment_owner"
-                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                                placeholder="Nama Pemilik">
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Nomor
-                                                            Pembayaran</label>
-                                                        <input type="text" name="sewa.payment_number"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                            placeholder="0812xxxxxxx">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">QRIS
-                                                            Image URL</label>
-                                                        <input type="text" name="sewa.payment_qris"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm"
-                                                            placeholder="https://contoh.com/qris.jpg">
-                                                        <p class="text-[9px] text-gray-500 mt-1">* Opsional, kosongkan untuk pakai gambar QRIS default</p>
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Caption
-                                                            Pembayaran</label>
-                                                        <textarea name="sewa.payment_caption"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-24"
-                                                            placeholder="> Pembayaran Sewa Bot via DANA&#10;> A/N: Nama Kamu&#10;> No: 0812xxxxxxx"></textarea>
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Instruksi
-                                                            Pembayaran</label>
-                                                        <textarea name="sewa.payment_instruction"
-                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm h-24"
-                                                            placeholder="Setelah transfer, kirim bukti pembayaran ke owner ya kak~"></textarea>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="accordion-item" data-accordion-item="5">
-                                    <button type="button" class="accordion-header" aria-expanded="false" aria-controls="msg-group-5">
-                                        <span class="accordion-arrow">&#9656;</span>
-                                        <span class="accordion-title">Premium / VIP Messages</span>
-                                    </button>
-                                    <div class="accordion-content">
-                                        <div class="accordion-content-inner">
-                                            <div id="msg-group-5" class="space-y-4">
-                                                <div>
-                                                    <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
-                                                        Premium</label>
-                                                    <input type="text" name="only.premium"
-                                                        class="auth-input w-full py-3 px-4 rounded-xl text-sm">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 mb-2 ml-1">Thumbnail (Max
+                                    10MB)</label>
+                                <input type="file" name="thumbnail" accept="image/*"
+                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-500 file:text-black hover:file:bg-green-400">
                             </div>
 
-                            <button type="submit" id="submit-editmsg"
+                            <button type="submit" id="submit-config"
                                 class="w-full mt-6 py-4 text-sm font-extrabold text-gray-400 hover:text-green-500 transition-colors uppercase tracking-widest">
                                 Auto Save Active
                             </button>
-                            <p id="editmsg-autosave-status" class="text-[10px] text-center text-gray-500 font-bold uppercase tracking-widest">
-                                Perubahan pesan akan tersimpan otomatis.
+                            <p id="config-autosave-status"
+                                class="text-[10px] text-center text-gray-500 font-bold uppercase tracking-widest">
+                                Perubahan akan tersimpan otomatis.
                             </p>
                         </form>
+
+                        <!-- Edit Msg Form -->
+                        <div id="editmsg-form" class="space-y-4 hidden">
+                            <form id="editmsg-actual-form" class="space-y-6">
+                                <div class="msg-accordion">
+                                    <div class="accordion-item" data-accordion-item="1">
+                                        <button type="button" class="accordion-header" aria-expanded="false"
+                                            aria-controls="msg-group-1">
+                                            <span class="accordion-arrow">&#9656;</span>
+                                            <span class="accordion-title">Basic Messages</span>
+                                        </button>
+                                        <div class="accordion-content">
+                                            <div class="accordion-content-inner">
+                                                <div id="msg-group-1" class="space-y-4"
+                                                    data-package="<%= user.paket %>">
+                                                    <p
+                                                        class="text-[10px] font-bold text-green-500 uppercase tracking-widest bg-green-500/10 w-fit px-2 py-1 rounded">
+                                                        Package: <span class="capitalize">
+                                                            <%= user.paket %>
+                                                        </span></p>
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Wait
+                                                                Message</label>
+                                                            <input type="text" name="wait"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Tunggu sebentar...">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Success
+                                                                Message</label>
+                                                            <input type="text" name="success"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Sukses Kak">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">On
+                                                                Message</label>
+                                                            <input type="text" name="on"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Sudah Aktif">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Off
+                                                                Message</label>
+                                                            <input type="text" name="off"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Sudah Off">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item" data-accordion-item="2">
+                                        <button type="button" class="accordion-header" aria-expanded="false"
+                                            aria-controls="msg-group-2">
+                                            <span class="accordion-arrow">&#9656;</span>
+                                            <span class="accordion-title">Query &amp; Error Messages</span>
+                                        </button>
+                                        <div class="accordion-content">
+                                            <div class="accordion-content-inner">
+                                                <div id="msg-group-2" class="space-y-4">
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Query
+                                                                Text</label>
+                                                            <input type="text" name="query.text"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Teks Mana?">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Query
+                                                                Link</label>
+                                                            <input type="text" name="query.link"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Link Mana?">
+                                                        </div>
+                                                        <div class="md:col-span-2">
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Error
+                                                                Feature</label>
+                                                            <input type="text" name="error.fitur"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="Fitur Error...">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item" data-accordion-item="3">
+                                        <button type="button" class="accordion-header" aria-expanded="false"
+                                            aria-controls="msg-group-3">
+                                            <span class="accordion-arrow">&#9656;</span>
+                                            <span class="accordion-title">Only / Restriction Messages</span>
+                                        </button>
+                                        <div class="accordion-content">
+                                            <div class="accordion-content-inner">
+                                                <div id="msg-group-3" class="space-y-4">
+                                                    <div class="space-y-4">
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                                                Group</label>
+                                                            <input type="text" name="only.group"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                                                Private</label>
+                                                            <input type="text" name="only.private"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                                                Owner</label>
+                                                            <input type="text" name="only.owner"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                                                Admin</label>
+                                                            <input type="text" name="only.admin"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                                                Bot
+                                                                Admin</label>
+                                                            <input type="text" name="only.badmin"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item" data-accordion-item="4">
+                                        <button type="button" class="accordion-header" aria-expanded="false"
+                                            aria-controls="msg-group-4">
+                                            <span class="accordion-arrow">&#9656;</span>
+                                            <span class="accordion-title">Special Feature Messages (Sewa)</span>
+                                        </button>
+                                        <div class="accordion-content">
+                                            <div class="accordion-content-inner">
+                                                <div id="msg-group-4" class="space-y-4">
+                                                    <div class="space-y-4">
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Sewa
+                                                                Caption</label>
+                                                            <textarea name="sewa.caption"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm h-32"
+                                                                placeholder="Haloo Kak {name}..."></textarea>
+                                                            <p class="text-[9px] text-gray-500 mt-1">* Use {name} for
+                                                                User Name and {time}
+                                                                for Greeting</p>
+                                                        </div>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label
+                                                                    class="block text-xs font-bold text-gray-400 mb-2 ml-1">List
+                                                                    Sewa
+                                                                    Title</label>
+                                                                <input type="text" name="sewa.list_title"
+                                                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                    placeholder="LIST SEWA">
+                                                            </div>
+                                                            <div>
+                                                                <label
+                                                                    class="block text-xs font-bold text-gray-400 mb-2 ml-1">Payment
+                                                                    Button</label>
+                                                                <input type="text" name="sewa.payment_text"
+                                                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                    placeholder="PAYMENT💰">
+                                                            </div>
+                                                            <div>
+                                                                <label
+                                                                    class="block text-xs font-bold text-gray-400 mb-2 ml-1">Owner
+                                                                    Button</label>
+                                                                <input type="text" name="sewa.owner_text"
+                                                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                    placeholder="OWNER👥">
+                                                            </div>
+                                                        </div>
+
+                                                        <p
+                                                            class="text-[10px] font-bold text-green-500 uppercase tracking-widest pt-2 border-t border-white/5">
+                                                            Judul, Deskripsi &amp; Benefit
+                                                        </p>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Judul
+                                                                Sewa</label>
+                                                            <input type="text" name="sewa.judul"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="🤖 SEWA BOT WHATSAPP MURAH">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Deskripsi
+                                                                Sewa</label>
+                                                            <textarea name="sewa.deskripsi"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm h-24"
+                                                                placeholder="Jelaskan singkat tentang layanan sewa bot kamu..."></textarea>
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">List
+                                                                Benefit</label>
+                                                            <textarea name="sewa.benefit"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm h-28"
+                                                                placeholder="Jaga Group&#10;Game Seru&#10;Antilink GC lain&#10;Anti Promosi"></textarea>
+                                                            <p class="text-[9px] text-gray-500 mt-1">* Satu benefit per
+                                                                baris</p>
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Footer
+                                                                Sewa</label>
+                                                            <textarea name="sewa.footer"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm h-20"
+                                                                placeholder="🚩Jika ragu kami juga mempunyai testimoni..."></textarea>
+                                                        </div>
+
+                                                        <p
+                                                            class="text-[10px] font-bold text-green-500 uppercase tracking-widest pt-2 border-t border-white/5">
+                                                            💰 Harga Sewa
+                                                        </p>
+                                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label
+                                                                    class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
+                                                                    1 Hari</label>
+                                                                <input type="text" name="sewa.price_1d"
+                                                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                    placeholder="Rp3.000">
+                                                            </div>
+                                                            <div>
+                                                                <label
+                                                                    class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
+                                                                    7 Hari</label>
+                                                                <input type="text" name="sewa.price_7d"
+                                                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                    placeholder="Rp5.000">
+                                                            </div>
+                                                            <div>
+                                                                <label
+                                                                    class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
+                                                                    15 Hari</label>
+                                                                <input type="text" name="sewa.price_15d"
+                                                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                    placeholder="Rp10.000">
+                                                            </div>
+                                                            <div>
+                                                                <label
+                                                                    class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
+                                                                    30 Hari</label>
+                                                                <input type="text" name="sewa.price_30d"
+                                                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                    placeholder="Rp20.000">
+                                                            </div>
+                                                            <div class="sm:col-span-2">
+                                                                <label
+                                                                    class="block text-xs font-bold text-gray-400 mb-2 ml-1">Harga
+                                                                    Permanen</label>
+                                                                <input type="text" name="sewa.price_permanent"
+                                                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                    placeholder="Rp50.000">
+                                                            </div>
+                                                        </div>
+
+                                                        <p
+                                                            class="text-[10px] font-bold text-green-500 uppercase tracking-widest pt-2 border-t border-white/5">
+                                                            💳 Konfigurasi Pembayaran
+                                                        </p>
+                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label
+                                                                    class="block text-xs font-bold text-gray-400 mb-2 ml-1">Nama
+                                                                    Payment</label>
+                                                                <input type="text" name="sewa.payment_name"
+                                                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                    placeholder="DANA / QRIS / BCA">
+                                                            </div>
+                                                            <div>
+                                                                <label
+                                                                    class="block text-xs font-bold text-gray-400 mb-2 ml-1">Nama
+                                                                    Pemilik Rekening / E-Wallet</label>
+                                                                <input type="text" name="sewa.payment_owner"
+                                                                    class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                    placeholder="Nama Pemilik">
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Nomor
+                                                                Pembayaran</label>
+                                                            <input type="text" name="sewa.payment_number"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="0812xxxxxxx">
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">QRIS
+                                                                Image URL</label>
+                                                            <input type="text" name="sewa.payment_qris"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm"
+                                                                placeholder="https://contoh.com/qris.jpg">
+                                                            <p class="text-[9px] text-gray-500 mt-1">* Opsional,
+                                                                kosongkan untuk pakai gambar QRIS default</p>
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Caption
+                                                                Pembayaran</label>
+                                                            <textarea name="sewa.payment_caption"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm h-24"
+                                                                placeholder="> Pembayaran Sewa Bot via DANA&#10;> A/N: Nama Kamu&#10;> No: 0812xxxxxxx"></textarea>
+                                                        </div>
+                                                        <div>
+                                                            <label
+                                                                class="block text-xs font-bold text-gray-400 mb-2 ml-1">Instruksi
+                                                                Pembayaran</label>
+                                                            <textarea name="sewa.payment_instruction"
+                                                                class="auth-input w-full py-3 px-4 rounded-xl text-sm h-24"
+                                                                placeholder="Setelah transfer, kirim bukti pembayaran ke owner ya kak~"></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item" data-accordion-item="5">
+                                        <button type="button" class="accordion-header" aria-expanded="false"
+                                            aria-controls="msg-group-5">
+                                            <span class="accordion-arrow">&#9656;</span>
+                                            <span class="accordion-title">Premium / VIP Messages</span>
+                                        </button>
+                                        <div class="accordion-content">
+                                            <div class="accordion-content-inner">
+                                                <div id="msg-group-5" class="space-y-4">
+                                                    <div>
+                                                        <label
+                                                            class="block text-xs font-bold text-gray-400 mb-2 ml-1">Only
+                                                            Premium</label>
+                                                        <input type="text" name="only.premium"
+                                                            class="auth-input w-full py-3 px-4 rounded-xl text-sm">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" id="submit-editmsg"
+                                    class="w-full mt-6 py-4 text-sm font-extrabold text-gray-400 hover:text-green-500 transition-colors uppercase tracking-widest">
+                                    Auto Save Active
+                                </button>
+                                <p id="editmsg-autosave-status"
+                                    class="text-[10px] text-center text-gray-500 font-bold uppercase tracking-widest">
+                                    Perubahan pesan akan tersimpan otomatis.
+                                </p>
+                            </form>
+                        </div>
+
                     </div>
 
-                </div>
-
-                <!-- Log Console -->
-                <div class="lg:col-span-1 popup-float" style="animation-delay: 100ms;">
-                    <div
-                        class="dashboard-console bg-[#0c0e14] border border-white/10 rounded-2xl overflow-hidden flex flex-col">
+                    <!-- Log Console -->
+                    <div class="lg:col-span-1 popup-float" style="animation-delay: 100ms;">
                         <div
-                            class="bg-white/5 border-b border-white/10 px-3 sm:px-4 py-3 flex items-center justify-between gap-2 flex-wrap">
-                            <div class="flex items-center gap-2 min-w-0">
-                                <div class="flex gap-1.5 shrink-0">
-                                    <div class="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
-                                    <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
-                                    <div class="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
+                            class="dashboard-console bg-[#0c0e14] border border-white/10 rounded-2xl overflow-hidden flex flex-col">
+                            <div
+                                class="bg-white/5 border-b border-white/10 px-3 sm:px-4 py-3 flex items-center justify-between gap-2 flex-wrap">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="flex gap-1.5 shrink-0">
+                                        <div class="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
+                                        <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
+                                        <div class="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
+                                    </div>
+                                    <span
+                                        class="text-xs font-bold font-mono text-gray-500 ml-2 truncate">system_logs_whatsapp.sh</span>
                                 </div>
-                                <span
-                                    class="text-xs font-bold font-mono text-gray-500 ml-2 truncate">system_logs_whatsapp.sh</span>
+                                <div class="flex items-center gap-3 shrink-0">
+                                    <div id="status-badge"
+                                        class="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-gray-500">
+                                        IDLE</div>
+                                    <button onclick="document.getElementById('wa-logs-container').innerHTML = ''"
+                                        class="text-gray-500 hover:text-white transition-colors">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-3 shrink-0">
-                                <div id="status-badge"
-                                    class="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-gray-500">IDLE</div>
-                                <button onclick="document.getElementById('wa-logs-container').innerHTML = ''"
-                                    class="text-gray-500 hover:text-white transition-colors">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                            <div id="status-content"
+                                class="min-h-[220px] flex flex-col items-center justify-center bg-white/5 border-b border-white/10 p-6 transition-all">
+                                <i class="bi bi-qr-code text-6xl text-gray-600 mb-4"></i>
+                                <p id="status-text"
+                                    class="text-gray-500 text-xs text-center leading-relaxed font-medium">
+                                    QR Code atau Pairing Code akan muncul di sini.
+                                </p>
                             </div>
-                        </div>
-                        <div id="status-content"
-                            class="min-h-[220px] flex flex-col items-center justify-center bg-white/5 border-b border-white/10 p-6 transition-all">
-                            <i class="bi bi-qr-code text-6xl text-gray-600 mb-4"></i>
-                            <p id="status-text" class="text-gray-500 text-xs text-center leading-relaxed font-medium">
-                                QR Code atau Pairing Code akan muncul di sini.
-                            </p>
-                        </div>
-                        <div id="wa-logs-container"
-                            class="flex-1 p-4 font-mono text-[11px] leading-relaxed overflow-y-auto space-y-1 scroll-smooth">
-                            <!-- Logs will appear here -->
-                            <div class="text-gray-500 opacity-50"># Waiting for logs...</div>
+                            <div id="wa-logs-container"
+                                class="flex-1 p-4 font-mono text-[11px] leading-relaxed overflow-y-auto space-y-1 scroll-smooth">
+                                <!-- Logs will appear here -->
+                                <div class="text-gray-500 opacity-50"># Waiting for logs...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
 
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const adOverlay = document.getElementById('dashboard-ad-overlay');
-                const closeAd = document.getElementById('dashboard-ad-close');
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const adOverlay = document.getElementById('dashboard-ad-overlay');
+                    const closeAd = document.getElementById('dashboard-ad-close');
 
-                function hideDashboardAd() {
-                    if (!adOverlay) return;
-                    adOverlay.classList.add('opacity-0', 'pointer-events-none');
-                    setTimeout(() => adOverlay.remove(), 180);
-                }
+                    function hideDashboardAd() {
+                        if (!adOverlay) return;
+                        adOverlay.classList.add('opacity-0', 'pointer-events-none');
+                        setTimeout(() => adOverlay.remove(), 180);
+                    }
 
-                closeAd?.addEventListener('click', hideDashboardAd);
-                document.addEventListener('keydown', (event) => {
-                    if (event.key === 'Escape') hideDashboardAd();
-                });
+                    closeAd?.addEventListener('click', hideDashboardAd);
+                    document.addEventListener('keydown', (event) => {
+                        if (event.key === 'Escape') hideDashboardAd();
+                    });
 
-                // Edit Msg - Single Open Accordion (visual only, tidak mengubah data/binding/logic submit)
-                const msgAccordionItems = document.querySelectorAll('#editmsg-actual-form .accordion-item');
-                msgAccordionItems.forEach((item) => {
-                    const header = item.querySelector('.accordion-header');
-                    if (!header) return;
+                    // Edit Msg - Single Open Accordion (visual only, tidak mengubah data/binding/logic submit)
+                    const msgAccordionItems = document.querySelectorAll('#editmsg-actual-form .accordion-item');
+                    msgAccordionItems.forEach((item) => {
+                        const header = item.querySelector('.accordion-header');
+                        if (!header) return;
 
-                    header.addEventListener('click', () => {
-                        const wasOpen = item.classList.contains('is-open');
+                        header.addEventListener('click', () => {
+                            const wasOpen = item.classList.contains('is-open');
 
-                        msgAccordionItems.forEach((otherItem) => {
-                            otherItem.classList.remove('is-open');
-                            const otherHeader = otherItem.querySelector('.accordion-header');
-                            if (otherHeader) otherHeader.setAttribute('aria-expanded', 'false');
+                            msgAccordionItems.forEach((otherItem) => {
+                                otherItem.classList.remove('is-open');
+                                const otherHeader = otherItem.querySelector('.accordion-header');
+                                if (otherHeader) otherHeader.setAttribute('aria-expanded', 'false');
+                            });
+
+                            if (!wasOpen) {
+                                item.classList.add('is-open');
+                                header.setAttribute('aria-expanded', 'true');
+                            }
                         });
-
-                        if (!wasOpen) {
-                            item.classList.add('is-open');
-                            header.setAttribute('aria-expanded', 'true');
-                        }
                     });
                 });
-            });
-        </script>
+            </script>
 
-        <%- include('partials/footer') %>
+            <%- include('partials/footer') %>
