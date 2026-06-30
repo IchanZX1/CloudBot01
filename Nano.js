@@ -30051,35 +30051,35 @@ ${meg.result}`)
         }
         break
       case 'pushkontak': {
-        if (!isPrem && !DanzTheCreator) return reply(mess.only.premium)
-        if (!m.isGroup) return replynano(mess.onlygrub)
-        if (!text) return replynano(`Contoh: ${prefix + command} Save ChanzxDev kak nanti saya save back`);
-         // console.log(participants)
+         if (!isPrem && !DanzTheCreator) return reply(mess.only.premium)
+         if (!m.isGroup) return replynano(mess.onlygrub)
+         if (!text) return replynano(`Contoh: ${prefix + command} Save ChanzxDev kak nanti saya save back`);
          const ambilDataGrup = await NanoBotz.groupMetadata(m.chat)
-          const ambilParticipants = ambilDataGrup.participants.map(u => u.phoneNumber)
+         const ambilParticipants = ambilDataGrup.participants.map(u => u.id)
          for (let pler of ambilParticipants) {
-          // console.log(pler)
-          await NanoBotz.sendMessage(pler, { text: text })
-          await sleep(6000)
-         // NanoBotz.sendMessage(pler.phoneNumber, { text: text })
-        }
-        // replynano(`Success in pushing the message to contacts`)
-        // for (let pler of mem) {
-        //   NanoBotz.sendMessage(pler, { text: text })
-        // }
-      //  replynano(`Done`)
+           try {
+             await NanoBotz.sendMessage(pler, { text: text })
+             await sleep(6000)
+           } catch (e) {
+             console.error(`Gagal pushkontak ke ${pler}:`, e)
+           }
+         }
       }
         break
       case 'pushkontakv2': {
         if (!isPrem && !DanzTheCreator) return reply(mess.only.owner)
         if (!text) return replynano(`Incorrect Usage Please Use Command Like This\n${prefix + command} idgc|text`)
         reply(mess.wait)
-        const metadata2 = await NanoBotz.groupMetadata(text.split("|")[0])
-        const halss = metadata2.participants
-        for (let mem of halss) {
-          NanoBotz.sendMessage(`${mem.jid.split('@')[0]}` + "@s.whatsapp.net", { text: text.split("|")[1] })
-          await sleep(5000)
-        }
+         const metadata2 = await NanoBotz.groupMetadata(text.split("|")[0])
+         const halss = metadata2.participants
+         for (let mem of halss) {
+           try {
+             await NanoBotz.sendMessage(`${mem.jid.split('@')[0]}` + "@s.whatsapp.net", { text: text.split("|")[1] })
+             await sleep(5000)
+           } catch (e) {
+             console.error(`Gagal pushkontakv2 ke ${mem.jid}:`, e)
+           }
+         }
         replynano(`Success`)
       }
         break
@@ -30099,18 +30099,22 @@ ${meg.result}`)
         const halls = await participantss.filter(v => v.jid.endsWith('.net')).map(v => v.jid)
         global.tekspushkonv3 = text.split("|")[2]
         for (let mem of halls) {
-          if (/image/.test(mime)) {
-            let media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
-            let memk = await uptotelegra(media)
-            if (fs.existsSync(media)) fs.unlinkSync(media)
-            await NanoBotz.sendMessage(mem, { image: { url: memk }, caption: global.tekspushkonv3 })
-            await sleep(jedaPushv3)
-          } else {
-            await NanoBotz.sendMessage(mem, { text: global.tekspushkonv3 })
-            await sleep(jedaPushv3)
-          }
-        }
-        reply("Succes Boss!")
+           try {
+             if (/image/.test(mime)) {
+               let media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+               let memk = await uptotelegra(media)
+               if (fs.existsSync(media)) fs.unlinkSync(media)
+               await NanoBotz.sendMessage(mem, { image: { url: memk }, caption: global.tekspushkonv3 })
+               await sleep(jedaPushv3)
+             } else {
+               await NanoBotz.sendMessage(mem, { text: global.tekspushkonv3 })
+               await sleep(jedaPushv3)
+             }
+           } catch (e) {
+             console.error(`Gagal pushkontakv3 ke ${mem}:`, e)
+           }
+         }
+         reply("Succes Boss!")
         break
       case 'pushkontakv4':
         if (!isPrem && !DanzTheCreator) return reply(mess.only.premium)
@@ -30120,17 +30124,21 @@ ${meg.result}`)
         const halsss = await participants.filter(v => v.jid.endsWith('.net')).map(v => v.jid)
         global.tekspushkonv4 = text.split("|")[1]
         for (let men of halsss) {
-          if (/image/.test(mime)) {
-            media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
-            mem = await uptotelegra(media)
-            await NanoBotz.sendMessage(men, { image: { url: mem }, caption: global.tekspushkonv4 })
-            await sleep(text.split("|")[0])
-          } else {
-            await NanoBotz.sendMessage(men, { text: global.tekspushkonv4 })
-            await sleep(text.split("|")[0])
-          }
-        }
-        reply("Succes Boss!")
+           try {
+             if (/image/.test(mime)) {
+               media = await NanoBotz.downloadAndSaveMediaMessage(quoted)
+               mem = await uptotelegra(media)
+               await NanoBotz.sendMessage(men, { image: { url: mem }, caption: global.tekspushkonv4 })
+               await sleep(text.split("|")[0])
+             } else {
+               await NanoBotz.sendMessage(men, { text: global.tekspushkonv4 })
+               await sleep(text.split("|")[0])
+             }
+           } catch (e) {
+             console.error(`Gagal pushkontakv4 ke ${men}:`, e)
+           }
+         }
+         reply("Succes Boss!")
         break
 
       case 'savekontak': case 'svkontak':
