@@ -30053,17 +30053,18 @@ ${meg.result}`)
       case 'pushkontak': {
          if (!isPrem && !DanzTheCreator) return reply(mess.only.premium)
          if (!m.isGroup) return replynano(mess.onlygrub)
-         if (!text) return replynano(`Contoh: ${prefix + command} Save ChanzxDev kak nanti saya save back`);
-         const ambilDataGrup = await NanoBotz.groupMetadata(m.chat)
-         const ambilParticipants = ambilDataGrup.participants.map(u => u.id)
-         for (let pler of ambilParticipants) {
-           try {
-             await NanoBotz.sendMessage(pler, { text: text })
-             await sleep(6000)
-           } catch (e) {
-             console.error(`Gagal pushkontak ke ${pler}:`, e)
-           }
-         }
+          let [pesan, jeda] = text.split("|")
+          if (!pesan || !jeda) return replynano(`Contoh: ${prefix + command} Save ChanzxDev kak nanti saya save back|3000\n\nArtinya 3000 = Jeda 3 Detik`)
+          const ambilDataGrup = await NanoBotz.groupMetadata(m.chat)
+          const ambilParticipants = ambilDataGrup.participants.map(u => u.id)
+          for (let pler of ambilParticipants) {
+            try {
+              await NanoBotz.sendMessage(pler, { text: pesan })
+              await sleep(Number(jeda) || 3000)
+            } catch (e) {
+              console.error(`Gagal pushkontak ke ${pler}:`, e)
+            }
+          }
       }
         break
       case 'pushkontakv2': {
