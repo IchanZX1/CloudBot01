@@ -2823,19 +2823,17 @@ Desc : ${PlXz.player_response.videoDetails.shortDescription}`
       reply(mess.wait)
       //  reply("bentar sek....")
       try {
-        const res = await Api.neoxr('/tiktok', {
-          url: budy
-        });
+        const res = JSON.parse(execSync(`curl -sk "https://api-faa.my.id/faa/tiktok?url=${encodeURIComponent(budy)}"`).toString());
         if (!res.status) return reply('Error!');
         const data = res.data;
         const caption = `*[ TIKTOK DOWNLOADER ]*
 
-*Caption*: _${data.caption}_
-*Author*: _${data.author.nickname} (@${data.author.uniqueId})_
-*Likes*: _${data.statistic.likes}_
-*Comments*: _${data.statistic.comments}_
-*Shares*: _${data.statistic.shares}_
-*Views*: _${data.statistic.views}_
+*Caption*: _${data.title}_
+*Author*: _${data.author.username}_
+*Likes*: _${data.stats.likes}_
+*Comments*: _${data.stats.comment}_
+*Shares*: _${data.stats.share}_
+*Views*: _${data.stats.views}_
 
 \`⏤͟͟͞͞ Downloader By ${botname}\``;
         NanoBotz.sendMessage(m.chat, { caption: caption, video: { url: data.video } }, { quoted: m })
@@ -3876,7 +3874,11 @@ const time = getJakartaTime();
 const chat_time = getJakartaTime();
           meme = `https://api.neoxr.eu/api/iqc?text=${encodeURIComponent(text)}&time=${time}&chat_time=${chat_time}&apikey=chanzxdevw`
           let resultss = await fetchJson(meme).then(res => res.data.url)
-          await NanoBotz.sendMessage(m.chat, { image: { url: resultss }, caption: mess.success }, { quoted: m })
+          if(!resultss) {
+            const fallbackUrl = `https://docs-alip.clutch.web.id/imagecreator/iqc?apikey=alipaiapikeybaru&time=${time}&text=${encodeURIComponent(text)}`
+            resultss = execSync(`curl -s "${fallbackUrl}"`, { encoding: null })
+          }
+          await NanoBotz.sendMessage(m.chat, { image: typeof resultss === 'string' ? { url: resultss } : resultss, caption: mess.success }, { quoted: m })
       }
         break
       case 'toputih': case 'putihkan': {
@@ -13171,21 +13173,19 @@ Latest Publish Time : ${eha.latestPublishTime}`)
         if (!text) return replynano(`Contoh: ${prefix + command} link`);
         reply(mess.wait)
         try {
-          const res = await Api.neoxr('/tiktok', {
-            url: text
-          });
+          const res = JSON.parse(execSync(`curl -sk "https://api-faa.my.id/faa/tiktok?url=${encodeURIComponent(text)}"`).toString());
           if (!res.status) return reply('Error!');
-          const data = res.data;
+          const data = res.result;
           const caption = `*[ TIKTOK DOWNLOADER ]*
 
-*Caption*: _${data.caption}_
-*Author*: _${data.author.nickname} (@${data.author.uniqueId})_
-*Likes*: _${data.statistic.likes}_
-*Comments*: _${data.statistic.comments}_
-*Shares*: _${data.statistic.shares}_
-*Views*: _${data.statistic.views}_
+*Caption*: _${data.title}_
+*Author*: _${data.author.username}_
+*Likes*: _${data.stats.likes}_
+*Comments*: _${data.stats.comment}_
+*Shares*: _${data.stats.share}_
+*Views*: _${data.stats.views}_
 
-\`⏤͟͟͞͞ Downloader By ${botname}\``;
+\`⏤͟͟͞͞ Downloader By ${botname}\``;
           NanoBotz.sendMessage(m.chat, { caption: caption, video: { url: data.video } }, { quoted: m })
         } catch (e) {
           console.error(e);
